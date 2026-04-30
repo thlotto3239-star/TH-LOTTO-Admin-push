@@ -66,12 +66,14 @@ export default function Layout() {
               src={siteSettings.site_logo_url}
               alt={siteSettings.site_name}
               className="h-16 w-auto object-contain mb-3 drop-shadow-md"
+              onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex' }}
             />
-          ) : (
-            <div className="h-16 w-16 rounded-full bg-primary-container flex items-center justify-center mb-3 border-2 border-white shadow-capsule-md">
-              <span className="text-on-primary-container text-2xl font-black">{initial}</span>
-            </div>
-          )}
+          ) : null}
+          <div
+            className="h-16 w-16 rounded-full bg-primary-container items-center justify-center mb-3 border-2 border-white shadow-capsule-md"
+            style={{ display: siteSettings.site_logo_url ? 'none' : 'flex' }}>
+            <span className="text-on-primary-container text-2xl font-black">{initial}</span>
+          </div>
           <div className="text-lg font-black tracking-tight text-primary">{siteSettings.site_name || 'THLotto'}</div>
           <div className="text-on-surface-variant text-sm mt-1">{profile?.full_name || 'ผู้ดูแลระบบ'}</div>
         </div>
