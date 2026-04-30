@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { CheckCircle, XCircle, Eye, Search, Filter, Loader2 } from 'lucide-react'
 
-const STATUS_LABEL = { PENDING: { label: 'รอดำเนินการ', cls: 'bg-amber-100 text-amber-700' }, APPROVED: { label: 'อนุมัติแล้ว', cls: 'bg-emerald-100 text-emerald-700' }, REJECTED: { label: 'ปฏิเสธ', cls: 'bg-red-100 text-red-700' } }
+const STATUS_LABEL = { PENDING: { label: 'รอดำเนินการ', cls: 'bg-amber-100 text-amber-700' }, APPROVED: { label: 'อนุมัติแล้ว', cls: 'bg-secondary-container text-on-secondary-container' }, REJECTED: { label: 'ปฏิเสธ', cls: 'bg-error-container text-on-error-container' } }
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
 
 export default function Deposits() {
@@ -86,9 +86,9 @@ export default function Deposits() {
       {/* Table */}
       <div className="glass-panel rounded-2xl shadow-glass overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center h-32"><Loader2 className="animate-spin text-emerald-500" size={24}/></div>
+          <div className="flex items-center justify-center h-32"><Loader2 className="animate-spin text-primary" size={24}/></div>
         ) : rows.length === 0 ? (
-          <div className="text-center py-12 text-slate-400">ไม่มีรายการ</div>
+          <div className="text-center py-12 text-outline">ไม่มีรายการ</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -103,15 +103,15 @@ export default function Deposits() {
                   <th className="px-4 py-3 font-medium">จัดการ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-outline-variant">
                 {rows.map(r => (
                   <tr key={r.id} className="hover:bg-surface-container-low transition">
                     <td className="px-4 py-3">
                       <div className="font-medium text-on-surface">{r.profiles?.full_name || '-'}</div>
                       <div className="text-xs text-outline">{r.profiles?.member_id} · {r.profiles?.phone}</div>
                     </td>
-                    <td className="px-4 py-3 font-bold text-emerald-700">฿{fmt(r.amount)}</td>
-                    <td className="px-4 py-3 text-xs text-purple-700">{r.promo_code || '-'}</td>
+                    <td className="px-4 py-3 font-bold text-secondary">฿{fmt(r.amount)}</td>
+                    <td className="px-4 py-3 text-xs text-on-surface-variant font-medium">{r.promo_code || '-'}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_LABEL[r.status]?.cls}`}>
                         {STATUS_LABEL[r.status]?.label || r.status}

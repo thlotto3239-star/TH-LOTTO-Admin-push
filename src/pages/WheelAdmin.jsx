@@ -61,11 +61,11 @@ export default function WheelAdmin() {
                 <th className="px-4 py-3 font-medium">แก้ไข</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-outline-variant">
               {prizes.map(p => (
-                <tr key={p.id} className={`hover:bg-slate-50 transition ${!p.is_active ? 'opacity-50' : ''}`}>
+                <tr key={p.id} className={`hover:bg-surface-container-low transition ${!p.is_active ? 'opacity-50' : ''}`}>
                   <td className="px-4 py-3">
-                    <div className="w-6 h-6 rounded-full border border-slate-200" style={{ backgroundColor: p.color || '#ccc' }}></div>
+                    <div className="w-6 h-6 rounded-full border border-outline-variant" style={{ backgroundColor: p.color || '#ccc' }}></div>
                   </td>
                   <td className="px-4 py-3 font-semibold text-on-surface">{p.name}</td>
                   <td className="px-4 py-3 font-bold text-secondary">
@@ -77,7 +77,7 @@ export default function WheelAdmin() {
                   </td>
                   <td className="px-4 py-3">
                     <button onClick={() => toggle(p.id, p.is_active)}
-                      className={`text-xs px-2 py-1 rounded-full font-medium transition ${p.is_active ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                      className={`text-xs px-2 py-1 rounded-full font-medium transition ${p.is_active ? 'bg-secondary-container text-on-secondary-container hover:bg-secondary/20' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'}`}>
                       {p.is_active ? 'เปิด' : 'ปิด'}
                     </button>
                   </td>

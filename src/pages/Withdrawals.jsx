@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { CheckCircle, XCircle, Search, Loader2, Copy } from 'lucide-react'
 
-const STATUS_LABEL = { PENDING: { label: 'รอดำเนินการ', cls: 'bg-amber-100 text-amber-700' }, APPROVED: { label: 'โอนแล้ว', cls: 'bg-emerald-100 text-emerald-700' }, REJECTED: { label: 'ปฏิเสธ', cls: 'bg-red-100 text-red-700' } }
+const STATUS_LABEL = { PENDING: { label: 'รอดำเนินการ', cls: 'bg-amber-100 text-amber-700' }, APPROVED: { label: 'โอนแล้ว', cls: 'bg-secondary-container text-on-secondary-container' }, REJECTED: { label: 'ปฏิเสธ', cls: 'bg-error-container text-on-error-container' } }
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
 
 export default function Withdrawals() {
@@ -90,7 +90,7 @@ export default function Withdrawals() {
 
       <div className="glass-panel rounded-2xl shadow-glass overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center h-32"><Loader2 className="animate-spin text-emerald-500" size={24}/></div>
+          <div className="flex items-center justify-center h-32"><Loader2 className="animate-spin text-primary" size={24}/></div>
         ) : rows.length === 0 ? (
           <div className="text-center py-12 text-outline">ไม่มีรายการ</div>
         ) : (
@@ -106,7 +106,7 @@ export default function Withdrawals() {
                   <th className="px-4 py-3 font-medium">จัดการ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-outline-variant">
                 {rows.map(r => (
                   <tr key={r.id} className="hover:bg-surface-container-low transition">
                     <td className="px-4 py-3">

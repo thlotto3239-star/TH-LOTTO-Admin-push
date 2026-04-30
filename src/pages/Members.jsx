@@ -77,7 +77,7 @@ export default function Members() {
 
       <div className="glass-panel rounded-2xl shadow-glass overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center h-32"><Loader2 className="animate-spin text-emerald-500" size={24}/></div>
+          <div className="flex items-center justify-center h-32"><Loader2 className="animate-spin text-primary" size={24}/></div>
         ) : rows.length === 0 ? (
           <div className="text-center py-12 text-outline">ไม่พบสมาชิก</div>
         ) : (
@@ -105,7 +105,7 @@ export default function Members() {
                     <td className="px-4 py-3 text-on-surface-variant">฿{fmt(r.wallets?.total_bets)}</td>
                     <td className="px-4 py-3 text-on-surface-variant">฿{fmt(r.wallets?.total_won)}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${r.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${r.status === 'active' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}`}>
                         {r.status === 'active' ? 'ปกติ' : 'ระงับ'}
                       </span>
                     </td>

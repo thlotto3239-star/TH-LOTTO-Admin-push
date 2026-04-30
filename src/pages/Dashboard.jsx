@@ -94,7 +94,7 @@ export default function Dashboard() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="text-emerald-600 animate-pulse text-lg">กำลังโหลดข้อมูล...</div>
+      <div className="text-primary animate-pulse text-lg">กำลังโหลดข้อมูล...</div>
     </div>
   )
 
@@ -168,10 +168,10 @@ export default function Dashboard() {
         <div className="glass-panel rounded-2xl shadow-glass p-5">
           <h3 className="text-sm font-semibold text-on-surface-variant mb-4">สถานะตลาด</h3>
           <div className="space-y-2 max-h-64 overflow-y-auto">
-            {markets.length === 0 && <div className="text-slate-400 text-sm text-center py-4">ไม่มีตลาด</div>}
+            {markets.length === 0 && <div className="text-outline text-sm text-center py-4">ไม่มีตลาด</div>}
             {markets.map(m => (
-              <div key={m.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                <span className="text-sm text-slate-700 truncate">{m.name}</span>
+              <div key={m.id} className="flex items-center justify-between py-2 border-b border-outline-variant last:border-0">
+                <span className="text-sm text-on-surface truncate">{m.name}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${m.is_open ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container text-on-surface-variant'}`}>
                   {m.is_open ? '🟢 เปิด' : '⛔ ปิด'}
                 </span>
@@ -188,7 +188,7 @@ export default function Dashboard() {
         </h3>
         <div className="space-y-2 max-h-72 overflow-y-auto">
           {feed.map((f, i) => (
-            <div key={i} className="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
+            <div key={i} className="flex items-center gap-3 py-2 border-b border-outline-variant last:border-0">
               <span className="text-lg">{feedIcon(f.type)}</span>
               <div className="flex-1 min-w-0">
                 <div className="text-sm text-on-surface truncate">

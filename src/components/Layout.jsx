@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
+import { supabase } from '../supabaseClient'
 
 const NAV = [
   { to: '/',           label: 'แผงควบคุม',       icon: 'dashboard',              end: true },
@@ -24,6 +25,20 @@ export default function Layout() {
   const { profile, signOut } = useAuth()
   const nav = useNavigate()
   const [open, setOpen] = useState(false)
+  const [siteSettings, setSiteSettings] = useState({ site_logo_url: '', site_name: 'THLotto' })
+
+  useEffect(() => {
+    supabase.from('settings')
+      .select('key,value')
+      .in('key', ['site_logo_url', 'site_name'])
+      .then(({ data }) => {
+        if (data) {
+          const map = {}
+          data.forEach(s => { map[s.key] = s.value })
+          setSiteSettings(prev => ({ ...prev, ...map }))
+        }
+      })
+  }, [])
 
   const handleLogout = async () => { await signOut(); nav('/login', { replace: true }) }
   const initial = (profile?.full_name || 'A')[0].toUpperCase()
@@ -45,11 +60,19 @@ export default function Layout() {
         ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo / Profile */}
-        <div className="p-8 flex flex-col items-center border-b border-white/20 flex-shrink-0">
-          <div className="h-16 w-16 rounded-full bg-primary-container flex items-center justify-center mb-4 border-2 border-white shadow-capsule-md">
-            <span className="text-on-primary-container text-2xl font-black">{initial}</span>
-          </div>
-          <div className="text-2xl font-black tracking-tight text-primary">THLotto</div>
+        <div className="p-6 flex flex-col items-center border-b border-white/20 flex-shrink-0">
+          {siteSettings.site_logo_url ? (
+            <img
+              src={siteSettings.site_logo_url}
+              alt={siteSettings.site_name}
+              className="h-16 w-auto object-contain mb-3 drop-shadow-md"
+            />
+          ) : (
+            <div className="h-16 w-16 rounded-full bg-primary-container flex items-center justify-center mb-3 border-2 border-white shadow-capsule-md">
+              <span className="text-on-primary-container text-2xl font-black">{initial}</span>
+            </div>
+          )}
+          <div className="text-lg font-black tracking-tight text-primary">{siteSettings.site_name || 'THLotto'}</div>
           <div className="text-on-surface-variant text-sm mt-1">{profile?.full_name || 'ผู้ดูแลระบบ'}</div>
         </div>
 

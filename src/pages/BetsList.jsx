@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Search, Loader2 } from 'lucide-react'
 
-const STATUS = { PENDING:'bg-amber-100 text-amber-700', WON:'bg-emerald-100 text-emerald-700', LOST:'bg-slate-100 text-slate-500', CANCELLED:'bg-red-100 text-red-600' }
+const STATUS = { PENDING:'bg-amber-100 text-amber-700', WON:'bg-secondary-container text-on-secondary-container', LOST:'bg-surface-container text-on-surface-variant', CANCELLED:'bg-error-container text-on-error-container' }
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
 
 export default function BetsList() {
@@ -80,7 +80,7 @@ export default function BetsList() {
                   <th className="px-4 py-3 font-medium">งวด</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-outline-variant">
                 {rows.map(r => (
                   <tr key={r.id} className="hover:bg-surface-container-low transition">
                     <td className="px-4 py-3">
@@ -88,12 +88,12 @@ export default function BetsList() {
                       <div className="text-xs text-outline">{r.profiles?.member_id}</div>
                     </td>
                     <td className="px-4 py-3 text-xs text-on-surface-variant">{r.lottery_markets?.name || '-'}</td>
-                    <td className="px-4 py-3 font-bold text-lg text-slate-800">{r.numbers}</td>
-                    <td className="px-4 py-3 text-xs text-purple-700 font-medium">{r.bet_type}</td>
+                    <td className="px-4 py-3 font-bold text-lg text-on-surface">{r.numbers}</td>
+                    <td className="px-4 py-3 text-xs text-on-surface-variant font-medium">{r.bet_type}</td>
                     <td className="px-4 py-3 font-semibold text-on-surface">฿{fmt(r.amount)}</td>
                     <td className="px-4 py-3 font-semibold text-secondary">{r.payout_amount > 0 ? `฿${fmt(r.payout_amount)}` : '-'}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS[r.status] || 'bg-slate-100 text-slate-500'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS[r.status] || 'bg-surface-container text-on-surface-variant'}`}>
                         {r.status === 'PENDING' ? 'รอผล' : r.status === 'WON' ? '✓ ถูกรางวัล' : r.status === 'LOST' ? 'ไม่ถูก' : r.status}
                       </span>
                     </td>
