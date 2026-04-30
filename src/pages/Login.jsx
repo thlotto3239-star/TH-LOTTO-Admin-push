@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
+import { supabase } from '../supabaseClient'
 
 export default function Login() {
   const { signIn } = useAuth()
@@ -10,6 +11,22 @@ export default function Login() {
   const [showPin, setShowPin] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [logoUrl, setLogoUrl] = useState('')
+  const [siteName, setSiteName] = useState('THLotto')
+
+  useEffect(() => {
+    supabase.from('settings')
+      .select('key,value')
+      .in('key', ['site_logo_url', 'site_name'])
+      .then(({ data }) => {
+        if (data) {
+          const map = {}
+          data.forEach(s => { map[s.key] = s.value })
+          if (map.site_logo_url) setLogoUrl(map.site_logo_url)
+          if (map.site_name) setSiteName(map.site_name)
+        }
+      })
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -34,11 +51,16 @@ export default function Login() {
 
           {/* Header */}
           <div className="flex flex-col items-center text-center gap-3">
-            <div className="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center shadow-capsule-md border-2 border-white">
-              <span className="material-symbols-outlined text-on-primary-container text-[32px]"
-                style={{ fontVariationSettings: "'FILL' 1" }}>shield_person</span>
-            </div>
-            <h1 className="text-3xl font-black tracking-tight text-primary">THLotto</h1>
+            {logoUrl ? (
+              <img src={logoUrl} alt={siteName} className="h-16 w-auto object-contain drop-shadow-md"
+                onError={e => { e.currentTarget.style.display='none' }} />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center shadow-capsule-md border-2 border-white">
+                <span className="material-symbols-outlined text-on-primary-container text-[32px]"
+                  style={{ fontVariationSettings: "'FILL' 1" }}>shield_person</span>
+              </div>
+            )}
+            <h1 className="text-3xl font-black tracking-tight text-primary">{siteName}</h1>
             <p className="text-sm text-on-surface-variant">ระบบยืนยันตัวตนระดับบริหาร</p>
           </div>
 
