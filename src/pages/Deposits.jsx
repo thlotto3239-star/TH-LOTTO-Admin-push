@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { CheckCircle, XCircle, Eye, Search, Filter, Loader2 } from 'lucide-react'
+import BankBadge from '../components/BankBadge'
 
-const STATUS_LABEL = { PENDING: { label: 'รอดำเนินการ', cls: 'bg-amber-100 text-amber-700' }, APPROVED: { label: 'อนุมัติแล้ว', cls: 'bg-secondary-container text-on-secondary-container' }, REJECTED: { label: 'ปฏิเสธ', cls: 'bg-error-container text-on-error-container' } }
+const STATUS_LABEL = { PENDING: { label: 'รอดำเนินการ', cls: 'bg-warning-container text-on-warning-container' }, APPROVED: { label: 'อนุมัติแล้ว', cls: 'bg-secondary-container text-on-secondary-container' }, REJECTED: { label: 'ปฏิเสธ', cls: 'bg-error-container text-on-error-container' } }
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
 
 export default function Deposits() {
@@ -69,7 +70,7 @@ export default function Deposits() {
       {/* Filters */}
       <div className="glass-panel rounded-2xl shadow-glass p-4 flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-48">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/>
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-outline"/>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="ค้นหาชื่อ/เบอร์/Member ID"
             className="w-full pl-9 pr-4 py-2 rounded-full bg-surface-container-low border-none text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
         </div>
@@ -109,6 +110,7 @@ export default function Deposits() {
                     <td className="px-4 py-3">
                       <div className="font-medium text-on-surface">{r.profiles?.full_name || '-'}</div>
                       <div className="text-xs text-outline">{r.profiles?.member_id} · {r.profiles?.phone}</div>
+                      {r.profiles?.bank_name && <div className="mt-1"><BankBadge code={r.profiles.bank_name} showName /></div>}
                     </td>
                     <td className="px-4 py-3 font-bold text-secondary">฿{fmt(r.amount)}</td>
                     <td className="px-4 py-3 text-xs text-on-surface-variant font-medium">{r.promo_code || '-'}</td>
@@ -121,7 +123,7 @@ export default function Deposits() {
                     <td className="px-4 py-3">
                       {r.slip_url && (
                         <button onClick={() => setPreview(r.slip_url)}
-                          className="flex items-center gap-1 text-blue-600 hover:underline text-xs">
+                          className="flex items-center gap-1 text-primary hover:underline text-xs">
                           <Eye size={13}/> ดูสลิป
                         </button>
                       )}
@@ -145,10 +147,10 @@ export default function Deposits() {
       {/* Slip Preview */}
       {preview && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={() => setPreview(null)}>
-          <div className="bg-white rounded-2xl overflow-hidden max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-4 py-3 border-b">
-              <span className="font-semibold text-slate-800">สลิปโอนเงิน</span>
-              <button onClick={() => setPreview(null)} className="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+          <div className="bg-surface rounded-2xl overflow-hidden max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-outline-variant">
+              <span className="font-semibold text-on-surface">สลิปโอนเงิน</span>
+              <button onClick={() => setPreview(null)} className="text-outline hover:text-on-surface-variant text-xl">&times;</button>
             </div>
             <img src={preview} alt="slip" className="w-full object-contain max-h-[70vh]"/>
           </div>

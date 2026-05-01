@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
-import { CheckCircle, XCircle, Search, Loader2, Copy } from 'lucide-react'
+import { CheckCircle, XCircle, Copy, Search, Filter, Loader2 } from 'lucide-react'
+import BankBadge from '../components/BankBadge'
 
-const STATUS_LABEL = { PENDING: { label: 'รอดำเนินการ', cls: 'bg-amber-100 text-amber-700' }, APPROVED: { label: 'โอนแล้ว', cls: 'bg-secondary-container text-on-secondary-container' }, REJECTED: { label: 'ปฏิเสธ', cls: 'bg-error-container text-on-error-container' } }
+const STATUS_LABEL = { PENDING: { label: 'รอดำเนินการ', cls: 'bg-warning-container text-on-warning-container' }, APPROVED: { label: 'โอนแล้ว', cls: 'bg-secondary-container text-on-secondary-container' }, REJECTED: { label: 'ปฏิเสธ', cls: 'bg-error-container text-on-error-container' } }
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
 
 export default function Withdrawals() {
@@ -115,15 +116,15 @@ export default function Withdrawals() {
                     </td>
                     <td className="px-4 py-3 font-bold text-error">฿{fmt(r.amount)}</td>
                     <td className="px-4 py-3">
-                      <div className="text-xs">
-                        <div className="font-medium text-on-surface">{r.bank_name}</div>
-                        <div className="flex items-center gap-1 text-slate-500">
-                          {r.bank_account_number}
-                          <button onClick={() => copyText(r.bank_account_number)} className="text-blue-500 hover:text-blue-700">
+                      <div className="text-xs space-y-1">
+                        <BankBadge code={r.bank_name} showName />
+                        <div className="flex items-center gap-1 text-on-surface-variant">
+                          <span className="font-mono">{r.bank_account_number}</span>
+                          <button onClick={() => copyText(r.bank_account_number)} className="text-primary hover:text-primary/70">
                             {copied === r.bank_account_number ? '✓' : <Copy size={11}/>}
                           </button>
                         </div>
-                        <div className="text-on-surface-variant">{r.bank_account_name}</div>
+                        <div className="text-outline">{r.bank_account_name}</div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -162,7 +163,7 @@ export default function Withdrawals() {
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-bold text-on-surface">{modal.bank_account_number}</span>
                   <button onClick={() => copyText(modal.bank_account_number)}
-                    className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+                    className="text-xs text-primary hover:underline flex items-center gap-1">
                     <Copy size={12}/> {copied === modal.bank_account_number ? 'คัดลอกแล้ว!' : 'คัดลอก'}
                   </button>
                 </div>

@@ -34,7 +34,7 @@ export default function Appearance() {
     setTimeout(() => setSaved(s => ({ ...s, [key]: false })), 2000)
   }
 
-  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-emerald-500" size={24}/></div>
+  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-primary" size={24}/></div>
 
   return (
     <div className="space-y-6">

@@ -40,11 +40,16 @@ export default function RestrictedNumbers() {
 
   const remove = async (id) => {
     if (!confirm('ลบเลขอั้นนี้?')) return
-    await supabase.from('restricted_numbers').delete().eq('id', id)
-    setRows(r => r.filter(x => x.id !== id))
+    try {
+      const { error } = await supabase.from('restricted_numbers').delete().eq('id', id)
+      if (error) throw error
+      setRows(r => r.filter(x => x.id !== id))
+    } catch (e) {
+      alert('เกิดข้อผิดพลาด: ' + e.message)
+    }
   }
 
-  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-emerald-500" size={24}/></div>
+  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-primary" size={24}/></div>
 
   return (
     <div className="space-y-5">
@@ -89,15 +94,15 @@ export default function RestrictedNumbers() {
                   <th className="px-4 py-3 font-medium">ลบ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-outline-variant">
                 {rows.map(r => (
                   <tr key={r.id} className="hover:bg-surface-container-low transition">
                     <td className="px-4 py-3 text-on-surface">{r.lottery_markets?.name || '-'}</td>
-                    <td className="px-4 py-3 font-bold text-lg text-red-600">{r.number}</td>
-                    <td className="px-4 py-3"><span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">{r.bet_type}</span></td>
+                    <td className="px-4 py-3 font-bold text-lg text-error">{r.number}</td>
+                    <td className="px-4 py-3"><span className="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-xs font-medium">{r.bet_type}</span></td>
                     <td className="px-4 py-3 text-xs text-outline">{new Date(r.created_at).toLocaleString('th-TH')}</td>
                     <td className="px-4 py-3">
-                      <button onClick={() => remove(r.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition"><Trash2 size={15}/></button>
+                      <button onClick={() => remove(r.id)} className="p-1.5 text-error hover:bg-error/10 rounded-lg transition"><Trash2 size={15}/></button>
                     </td>
                   </tr>
                 ))}

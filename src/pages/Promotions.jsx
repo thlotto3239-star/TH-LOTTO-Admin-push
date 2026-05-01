@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Plus, Edit, Trash2, Loader2, X, Save, ToggleLeft, ToggleRight } from 'lucide-react'
 
-const EMPTY = { title:'', promo_code:'', description:'', bonus_rate:0, bonus_amount:0, min_deposit:0, max_withdrawal:0, turnover_multiplier:1, is_active:true }
+const EMPTY = { title:'', promo_code:'', description:'', image_url:'', badge_text:'', background_color:'', type:'general', line1:'', line2:'', bonus_rate:0, bonus_amount:0, min_deposit:0, max_withdrawal:0, turnover_multiplier:1, default_amount:0, target_view:'deposit', is_active:true }
 
 export default function Promotions() {
   const [rows, setRows]     = useState([])
@@ -43,7 +43,7 @@ export default function Promotions() {
     load()
   }
 
-  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-emerald-500" size={24}/></div>
+  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-primary" size={24}/></div>
 
   return (
     <div className="space-y-5">
@@ -60,13 +60,23 @@ export default function Promotions() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {rows.map(r => (
-          <div key={r.id} className={`glass-panel rounded-2xl shadow-glass p-5 ${!r.is_active ? 'opacity-60' : ''}`}>
+          <div key={r.id} className={`glass-panel rounded-2xl shadow-glass overflow-hidden ${!r.is_active ? 'opacity-60' : ''}`}>
+            {r.image_url && (
+              <div className="relative">
+                <img src={r.image_url} alt={r.title} className="w-full h-28 object-cover"/>
+                {r.badge_text && <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-bold bg-primary text-on-primary shadow">{r.badge_text}</span>}
+              </div>
+            )}
+            <div className="p-5">
             <div className="flex items-start justify-between mb-3">
               <div>
                 <div className="font-bold text-on-surface">{r.title}</div>
-                <div className="text-xs font-mono bg-surface-container text-on-surface-variant px-2 py-0.5 rounded-full mt-1 inline-block">{r.promo_code}</div>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <span className="text-xs font-mono bg-surface-container text-on-surface-variant px-2 py-0.5 rounded-full">{r.promo_code}</span>
+                  {!r.image_url && r.badge_text && <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">{r.badge_text}</span>}
+                </div>
               </div>
-              <button onClick={() => toggle(r.id, r.is_active)} className={r.is_active ? 'text-emerald-500' : 'text-slate-300'}>
+              <button onClick={() => toggle(r.id, r.is_active)} className={r.is_active ? 'text-primary' : 'text-outline'}>
                 {r.is_active ? <ToggleRight size={28}/> : <ToggleLeft size={28}/>}
               </button>
             </div>
@@ -87,6 +97,7 @@ export default function Promotions() {
                 <Trash2 size={13}/> ลบ
               </button>
             </div>
+            </div>
           </div>
         ))}
       </div>
@@ -103,11 +114,17 @@ export default function Promotions() {
                 { key:'title', label:'ชื่อโปร', type:'text' },
                 { key:'promo_code', label:'Promo Code', type:'text' },
                 { key:'description', label:'คำอธิบาย', type:'text' },
+                { key:'image_url', label:'URL รูปภาพโปร', type:'text' },
+                { key:'badge_text', label:'Badge Text (เช่น NEW, HOT, VIP)', type:'text' },
+                { key:'background_color', label:'Background Color/Gradient (CSS)', type:'text' },
+                { key:'line1', label:'ข้อความบรรทัด 1 (ไม่บังคับ)', type:'text' },
+                { key:'line2', label:'ข้อความบรรทัด 2 (ไม่บังคับ)', type:'text' },
                 { key:'bonus_rate', label:'โบนัส (%)', type:'number' },
                 { key:'bonus_amount', label:'โบนัสคงที่ (บาท)', type:'number' },
                 { key:'min_deposit', label:'ฝากขั้นต่ำ (บาท)', type:'number' },
                 { key:'max_withdrawal', label:'ถอนสูงสุด (บาท)', type:'number' },
                 { key:'turnover_multiplier', label:'Turnover (x)', type:'number' },
+                { key:'default_amount', label:'ยอดฝากตั้งต้น (บาท)', type:'number' },
               ].map(f => (
                 <div key={f.key}>
                   <label className="text-xs font-medium text-on-surface-variant mb-1 block">{f.label}</label>
@@ -116,13 +133,26 @@ export default function Promotions() {
                     className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
               ))}
+              <div>
+                <label className="text-xs font-medium text-on-surface-variant mb-1 block">ประเภทโปร</label>
+                <select value={modal.type || 'general'} onChange={e => setModal(m => ({ ...m, type: e.target.value }))}
+                  className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                  <option value="general">ทั่วไป (general)</option>
+                  <option value="welcome">ต้อนรับ (welcome)</option>
+                  <option value="deposit">ฝากเงิน (deposit)</option>
+                  <option value="rebate">คืนยอด (rebate)</option>
+                  <option value="special">พิเศษ (special)</option>
+                  <option value="referral">แนะนำเพื่อน (referral)</option>
+                </select>
+              </div>
+              {modal.image_url && <img src={modal.image_url} alt="" className="w-full rounded-xl object-cover max-h-32 border border-outline-variant"/>}
               <div className="flex items-center gap-3">
-                <label className="text-sm text-slate-600">สถานะ:</label>
+                <label className="text-sm text-on-surface-variant">สถานะ:</label>
                 <button onClick={() => setModal(m => ({ ...m, is_active: !m.is_active }))}
-                  className={modal.is_active ? 'text-emerald-500' : 'text-slate-300'}>
+                  className={modal.is_active ? 'text-primary' : 'text-outline'}>
                   {modal.is_active ? <ToggleRight size={32}/> : <ToggleLeft size={32}/>}
                 </button>
-                <span className="text-sm">{modal.is_active ? 'เปิดใช้งาน' : 'ปิด'}</span>
+                <span className="text-sm text-on-surface">{modal.is_active ? 'เปิดใช้งาน' : 'ปิด'}</span>
               </div>
             </div>
             <div className="flex gap-3 mt-6">

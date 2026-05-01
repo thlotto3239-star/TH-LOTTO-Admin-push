@@ -1,24 +1,69 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
 import { supabase } from '../supabaseClient'
+import { formatDistanceToNow } from 'date-fns'
+import { th } from 'date-fns/locale'
+import { 
+  fetchNotifications, 
+  markAsRead, 
+  markAllAsRead,
+  subscribeToNotifications,
+  getNotificationStyle 
+} from '../utils/notifications'
 
-const NAV = [
-  { to: '/',           label: 'แผงควบคุม',       icon: 'dashboard',              end: true },
-  { to: '/deposits',   label: 'รายการฝากเงิน',    icon: 'payments' },
-  { to: '/withdrawals',label: 'รายการถอนเงิน',    icon: 'account_balance_wallet' },
-  { to: '/members',    label: 'จัดการสมาชิก',     icon: 'group' },
-  { to: '/markets',    label: 'ตลาดหวย',          icon: 'confirmation_number' },
-  { to: '/bets',       label: 'รายการโพย',        icon: 'list_alt' },
-  { to: '/restricted', label: 'เลขอั้น',           icon: 'block' },
-  { to: '/wheel',      label: 'จัดการวงล้อ',      icon: 'casino' },
-  { to: '/settings',   label: 'ตั้งค่า',           icon: 'settings' },
-  { to: '/appearance', label: 'รูปลักษณ์',         icon: 'palette' },
-  { to: '/sliders',    label: 'สไลเดอร์',          icon: 'view_carousel' },
-  { to: '/promotions', label: 'โปรโมชั่น',         icon: 'campaign' },
-  { to: '/articles',   label: 'บทความ',            icon: 'article' },
-  { to: '/banks',      label: 'ธนาคาร',            icon: 'account_balance' },
-  { to: '/admins',     label: 'ผู้ดูแลระบบ',       icon: 'admin_panel_settings' },
+const NAV_GROUPS = [
+  {
+    label: 'ภาพรวม',
+    items: [
+      { to: '/', label: 'แผงควบคุม', icon: 'dashboard', end: true },
+    ]
+  },
+  {
+    label: 'การเงิน',
+    items: [
+      { to: '/deposits',    label: 'รายการฝากเงิน',  icon: 'payments' },
+      { to: '/withdrawals', label: 'รายการถอนเงิน',  icon: 'account_balance_wallet' },
+    ]
+  },
+  {
+    label: 'สมาชิก',
+    items: [
+      { to: '/members', label: 'จัดการสมาชิก', icon: 'group' },
+      { to: '/admins',  label: 'ผู้ดูแลระบบ',  icon: 'admin_panel_settings' },
+    ]
+  },
+  {
+    label: 'หวย',
+    items: [
+      { to: '/markets',    label: 'ตลาดหวย',    icon: 'confirmation_number' },
+      { to: '/results',    label: 'ออกผลรางวัล', icon: 'emoji_events' },
+      { to: '/bets',       label: 'รายการโพย',  icon: 'list_alt' },
+      { to: '/restricted', label: 'เลขอั้น',    icon: 'block' },
+    ]
+  },
+  {
+    label: 'เกม',
+    items: [
+      { to: '/wheel', label: 'วงล้อโชคดี', icon: 'casino' },
+    ]
+  },
+  {
+    label: 'คอนเทนต์',
+    items: [
+      { to: '/sliders',    label: 'สไลเดอร์',  icon: 'view_carousel' },
+      { to: '/promotions', label: 'โปรโมชั่น', icon: 'campaign' },
+      { to: '/articles',   label: 'บทความ',    icon: 'article' },
+    ]
+  },
+  {
+    label: 'ระบบ',
+    items: [
+      { to: '/settings',   label: 'ตั้งค่าระบบ', icon: 'settings' },
+      { to: '/appearance', label: 'รูปลักษณ์',   icon: 'palette' },
+      { to: '/banks',      label: 'ธนาคาร',      icon: 'account_balance' },
+    ]
+  },
 ]
 
 export default function Layout() {
@@ -26,6 +71,12 @@ export default function Layout() {
   const nav = useNavigate()
   const [open, setOpen] = useState(false)
   const [siteSettings, setSiteSettings] = useState({ site_logo_url: '', site_name: 'THLotto' })
+  
+  // Notification state
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const notifRef = useRef(null)
 
   useEffect(() => {
     supabase.from('settings')
@@ -42,6 +93,79 @@ export default function Layout() {
 
   const handleLogout = async () => { await signOut(); nav('/login', { replace: true }) }
   const initial = (profile?.full_name || 'A')[0].toUpperCase()
+
+  // Load notifications
+  const loadNotifications = async () => {
+    try {
+      const data = await fetchNotifications(20)
+      setNotifications(data)
+      setUnreadCount(data.filter(n => !n.is_read).length)
+    } catch (err) {
+      console.error('Failed to load notifications:', err)
+    }
+  }
+
+  // Handle notification click
+  const handleNotifClick = async (notification) => {
+    // Mark as read
+    if (!notification.is_read) {
+      try {
+        await markAsRead(notification.id)
+        setNotifications(prev => prev.map(n => 
+          n.id === notification.id ? { ...n, is_read: true } : n
+        ))
+        setUnreadCount(prev => Math.max(0, prev - 1))
+      } catch (err) {
+        console.error('Failed to mark as read:', err)
+      }
+    }
+    
+    // Navigate to link if provided
+    if (notification.link_url) {
+      nav(notification.link_url)
+      setNotifOpen(false)
+    }
+  }
+
+  // Mark all as read
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead()
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+      setUnreadCount(0)
+    } catch (err) {
+      console.error('Failed to mark all as read:', err)
+    }
+  }
+
+  // Realtime subscription
+  useEffect(() => {
+    loadNotifications()
+    const unsubscribe = subscribeToNotifications((payload) => {
+      if (payload.eventType === 'INSERT') {
+        // Add new notification to top
+        setNotifications(prev => [payload.new, ...prev].slice(0, 20))
+        if (!payload.new.is_read) {
+          setUnreadCount(prev => prev + 1)
+        }
+      } else {
+        // Reload for updates/deletes
+        loadNotifications()
+      }
+    })
+    return unsubscribe
+  }, [])
+
+  // Close notification panel on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   return (
     <div className="min-h-screen bg-background flex font-prompt">
@@ -79,33 +203,42 @@ export default function Layout() {
         </div>
 
         {/* Nav links */}
-        <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-0.5 scrollbar-thin">
-          {NAV.map(item => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              onClick={() => setOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-4 mx-2 py-3 px-4 rounded-full text-sm font-medium transition-all duration-200 ease-out
-                ${isActive
-                  ? 'bg-primary text-on-primary shadow-capsule-md'
-                  : 'text-on-surface-variant hover:bg-primary/5 hover:text-primary hover:scale-[1.02] active:scale-95'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <span
-                    className="material-symbols-outlined text-[22px] leading-none"
-                    style={{ fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0" }}
+        <nav className="flex-1 overflow-y-auto py-3 px-2 scrollbar-thin">
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={gi} className="mb-1">
+              <div className="px-4 pt-3 pb-1">
+                <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-outline">{group.label}</span>
+              </div>
+              <div className="space-y-0.5">
+                {group.items.map(item => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    onClick={() => setOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 mx-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all duration-200 ease-out
+                      ${isActive
+                        ? 'bg-primary text-on-primary shadow-capsule-md'
+                        : 'text-on-surface-variant hover:bg-primary/8 hover:text-primary active:scale-95'
+                      }`
+                    }
                   >
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </>
-              )}
-            </NavLink>
+                    {({ isActive }) => (
+                      <>
+                        <span
+                          className="material-symbols-outlined text-[20px] leading-none flex-shrink-0"
+                          style={{ fontVariationSettings: isActive ? "'FILL' 1, 'wght' 500" : "'FILL' 0, 'wght' 400" }}
+                        >
+                          {item.icon}
+                        </span>
+                        <span className="truncate">{item.label}</span>
+                      </>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
@@ -147,9 +280,72 @@ export default function Layout() {
                 ระบบออนไลน์
               </div>
               {/* Notification */}
-              <button className="p-2 rounded-full text-on-surface-variant hover:bg-primary/5 transition-all">
-                <span className="material-symbols-outlined">notifications</span>
-              </button>
+              <div className="relative" ref={notifRef}>
+                <button 
+                  onClick={() => setNotifOpen(!notifOpen)}
+                  className="p-2 rounded-full text-on-surface-variant hover:bg-primary/5 transition-all relative"
+                >
+                  <span className="material-symbols-outlined">notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0 right-0 w-4 h-4 bg-error text-on-error text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                
+                {notifOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white/90 backdrop-blur-xl rounded-2xl shadow-capsule border border-white/30 z-50 max-h-96 overflow-hidden">
+                    <div className="flex items-center justify-between p-4 border-b border-outline-variant/30">
+                      <h3 className="font-semibold text-on-surface">การแจ้งเตือน</h3>
+                      {unreadCount > 0 && (
+                        <button 
+                          onClick={markAllAsRead}
+                          className="text-xs text-primary hover:text-primary/70 font-medium"
+                        >
+                          อ่านทั้งหมด
+                        </button>
+                      )}
+                    </div>
+                    <div className="overflow-y-auto max-h-72">
+                      {notifications.length === 0 ? (
+                        <div className="p-8 text-center text-outline text-sm">
+                          ไม่มีการแจ้งเตือน
+                        </div>
+                      ) : (
+                        notifications.map(n => {
+                          const style = getNotificationStyle(n.type)
+                          return (
+                            <div 
+                              key={n.id}
+                              onClick={() => handleNotifClick(n)}
+                              className={`p-4 border-b border-outline-variant/20 cursor-pointer transition-colors ${
+                                n.is_read ? 'bg-surface/50' : 'bg-primary/5 hover:bg-primary/10'
+                              }`}
+                            >
+                              <div className="flex items-start gap-3">
+                                <span className={`material-symbols-outlined ${style.color}`}>
+                                  {style.icon}
+                                </span>
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-sm ${n.is_read ? 'text-on-surface-variant' : 'text-on-surface font-medium'}`}>
+                                    {n.message}
+                                  </p>
+                                  <p className="text-xs text-outline mt-1">
+                                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: th })}
+                                  </p>
+                                </div>
+                                {!n.is_read && (
+                                  <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1"></span>
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
               {/* Avatar */}
               <div className="h-9 w-9 rounded-full bg-primary-container flex items-center justify-center border-2 border-white shadow-sm text-on-primary-container font-bold text-sm">
                 {initial}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Search, Edit, Loader2, X, Save, PlusCircle, MinusCircle } from 'lucide-react'
+import BankBadge from '../components/BankBadge'
 
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
 const BANKS = ['KBANK','SCB','KTB','BBL','BAY','TMB','CIMB','TTB','GSB','BAAC']
@@ -100,6 +101,7 @@ export default function Members() {
                     <td className="px-4 py-3">
                       <div className="font-medium text-on-surface">{r.full_name || '-'}</div>
                       <div className="text-xs text-outline">{r.member_id} · {r.phone}</div>
+                      {r.bank_name && <div className="mt-1"><BankBadge code={r.bank_name} showName /></div>}
                     </td>
                     <td className="px-4 py-3 font-bold text-secondary">฿{fmt(r.wallets?.balance)}</td>
                     <td className="px-4 py-3 text-on-surface-variant">฿{fmt(r.wallets?.total_bets)}</td>

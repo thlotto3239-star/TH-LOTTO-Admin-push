@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Search, Loader2 } from 'lucide-react'
 
-const STATUS = { PENDING:'bg-amber-100 text-amber-700', WON:'bg-secondary-container text-on-secondary-container', LOST:'bg-surface-container text-on-surface-variant', CANCELLED:'bg-error-container text-on-error-container' }
+const STATUS = { PENDING:'bg-warning-container text-on-warning-container', WON:'bg-secondary-container text-on-secondary-container', LOST:'bg-surface-container text-on-surface-variant', CANCELLED:'bg-error-container text-on-error-container' }
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
 
 export default function BetsList() {

@@ -11,6 +11,7 @@ const Deposits         = lazy(() => import('./pages/Deposits'))
 const Withdrawals      = lazy(() => import('./pages/Withdrawals'))
 const Members          = lazy(() => import('./pages/Members'))
 const LotteryMarkets   = lazy(() => import('./pages/LotteryMarkets'))
+const Results          = lazy(() => import('./pages/Results'))
 const BetsList         = lazy(() => import('./pages/BetsList'))
 const RestrictedNumbers = lazy(() => import('./pages/RestrictedNumbers'))
 const WheelAdmin       = lazy(() => import('./pages/WheelAdmin'))
@@ -24,7 +25,7 @@ const Admins           = lazy(() => import('./pages/Admins'))
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
-    <Loader2 className="animate-spin text-emerald-500" size={28} />
+    <Loader2 className="animate-spin text-primary" size={28} />
   </div>
 )
 
@@ -41,6 +42,7 @@ export default function App() {
               <Route path="withdrawals" element={<Withdrawals />} />
               <Route path="members" element={<Members />} />
               <Route path="markets" element={<LotteryMarkets />} />
+              <Route path="results" element={<Results />} />
               <Route path="bets" element={<BetsList />} />
               <Route path="restricted" element={<RestrictedNumbers />} />
               <Route path="wheel" element={<WheelAdmin />} />
@@ -52,6 +54,7 @@ export default function App() {
               <Route path="banks" element={<Banks />} />
               <Route path="admins" element={<Admins />} />
             </Route>
+            <Route path="/test" element={<TestConnection />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

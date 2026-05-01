@@ -32,7 +32,7 @@ export default function WheelAdmin() {
     load()
   }
 
-  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-emerald-500" size={24}/></div>
+  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-primary" size={24}/></div>
 
   const totalWeight = prizes.filter(p => p.is_active).reduce((s, p) => s + Number(p.probability), 0)
 
@@ -82,7 +82,7 @@ export default function WheelAdmin() {
                     </button>
                   </td>
                   <td className="px-4 py-3">
-                    <button onClick={() => setModal({ ...p })} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition"><Edit size={15}/></button>
+                    <button onClick={() => setModal({ ...p })} className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition"><Edit size={15}/></button>
                   </td>
                 </tr>
               ))}
@@ -96,7 +96,7 @@ export default function WheelAdmin() {
           <div className="glass-panel rounded-2xl shadow-capsule w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-on-surface">แก้ไขรางวัล</h3>
-              <button onClick={() => setModal(null)}><X size={20} className="text-slate-400"/></button>
+              <button onClick={() => setModal(null)}><X size={20} className="text-outline"/></button>
             </div>
             <div className="space-y-4">
               {[
@@ -116,13 +116,13 @@ export default function WheelAdmin() {
                 <div className="flex items-center gap-3">
                   <input type="color" value={modal.color || '#10b981'}
                     onChange={e => setModal(m => ({ ...m, color: e.target.value }))}
-                    className="h-10 w-16 rounded-lg border border-slate-200 cursor-pointer p-0.5"/>
-                  <span className="text-sm text-slate-600">{modal.color}</span>
+                    className="h-10 w-16 rounded-lg border border-outline-variant cursor-pointer p-0.5"/>
+                  <span className="text-sm text-on-surface-variant">{modal.color}</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <input type="checkbox" checked={modal.is_active} onChange={e => setModal(m => ({ ...m, is_active: e.target.checked }))} className="w-4 h-4"/>
-                <label className="text-sm text-slate-600">เปิดใช้งาน</label>
+                <label className="text-sm text-on-surface-variant">เปิดใช้งาน</label>
               </div>
             </div>
             <div className="flex gap-3 mt-6">

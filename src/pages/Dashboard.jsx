@@ -14,7 +14,7 @@ function KPICard({ icon: Icon, label, value, sub, color = 'emerald', alert }) {
   const colors = {
     emerald: 'bg-primary-container text-on-primary-container',
     blue:    'bg-secondary-container text-on-secondary-container',
-    amber:   'bg-amber-100 text-amber-700',
+    amber:   'bg-warning-container text-on-warning-container',
     rose:    'bg-error-container text-on-error-container',
   }
   return (

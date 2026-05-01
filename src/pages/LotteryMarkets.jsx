@@ -73,7 +73,7 @@ export default function LotteryMarkets() {
     load()
   }
 
-  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-emerald-500" size={24}/></div>
+  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-primary" size={24}/></div>
 
   return (
     <div className="space-y-5">
@@ -91,8 +91,8 @@ export default function LotteryMarkets() {
             <div key={m.id} className="glass-panel rounded-2xl shadow-glass overflow-hidden">
               <div className="flex items-center gap-4 p-4">
                 {m.logo_url
-                  ? <img src={m.logo_url} alt={m.name} className="w-10 h-10 rounded-xl object-contain border border-slate-100 flex-shrink-0"/>
-                  : <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 text-xs font-bold flex-shrink-0">{m.code?.slice(0,2)}</div>
+                  ? <img src={m.logo_url} alt={m.name} className="w-10 h-10 rounded-xl object-contain border border-outline-variant flex-shrink-0"/>
+                  : <div className="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-outline text-xs font-bold flex-shrink-0">{m.code?.slice(0,2)}</div>
                 }
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -106,11 +106,11 @@ export default function LotteryMarkets() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <button onClick={() => toggleActive(m.id, m.is_active)} className={m.is_active ? 'text-emerald-500' : 'text-slate-300'}>
+                  <button onClick={() => toggleActive(m.id, m.is_active)} className={m.is_active ? 'text-primary' : 'text-outline'}>
                     {m.is_active ? <ToggleRight size={28}/> : <ToggleLeft size={28}/>}
                   </button>
-                  <button onClick={() => openModal(m)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition"><Edit size={15}/></button>
-                  <button onClick={() => setExpanded(expanded === m.id ? null : m.id)} className="p-2 text-slate-400 hover:bg-slate-50 rounded-lg transition">
+                  <button onClick={() => openModal(m)} className="p-2 text-primary hover:bg-primary/10 rounded-lg transition"><Edit size={15}/></button>
+                  <button onClick={() => setExpanded(expanded === m.id ? null : m.id)} className="p-2 text-outline hover:bg-surface-container rounded-lg transition">
                     {expanded === m.id ? <ChevronUp size={15}/> : <ChevronDown size={15}/>}
                   </button>
                 </div>
@@ -141,7 +141,7 @@ export default function LotteryMarkets() {
           <div className="glass-panel rounded-2xl shadow-capsule w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-on-surface">แก้ไขตลาด: {modal.name}</h3>
-              <button onClick={() => setModal(null)}><X size={20} className="text-slate-400"/></button>
+              <button onClick={() => setModal(null)}><X size={20} className="text-outline"/></button>
             </div>
 
             <div className="space-y-5">
@@ -186,7 +186,7 @@ export default function LotteryMarkets() {
 
               <div className="flex items-center gap-3">
                 <input type="checkbox" id="mkt-active" checked={!!modal.is_active} onChange={e => setModal(m => ({ ...m, is_active: e.target.checked }))} className="w-4 h-4"/>
-                <label htmlFor="mkt-active" className="text-sm text-slate-600">เปิดใช้งานตลาดนี้</label>
+                <label htmlFor="mkt-active" className="text-sm text-on-surface-variant">เปิดใช้งานตลาดนี้</label>
               </div>
             </div>
 

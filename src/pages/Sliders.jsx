@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Plus, Trash2, Loader2, X, Save, ArrowUp, ArrowDown } from 'lucide-react'
 
-const EMPTY = { title:'', description:'', image_url:'', link_url:'', display_order:0, is_active:true }
+const EMPTY = { title:'', description:'', image_url:'', link_url:'', button_text:'', display_order:0, is_active:true }
 
 export default function Sliders() {
   const [rows, setRows]     = useState([])
@@ -48,7 +48,7 @@ export default function Sliders() {
     load()
   }
 
-  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-emerald-500" size={24}/></div>
+  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-primary" size={24}/></div>
 
   return (
     <div className="space-y-5">
@@ -68,7 +68,7 @@ export default function Sliders() {
         {rows.map((r, i) => (
           <div key={r.id} className={`glass-panel rounded-2xl shadow-glass p-4 flex items-center gap-4 ${!r.is_active ? 'opacity-50' : ''}`}>
             {r.image_url && (
-              <img src={r.image_url} alt={r.title} className="w-32 h-20 object-cover rounded-xl border border-slate-100 flex-shrink-0"/>
+              <img src={r.image_url} alt={r.title} className="w-32 h-20 object-cover rounded-xl border border-outline-variant flex-shrink-0"/>
             )}
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-on-surface">{r.title || 'ไม่มีชื่อ'}</div>
@@ -77,11 +77,11 @@ export default function Sliders() {
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <div className="flex flex-col gap-1">
-                <button onClick={() => moveOrder(r.id, -1)} disabled={i === 0} className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30"><ArrowUp size={14}/></button>
-                <button onClick={() => moveOrder(r.id, 1)} disabled={i === rows.length-1} className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-30"><ArrowDown size={14}/></button>
+                <button onClick={() => moveOrder(r.id, -1)} disabled={i === 0} className="p-1 text-outline hover:text-on-surface-variant disabled:opacity-30"><ArrowUp size={14}/></button>
+                <button onClick={() => moveOrder(r.id, 1)} disabled={i === rows.length-1} className="p-1 text-outline hover:text-on-surface-variant disabled:opacity-30"><ArrowDown size={14}/></button>
               </div>
-              <button onClick={() => setModal({ ...r })} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition">✎</button>
-              <button onClick={() => remove(r.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"><Trash2 size={15}/></button>
+              <button onClick={() => setModal({ ...r })} className="p-2 text-primary hover:bg-primary/10 rounded-lg transition">✎</button>
+              <button onClick={() => remove(r.id)} className="p-2 text-error hover:bg-error/10 rounded-lg transition"><Trash2 size={15}/></button>
             </div>
           </div>
         ))}
@@ -92,7 +92,7 @@ export default function Sliders() {
           <div className="glass-panel rounded-2xl shadow-capsule w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-on-surface">{modal.id ? 'แก้ไข' : 'เพิ่ม'}แบนเนอร์</h3>
-              <button onClick={() => setModal(null)}><X size={20} className="text-slate-400"/></button>
+              <button onClick={() => setModal(null)}><X size={20} className="text-outline"/></button>
             </div>
             <div className="space-y-4">
               {[
@@ -100,6 +100,7 @@ export default function Sliders() {
                 { key:'description', label:'คำบรรยาย', type:'text', placeholder:'ข้อความใต้แบนเนอร์' },
                 { key:'image_url', label:'URL รูปภาพ', type:'text', placeholder:'https://...' },
                 { key:'link_url', label:'URL ลิงค์ (ถ้ากดแล้วไปไหน)', type:'text', placeholder:'https://...' },
+                { key:'button_text', label:'ข้อความปุ่ม', type:'text', placeholder:'เช่น รับสิทธิ์เลย' },
                 { key:'display_order', label:'ลำดับ', type:'number', placeholder:'1' },
               ].map(f => (
                 <div key={f.key}>
@@ -109,9 +110,9 @@ export default function Sliders() {
                     className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
               ))}
-              {modal.image_url && <img src={modal.image_url} alt="" className="w-full rounded-xl object-cover max-h-40 border border-slate-100"/>}
+              {modal.image_url && <img src={modal.image_url} alt="" className="w-full rounded-xl object-cover max-h-40 border border-outline-variant"/>}
               <div className="flex items-center gap-3">
-                <label className="text-sm text-slate-600">แสดง:</label>
+                <label className="text-sm text-on-surface-variant">แสดง:</label>
                 <input type="checkbox" checked={modal.is_active} onChange={e => setModal(m => ({ ...m, is_active: e.target.checked }))} className="w-4 h-4"/>
               </div>
             </div>

@@ -28,7 +28,7 @@ export default function Admins() {
     load()
   }
 
-  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-emerald-500" size={24}/></div>
+  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-primary" size={24}/></div>
 
   return (
     <div className="space-y-5">
@@ -58,7 +58,7 @@ export default function Admins() {
                 <tr key={r.id} className="hover:bg-surface-container-low transition">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm">
+                      <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-sm">
                         {(r.full_name || 'A')[0]}
                       </div>
                       <div>
@@ -86,9 +86,9 @@ export default function Admins() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-        <h3 className="font-semibold text-slate-700 mb-3 flex items-center gap-2"><Shield size={16}/> เพิ่ม Admin</h3>
-        <p className="text-sm text-slate-500">ไปที่ <strong>สมาชิกทั้งหมด</strong> → ค้นหาสมาชิก → กด "แก้ไข" → เปิด is_admin = true</p>
+      <div className="glass-panel rounded-2xl shadow-glass p-5">
+        <h3 className="font-semibold text-on-surface mb-3 flex items-center gap-2"><Shield size={16}/> เพิ่ม Admin</h3>
+        <p className="text-sm text-on-surface-variant">ไปที่ <strong>สมาชิกทั้งหมด</strong> → ค้นหาสมาชิก → กด "แก้ไข" → เปิด is_admin = true</p>
       </div>
     </div>
   )

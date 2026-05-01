@@ -34,11 +34,16 @@ export default function Articles() {
 
   const remove = async (id) => {
     if (!confirm('ลบบทความนี้?')) return
-    await supabase.from('articles').delete().eq('id', id)
-    load()
+    try {
+      const { error } = await supabase.from('articles').delete().eq('id', id)
+      if (error) throw error
+      load()
+    } catch (e) {
+      alert('เกิดข้อผิดพลาด: ' + e.message)
+    }
   }
 
-  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-emerald-500" size={24}/></div>
+  if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-primary" size={24}/></div>
 
   return (
     <div className="space-y-5">
@@ -72,8 +77,8 @@ export default function Articles() {
                   </div>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
-                  <button onClick={() => setModal({ ...r })} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition"><Edit size={15}/></button>
-                  <button onClick={() => remove(r.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"><Trash2 size={15}/></button>
+                  <button onClick={() => setModal({ ...r })} className="p-2 text-primary hover:bg-primary/10 rounded-lg transition"><Edit size={15}/></button>
+                  <button onClick={() => remove(r.id)} className="p-2 text-error hover:bg-error/10 rounded-lg transition"><Trash2 size={15}/></button>
                 </div>
               </div>
             ))}
