@@ -299,7 +299,7 @@ export default function Layout() {
                       <h3 className="font-semibold text-on-surface">การแจ้งเตือน</h3>
                       {unreadCount > 0 && (
                         <button 
-                          onClick={markAllAsRead}
+                          onClick={handleMarkAllAsRead}
                           className="text-xs text-primary hover:text-primary/70 font-medium"
                         >
                           อ่านทั้งหมด

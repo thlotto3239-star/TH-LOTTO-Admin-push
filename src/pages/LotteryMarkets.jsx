@@ -4,6 +4,7 @@ import { Edit, Loader2, X, Save, ToggleLeft, ToggleRight, ChevronDown, ChevronUp
 
 const DAY_LABEL = { 1:'จันทร์', 2:'อังคาร', 3:'พุธ', 4:'พฤหัส', 5:'ศุกร์', 6:'เสาร์', 7:'อาทิตย์' }
 const BET_TYPES = [
+  { key:'4TOP',    label:'4 ตัวบน' },
   { key:'3TOP',    label:'3 ตัวบน' },
   { key:'3TODE',   label:'3 ตัวโต๊ด' },
   { key:'3FRONT',  label:'3 ตัวหน้า' },
@@ -12,7 +13,6 @@ const BET_TYPES = [
   { key:'2BOTTOM', label:'2 ตัวล่าง' },
   { key:'RUN_UP',  label:'วิ่งบน' },
   { key:'RUN_DOWN',label:'วิ่งล่าง' },
-  { key:'6DIGIT',  label:'6 หลัก' },
 ]
 const fmt = (n) => Number(n||0).toLocaleString('th-TH')
 

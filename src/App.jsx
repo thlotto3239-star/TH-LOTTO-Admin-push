@@ -22,6 +22,7 @@ const Promotions       = lazy(() => import('./pages/Promotions'))
 const Articles         = lazy(() => import('./pages/Articles'))
 const Banks            = lazy(() => import('./pages/Banks'))
 const Admins           = lazy(() => import('./pages/Admins'))
+const TestConnection   = lazy(() => import('./pages/TestConnection'))
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">

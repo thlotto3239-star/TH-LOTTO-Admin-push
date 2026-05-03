@@ -121,11 +121,13 @@ export default function Deposits() {
                     </td>
                     <td className="px-4 py-3 text-xs text-on-surface-variant">{new Date(r.created_at).toLocaleString('th-TH')}</td>
                     <td className="px-4 py-3">
-                      {r.slip_url && (
+                      {r.slip_url ? (
                         <button onClick={() => setPreview(r.slip_url)}
                           className="flex items-center gap-1 text-primary hover:underline text-xs">
                           <Eye size={13}/> ดูสลิป
                         </button>
+                      ) : (
+                        <span className="text-xs text-outline">ไม่มีสลิป</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
