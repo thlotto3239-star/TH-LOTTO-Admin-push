@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { ToastContainer, initToast } from './Toast'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
@@ -15,53 +15,53 @@ import {
 
 const NAV_GROUPS = [
   {
-    label: 'เธ เธฒเธเธฃเธงเธก',
+    label: 'ภาพรวม',
     items: [
-      { to: '/', label: 'เนเธเธเธเธงเธเธเธธเธก', icon: 'dashboard', end: true, perm: null },
+      { to: '/', label: 'แผงควบคุม', icon: 'dashboard', end: true, perm: null },
     ]
   },
   {
-    label: 'เธเธฒเธฃเน€เธเธดเธ',
+    label: 'การเงิน',
     items: [
-      { to: '/deposits',    label: 'เธฃเธฒเธขเธเธฒเธฃเธเธฒเธเน€เธเธดเธ',  icon: 'payments',                 perm: 'deposits' },
-      { to: '/withdrawals', label: 'เธฃเธฒเธขเธเธฒเธฃเธ–เธญเธเน€เธเธดเธ',  icon: 'account_balance_wallet',   perm: 'withdrawals' },
+      { to: '/deposits',    label: 'รายการฝากเงิน',  icon: 'payments',                 perm: 'deposits' },
+      { to: '/withdrawals', label: 'รายการถอนเงิน',  icon: 'account_balance_wallet',   perm: 'withdrawals' },
     ]
   },
   {
-    label: 'เธชเธกเธฒเธเธดเธ',
+    label: 'สมาชิก',
     items: [
-      { to: '/members', label: 'เธเธฑเธ”เธเธฒเธฃเธชเธกเธฒเธเธดเธ', icon: 'group',                perm: 'members' },
-      { to: '/admins',  label: 'เธเธนเนเธ”เธนเนเธฅเธฃเธฐเธเธ',  icon: 'admin_panel_settings', perm: null },
+      { to: '/members', label: 'จัดการสมาชิก', icon: 'group',                perm: 'members' },
+      { to: '/admins',  label: 'ผู้ดูแลระบบ',  icon: 'admin_panel_settings', perm: null },
     ]
   },
   {
-    label: 'เธซเธงเธข',
+    label: 'หวย',
     items: [
-      { to: '/markets',    label: 'เธ•เธฅเธฒเธ”เธซเธงเธข',    icon: 'confirmation_number', perm: 'markets' },
-      { to: '/results',    label: 'เธญเธญเธเธเธฅเธฃเธฒเธเธงเธฑเธฅ', icon: 'emoji_events',       perm: 'markets' },
-      { to: '/bets',       label: 'เธฃเธฒเธขเธเธฒเธฃเนเธเธข',  icon: 'list_alt',            perm: 'bets' },
-      { to: '/restricted', label: 'เน€เธฅเธเธญเธฑเนเธ',    icon: 'block',               perm: 'restricted' },
+      { to: '/markets',    label: 'ตลาดหวย',    icon: 'confirmation_number', perm: 'markets' },
+      { to: '/results',    label: 'ออกผลรางวัล', icon: 'emoji_events',       perm: 'markets' },
+      { to: '/bets',       label: 'รายการโพย',  icon: 'list_alt',            perm: 'bets' },
+      { to: '/restricted', label: 'เลขอั้น',    icon: 'block',               perm: 'restricted' },
     ]
   },
   {
-    label: 'เน€เธเธก',
+    label: 'เกม',
     items: [
-      { to: '/wheel', label: 'เธงเธเธฅเนเธญเนเธเธเธ”เธต', icon: 'casino', perm: 'wheel' },
+      { to: '/wheel', label: 'วงล้อโชคดี', icon: 'casino', perm: 'wheel' },
     ]
   },
   {
-    label: 'เธเธญเธเน€เธ—เธเธ•เน',
+    label: 'คอนเทนต์',
     items: [
-      { to: '/sliders',    label: 'เธชเนเธฅเน€เธ”เธญเธฃเน',  icon: 'view_carousel', perm: 'sliders' },
-      { to: '/promotions', label: 'เนเธเธฃเนเธกเธเธฑเนเธ', icon: 'campaign',      perm: 'promotions' },
-      { to: '/articles',   label: 'เธเธ—เธเธงเธฒเธก',    icon: 'article',       perm: 'articles' },
+      { to: '/sliders',    label: 'สไลเดอร์',  icon: 'view_carousel', perm: 'sliders' },
+      { to: '/promotions', label: 'โปรโมชั่น', icon: 'campaign',      perm: 'promotions' },
+      { to: '/articles',   label: 'บทความ',    icon: 'article',       perm: 'articles' },
     ]
   },
   {
-    label: 'เธฃเธฐเธเธ',
+    label: 'ระบบ',
     items: [
-      { to: '/settings',   label: 'เธ•เธฑเนเธเธเนเธฒเธฃเธฐเธเธ', icon: 'settings',        perm: 'settings' },
-      { to: '/appearance', label: 'เธฃเธนเธเธฅเธฑเธเธฉเธ“เน',   icon: 'palette',         perm: 'appearance' },
+      { to: '/settings',   label: 'ตั้งค่าระบบ', icon: 'settings',        perm: 'settings' },
+      { to: '/appearance', label: 'รูปลักษณ์',   icon: 'palette',         perm: 'appearance' },
       { to: '/banks',      label: 'ธนาคาร',         icon: 'account_balance', perm: 'banks' },
       { to: '/data-management', label: 'Backup & ข้อมูล', icon: 'backup',           perm: 'settings' },
     ]
@@ -180,7 +180,7 @@ export default function Layout() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden" onClick={() => setOpen(false)} />
       )}
 
-      {/* Sidebar โ€” glassmorphic floating pill */}
+      {/* Sidebar — glassmorphic floating pill */}
       <aside className={`
         fixed left-0 top-0 z-40 h-screen w-72 flex flex-col
         bg-white/60 backdrop-blur-xl border border-white/20
@@ -205,7 +205,7 @@ export default function Layout() {
             <span className="text-on-primary-container text-2xl font-black">{initial}</span>
           </div>
           <div className="text-lg font-black tracking-tight text-primary">{siteSettings.site_name || 'THLotto'}</div>
-          <div className="text-on-surface-variant text-sm mt-1">{profile?.full_name || 'เธเธนเนเธ”เธนเนเธฅเธฃเธฐเธเธ'}</div>
+          <div className="text-on-surface-variant text-sm mt-1">{profile?.full_name || 'ผู้ดูแลระบบ'}</div>
         </div>
 
         {/* Nav links */}
@@ -259,14 +259,14 @@ export default function Layout() {
             className="w-full flex items-center gap-4 py-3 px-4 rounded-full text-sm font-medium text-on-surface-variant hover:bg-error/10 hover:text-error transition-all duration-200 active:scale-95"
           >
             <span className="material-symbols-outlined text-[22px] leading-none">logout</span>
-            เธญเธญเธเธเธฒเธเธฃเธฐเธเธ
+            ออกจากระบบ
           </button>
         </div>
       </aside>
 
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0 lg:ml-[304px]">
-        {/* Header โ€” glassmorphic floating pill */}
+        {/* Header — glassmorphic floating pill */}
         <header className="sticky top-0 z-20 mx-4 mt-4">
           <div className="bg-white/60 backdrop-blur-md rounded-full border border-white/30 shadow-glass px-6 py-0 flex items-center h-16 gap-4">
             {/* Mobile hamburger */}
@@ -280,14 +280,14 @@ export default function Layout() {
             {/* Search */}
             <div className="flex-1 max-w-sm hidden md:flex items-center gap-2 bg-surface-container-low rounded-full px-4 py-2 border border-outline-variant/30">
               <span className="material-symbols-outlined text-outline text-[18px]">search</span>
-              <span className="text-sm text-outline">เธเนเธเธซเธฒ...</span>
+              <span className="text-sm text-outline">ค้นหา...</span>
             </div>
 
             <div className="ml-auto flex items-center gap-2">
               {/* Online indicator */}
               <div className="hidden sm:flex items-center gap-2 bg-secondary-container/40 text-on-secondary-container px-3 py-1.5 rounded-full text-xs font-medium">
                 <span className="w-2 h-2 rounded-full bg-secondary animate-pulse inline-block"></span>
-                เธฃเธฐเธเธเธญเธญเธเนเธฅเธเน
+                ระบบออนไลน์
               </div>
               {/* Notification */}
               <div className="relative" ref={notifRef}>
@@ -306,20 +306,20 @@ export default function Layout() {
                 {notifOpen && (
                   <div className="absolute right-0 top-full mt-2 w-80 bg-white/90 backdrop-blur-xl rounded-2xl shadow-capsule border border-white/30 z-50 max-h-96 overflow-hidden">
                     <div className="flex items-center justify-between p-4 border-b border-outline-variant/30">
-                      <h3 className="font-semibold text-on-surface">เธเธฒเธฃเนเธเนเธเน€เธ•เธทเธญเธ</h3>
+                      <h3 className="font-semibold text-on-surface">การแจ้งเตือน</h3>
                       {unreadCount > 0 && (
                         <button 
                           onClick={handleMarkAllAsRead}
                           className="text-xs text-primary hover:text-primary/70 font-medium"
                         >
-                          เธญเนเธฒเธเธ—เธฑเนเธเธซเธกเธ”
+                          อ่านทั้งหมด
                         </button>
                       )}
                     </div>
                     <div className="overflow-y-auto max-h-72">
                       {notifications.length === 0 ? (
                         <div className="p-8 text-center text-outline text-sm">
-                          เนเธกเนเธกเธตเธเธฒเธฃเนเธเนเธเน€เธ•เธทเธญเธ
+                          ไม่มีการแจ้งเตือน
                         </div>
                       ) : (
                         notifications.map(n => {
