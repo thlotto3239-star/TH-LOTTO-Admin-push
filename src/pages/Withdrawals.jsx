@@ -20,7 +20,7 @@ export default function Withdrawals() {
   const load = async () => {
     setLoading(true)
     let q = supabase.from('withdraw_requests')
-      .select('id,amount,status,admin_note,bank_name,bank_account_number,bank_account_name,created_at,profiles(full_name,member_id,phone)')
+      .select('id,amount,status,admin_note,bank_name,bank_account_number,bank_account_name,created_at,approved_at,approved_by,profiles(full_name,member_id,phone),approver:approved_by(full_name)')
       .order('created_at', { ascending: false })
     if (status !== 'ALL') q = q.eq('status', status)
     if (search) {
@@ -110,6 +110,7 @@ export default function Withdrawals() {
                   <th className="px-4 py-3 font-medium">บัญชีปลายทาง</th>
                   <th className="px-4 py-3 font-medium">สถานะ</th>
                   <th className="px-4 py-3 font-medium">วันที่</th>
+                  <th className="px-4 py-3 font-medium">ผู้ดำเนินการ</th>
                   <th className="px-4 py-3 font-medium">จัดการ</th>
                 </tr>
               </thead>
@@ -139,6 +140,11 @@ export default function Withdrawals() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-on-surface-variant">{new Date(r.created_at).toLocaleString('th-TH')}</td>
+                    <td className="px-4 py-3 text-xs">
+                      {r.approver?.full_name
+                        ? <span className="text-on-surface font-medium">{r.approver.full_name}<br/><span className="text-outline">{r.approved_at ? new Date(r.approved_at).toLocaleString('th-TH') : ''}</span></span>
+                        : <span className="text-outline">-</span>}
+                    </td>
                     <td className="px-4 py-3">
                       {r.status === 'PENDING' && (
                         <button onClick={() => { setModal(r); setNote('') }}

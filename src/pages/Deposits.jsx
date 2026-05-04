@@ -20,7 +20,7 @@ export default function Deposits() {
   const load = async () => {
     setLoading(true)
     let q = supabase.from('deposit_requests')
-      .select('id,amount,slip_url,status,admin_note,created_at,promo_code,profiles(full_name,member_id,phone,bank_name,bank_account_number)')
+      .select('id,amount,slip_url,status,admin_note,created_at,promo_code,approved_at,approved_by,profiles(full_name,member_id,phone,bank_name,bank_account_number),approver:approved_by(full_name)')
       .order('created_at', { ascending: false })
     if (status !== 'ALL') q = q.eq('status', status)
     if (search) {
@@ -106,6 +106,7 @@ export default function Deposits() {
                   <th className="px-4 py-3 font-medium">โปร</th>
                   <th className="px-4 py-3 font-medium">สถานะ</th>
                   <th className="px-4 py-3 font-medium">วันที่</th>
+                  <th className="px-4 py-3 font-medium">ผู้ดำเนินการ</th>
                   <th className="px-4 py-3 font-medium">สลิป</th>
                   <th className="px-4 py-3 font-medium">จัดการ</th>
                 </tr>
@@ -126,6 +127,11 @@ export default function Deposits() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-on-surface-variant">{new Date(r.created_at).toLocaleString('th-TH')}</td>
+                    <td className="px-4 py-3 text-xs">
+                      {r.approver?.full_name
+                        ? <span className="text-on-surface font-medium">{r.approver.full_name}<br/><span className="text-outline">{r.approved_at ? new Date(r.approved_at).toLocaleString('th-TH') : ''}</span></span>
+                        : <span className="text-outline">-</span>}
+                    </td>
                     <td className="px-4 py-3">
                       {r.slip_url ? (
                         <button onClick={() => setPreview(r.slip_url)}
