@@ -49,13 +49,15 @@ export default function Admins() {
   const [newPerms, setNewPerms]   = useState([])
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('profiles')
+    let q = supabase.from('profiles')
       .select('id,member_id,full_name,phone,is_admin,admin_role,admin_permissions,status,created_at')
       .eq('is_admin', true)
       .order('created_at')
+    if (!isSuperAdmin()) q = q.neq('admin_role', 'super_admin')
+    const { data } = await q
     setAdmins(data || [])
     setLoading(false)
-  }, [])
+  }, [isSuperAdmin])
 
   useEffect(() => { load() }, [load])
 
