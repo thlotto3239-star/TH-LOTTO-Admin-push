@@ -55,6 +55,7 @@ export default function LotteryMarkets() {
     const { error } = await supabase.from('lottery_markets').update({
       name: modal.name,
       logo_url: modal.logo_url,
+      stream_url: modal.stream_url || '',
       draw_time: modal.draw_time,
       close_minutes_before: Number(modal.close_minutes_before),
       is_active: modal.is_active,
@@ -165,6 +166,12 @@ export default function LotteryMarkets() {
                 <div className="col-span-2">
                   <label className="text-xs font-medium text-on-surface-variant mb-1 block">URL โลโก้</label>
                   <input value={modal.logo_url || ''} onChange={e => setModal(m => ({ ...m, logo_url: e.target.value }))}
+                    className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-on-surface-variant mb-1 block">🔴 URL ถ่ายทอดสด (YouTube) — ว่าง = ไม่แสดงวิดีโอ</label>
+                  <input value={modal.stream_url || ''} onChange={e => setModal(m => ({ ...m, stream_url: e.target.value }))}
+                    placeholder="https://youtube.com/live/XXXX หรือ https://youtu.be/XXXX"
                     className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
               </div>
