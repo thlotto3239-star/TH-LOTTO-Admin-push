@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Plus, Edit, Trash2, Loader2, X, Save, ToggleLeft, ToggleRight } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 const EMPTY = { title:'', promo_code:'', description:'', image_url:'', badge_text:'', background_color:'', type:'general', line1:'', line2:'', bonus_rate:0, bonus_amount:0, min_deposit:0, max_withdrawal:0, turnover_multiplier:1, default_amount:0, target_view:'deposit', is_active:true }
 
@@ -28,7 +29,7 @@ export default function Promotions() {
       ({ error } = await supabase.from('promotions').insert(fields))
     }
     setWorking(false)
-    if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); return }
+    if (error) { toast.error('เกิดข้อผิดพลาด: ' + error.message); return }
     setModal(null); load()
   }
 

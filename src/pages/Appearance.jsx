@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Save, Loader2, Palette, Globe, Image } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 export default function Appearance() {
   const [settings, setSettings] = useState({})
@@ -29,7 +30,7 @@ export default function Appearance() {
     setSaving(s => ({ ...s, [key]: true }))
     const { error } = await supabase.rpc('admin_upsert_setting', { p_key: key, p_value: String(settings[key] ?? '') })
     setSaving(s => ({ ...s, [key]: false }))
-    if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); return }
+    if (error) { toast.error('เกิดข้อผิดพลาด: ' + error.message); return }
     setSaved(s => ({ ...s, [key]: true }))
     setTimeout(() => setSaved(s => ({ ...s, [key]: false })), 2000)
   }

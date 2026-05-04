@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Plus, Edit, Trash2, Loader2, X, Save } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 const EMPTY = { title:'', content:'', image_url:'', category:'ข่าวสาร', is_published:true }
 
@@ -28,7 +29,7 @@ export default function Articles() {
       ({ error } = await supabase.from('articles').insert(fields))
     }
     setWorking(false)
-    if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); return }
+    if (error) { toast.error('เกิดข้อผิดพลาด: ' + error.message); return }
     setModal(null); load()
   }
 
@@ -39,7 +40,7 @@ export default function Articles() {
       if (error) throw error
       load()
     } catch (e) {
-      alert('เกิดข้อผิดพลาด: ' + e.message)
+      toast.error('เกิดข้อผิดพลาด: ' + e.message)
     }
   }
 

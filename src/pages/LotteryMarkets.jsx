@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Edit, Loader2, X, Save, ToggleLeft, ToggleRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 const DAY_LABEL = { 1:'จันทร์', 2:'อังคาร', 3:'พุธ', 4:'พฤหัส', 5:'ศุกร์', 6:'เสาร์', 7:'อาทิตย์' }
 const BET_TYPES = [
@@ -49,7 +50,7 @@ export default function LotteryMarkets() {
   }
 
   const save = async () => {
-    if (!modal.name) { alert('กรุณากรอกชื่อตลาด'); return }
+    if (!modal.name) { toast.warning('กรุณากรอกชื่อตลาด'); return }
     setWorking(true)
     const { error } = await supabase.from('lottery_markets').update({
       name: modal.name,
@@ -58,7 +59,7 @@ export default function LotteryMarkets() {
       close_minutes_before: Number(modal.close_minutes_before),
       is_active: modal.is_active,
     }).eq('id', modal.id)
-    if (error) { setWorking(false); alert('เกิดข้อผิดพลาด: ' + error.message); return }
+    if (error) { setWorking(false); toast.error('เกิดข้อผิดพลาด: ' + error.message); return }
     // Save payout rates — uses market code string, column name is 'rate'
     for (const [bet_type, rate] of Object.entries(rates)) {
       if (rate === '' || rate === null || rate === undefined) continue

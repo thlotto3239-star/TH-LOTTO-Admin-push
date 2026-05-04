@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Search, Edit, Loader2, X, Save, PlusCircle, MinusCircle } from 'lucide-react'
+import { toast } from '../components/Toast'
 import BankBadge from '../components/BankBadge'
 
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
@@ -44,19 +45,19 @@ export default function Members() {
     }
     const { error } = await supabase.rpc('admin_update_member', { p_user_id: modal.id, p_patch: patch })
     setWorking(false)
-    if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); return }
+    if (error) { toast.error('เกิดข้อผิดพลาด: ' + error.message); return }
     setModal(null); load()
   }
 
   const adjustWallet = async (sign) => {
-    if (!delta || isNaN(delta)) { alert('กรุณากรอกจำนวนเงิน'); return }
+    if (!delta || isNaN(delta)) { toast.warning('กรุณากรอกจำนวนเงิน'); return }
     setWorking(true)
     const amount = sign * Math.abs(Number(delta))
     const { error } = await supabase.rpc('admin_adjust_wallet', {
       p_user_id: walletModal.id, p_delta: amount, p_note: deltaNote || 'Admin adjust'
     })
     setWorking(false)
-    if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); return }
+    if (error) { toast.error('เกิดข้อผิดพลาด: ' + error.message); return }
     setWalletModal(null); setDelta(''); setDeltaNote(''); load()
   }
 

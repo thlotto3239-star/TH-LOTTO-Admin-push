@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Shield, ShieldOff, Loader2 } from 'lucide-react'
 import { useAuth } from '../AuthContext'
+import { toast } from '../components/Toast'
 
 export default function Admins() {
   const { profile: me } = useAuth()
@@ -21,7 +22,7 @@ export default function Admins() {
   useEffect(() => { load() }, [])
 
   const toggleAdmin = async (id, val) => {
-    if (id === me?.id) { alert('ไม่สามารถลบสิทธิ์ตัวเองได้'); return }
+    if (id === me?.id) { toast.warning('ไม่สามารถลบสิทธิ์ตัวเองได้'); return }
     setWorking(id)
     await supabase.rpc('admin_update_member', { p_user_id: id, p_patch: { is_admin: !val } })
     setWorking(null)

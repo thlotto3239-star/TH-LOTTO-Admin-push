@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Plus, Trash2, Loader2, X, Save, ArrowUp, ArrowDown } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 const EMPTY = { title:'', description:'', image_url:'', link_url:'', button_text:'', display_order:0, is_active:true }
 
@@ -28,7 +29,7 @@ export default function Sliders() {
       ({ error } = await supabase.from('sliders').insert(fields))
     }
     setWorking(false)
-    if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); return }
+    if (error) { toast.error('เกิดข้อผิดพลาด: ' + error.message); return }
     setModal(null); load()
   }
 

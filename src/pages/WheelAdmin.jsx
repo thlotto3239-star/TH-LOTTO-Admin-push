@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Edit, Loader2, X, Save } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 export default function WheelAdmin() {
   const [prizes, setPrizes] = useState([])
@@ -23,7 +24,7 @@ export default function WheelAdmin() {
       color: modal.color, is_active: modal.is_active
     }).eq('id', modal.id)
     setWorking(false)
-    if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); return }
+    if (error) { toast.error('เกิดข้อผิดพลาด: ' + error.message); return }
     setModal(null); load()
   }
 

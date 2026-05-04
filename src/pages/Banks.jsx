@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Plus, Edit, Trash2, Loader2, X, Save } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 const EMPTY = { name:'', code:'', image_url:'', is_active:true }
 
@@ -19,7 +20,7 @@ export default function Banks() {
   useEffect(() => { load() }, [])
 
   const save = async () => {
-    if (!modal.name || !modal.code) { alert('กรุณากรอกชื่อและรหัสธนาคาร'); return }
+    if (!modal.name || !modal.code) { toast.warning('กรุณากรอกชื่อและรหัสธนาคาร'); return }
     setWorking(true)
     let error
     if (modal.id) {
@@ -28,7 +29,7 @@ export default function Banks() {
       ({ error } = await supabase.from('banks').insert({ name: modal.name, code: modal.code, image_url: modal.image_url, is_active: modal.is_active }))
     }
     setWorking(false)
-    if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); return }
+    if (error) { toast.error('เกิดข้อผิดพลาด: ' + error.message); return }
     setModal(null); load()
   }
 
@@ -39,7 +40,7 @@ export default function Banks() {
       if (error) throw error
       load()
     } catch (e) {
-      alert('เกิดข้อผิดพลาด: ' + e.message)
+      toast.error('เกิดข้อผิดพลาด: ' + e.message)
     }
   }
 

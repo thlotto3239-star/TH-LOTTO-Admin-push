@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Plus, Trash2, Loader2 } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 export default function RestrictedNumbers() {
   const [markets, setMarkets] = useState([])
@@ -26,7 +27,7 @@ export default function RestrictedNumbers() {
   }, [])
 
   const add = async () => {
-    if (!numbers.trim() || !market) { alert('กรุณากรอกข้อมูลให้ครบ'); return }
+    if (!numbers.trim() || !market) { toast.warning('กรุณากรอกข้อมูลให้ครบ'); return }
     setWorking(true)
     const numList = numbers.split(/[\s,]+/).filter(Boolean)
     for (const n of numList) {
@@ -45,7 +46,7 @@ export default function RestrictedNumbers() {
       if (error) throw error
       setRows(r => r.filter(x => x.id !== id))
     } catch (e) {
-      alert('เกิดข้อผิดพลาด: ' + e.message)
+      toast.error('เกิดข้อผิดพลาด: ' + e.message)
     }
   }
 
