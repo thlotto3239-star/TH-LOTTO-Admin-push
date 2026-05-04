@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id,member_id,full_name,phone,is_admin,status,avatar_url')
+        .select('id,member_id,full_name,phone,is_admin,status,avatar_url,admin_role,admin_permissions')
         .eq('id', uid)
         .single()
       if (error) throw error
@@ -37,6 +37,15 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const isSuperAdmin = () => profile?.admin_role === 'super_admin'
+
+  const hasPermission = (perm) => {
+    if (!profile) return false
+    if (profile.admin_role === 'super_admin') return true
+    const perms = profile.admin_permissions || []
+    return perms.includes('*') || perms.includes(perm)
   }
 
   const pinToPassword = async (phone, pin) => {
@@ -63,7 +72,7 @@ export const AuthProvider = ({ children }) => {
   const signOut = () => supabase.auth.signOut()
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signOut, refreshProfile: () => fetchProfile(user?.id) }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signOut, isSuperAdmin, hasPermission, refreshProfile: () => fetchProfile(user?.id) }}>
       {children}
     </AuthContext.Provider>
   )

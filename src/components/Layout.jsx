@@ -17,58 +17,58 @@ const NAV_GROUPS = [
   {
     label: 'ภาพรวม',
     items: [
-      { to: '/', label: 'แผงควบคุม', icon: 'dashboard', end: true },
+      { to: '/', label: 'แผงควบคุม', icon: 'dashboard', end: true, perm: null },
     ]
   },
   {
     label: 'การเงิน',
     items: [
-      { to: '/deposits',    label: 'รายการฝากเงิน',  icon: 'payments' },
-      { to: '/withdrawals', label: 'รายการถอนเงิน',  icon: 'account_balance_wallet' },
+      { to: '/deposits',    label: 'รายการฝากเงิน',  icon: 'payments',                 perm: 'deposits' },
+      { to: '/withdrawals', label: 'รายการถอนเงิน',  icon: 'account_balance_wallet',   perm: 'withdrawals' },
     ]
   },
   {
     label: 'สมาชิก',
     items: [
-      { to: '/members', label: 'จัดการสมาชิก', icon: 'group' },
-      { to: '/admins',  label: 'ผู้ดูแลระบบ',  icon: 'admin_panel_settings' },
+      { to: '/members', label: 'จัดการสมาชิก', icon: 'group',                perm: 'members' },
+      { to: '/admins',  label: 'ผู้ดูแลระบบ',  icon: 'admin_panel_settings', perm: null },
     ]
   },
   {
     label: 'หวย',
     items: [
-      { to: '/markets',    label: 'ตลาดหวย',    icon: 'confirmation_number' },
-      { to: '/results',    label: 'ออกผลรางวัล', icon: 'emoji_events' },
-      { to: '/bets',       label: 'รายการโพย',  icon: 'list_alt' },
-      { to: '/restricted', label: 'เลขอั้น',    icon: 'block' },
+      { to: '/markets',    label: 'ตลาดหวย',    icon: 'confirmation_number', perm: 'markets' },
+      { to: '/results',    label: 'ออกผลรางวัล', icon: 'emoji_events',       perm: 'markets' },
+      { to: '/bets',       label: 'รายการโพย',  icon: 'list_alt',            perm: 'bets' },
+      { to: '/restricted', label: 'เลขอั้น',    icon: 'block',               perm: 'restricted' },
     ]
   },
   {
     label: 'เกม',
     items: [
-      { to: '/wheel', label: 'วงล้อโชคดี', icon: 'casino' },
+      { to: '/wheel', label: 'วงล้อโชคดี', icon: 'casino', perm: 'wheel' },
     ]
   },
   {
     label: 'คอนเทนต์',
     items: [
-      { to: '/sliders',    label: 'สไลเดอร์',  icon: 'view_carousel' },
-      { to: '/promotions', label: 'โปรโมชั่น', icon: 'campaign' },
-      { to: '/articles',   label: 'บทความ',    icon: 'article' },
+      { to: '/sliders',    label: 'สไลเดอร์',  icon: 'view_carousel', perm: 'sliders' },
+      { to: '/promotions', label: 'โปรโมชั่น', icon: 'campaign',      perm: 'promotions' },
+      { to: '/articles',   label: 'บทความ',    icon: 'article',       perm: 'articles' },
     ]
   },
   {
     label: 'ระบบ',
     items: [
-      { to: '/settings',   label: 'ตั้งค่าระบบ', icon: 'settings' },
-      { to: '/appearance', label: 'รูปลักษณ์',   icon: 'palette' },
-      { to: '/banks',      label: 'ธนาคาร',      icon: 'account_balance' },
+      { to: '/settings',   label: 'ตั้งค่าระบบ', icon: 'settings',        perm: 'settings' },
+      { to: '/appearance', label: 'รูปลักษณ์',   icon: 'palette',         perm: 'appearance' },
+      { to: '/banks',      label: 'ธนาคาร',      icon: 'account_balance', perm: 'banks' },
     ]
   },
 ]
 
 export default function Layout() {
-  const { profile, signOut } = useAuth()
+  const { profile, signOut, hasPermission } = useAuth()
   const nav = useNavigate()
   const [open, setOpen] = useState(false)
   const [siteSettings, setSiteSettings] = useState({ site_logo_url: '', site_name: 'THLotto' })
@@ -209,13 +209,16 @@ export default function Layout() {
 
         {/* Nav links */}
         <nav className="flex-1 overflow-y-auto py-3 px-2 scrollbar-thin">
-          {NAV_GROUPS.map((group, gi) => (
+          {NAV_GROUPS.map((group, gi) => {
+            const visibleItems = group.items.filter(item => item.perm === null || hasPermission(item.perm))
+            if (visibleItems.length === 0) return null
+            return (
             <div key={gi} className="mb-1">
               <div className="px-4 pt-3 pb-1">
                 <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-outline">{group.label}</span>
               </div>
               <div className="space-y-0.5">
-                {group.items.map(item => (
+                {visibleItems.map(item => (
                   <NavLink
                     key={item.to}
                     to={item.to}
@@ -244,7 +247,8 @@ export default function Layout() {
                 ))}
               </div>
             </div>
-          ))}
+            )
+          })}
         </nav>
 
         {/* Logout */}

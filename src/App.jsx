@@ -1,9 +1,15 @@
 import React, { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from './AuthContext'
+import { AuthProvider, useAuth } from './AuthContext'
 import AdminGuard from './AdminGuard'
 import Layout from './components/Layout'
 import { Loader2 } from 'lucide-react'
+
+const PermGuard = ({ perm, children }) => {
+  const { hasPermission } = useAuth()
+  if (!hasPermission(perm)) return <Navigate to="/" replace />
+  return children
+}
 
 const Login            = lazy(() => import('./pages/Login'))
 const Dashboard        = lazy(() => import('./pages/Dashboard'))
@@ -39,20 +45,20 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<AdminGuard><Layout /></AdminGuard>}>
               <Route index element={<Dashboard />} />
-              <Route path="deposits" element={<Deposits />} />
-              <Route path="withdrawals" element={<Withdrawals />} />
-              <Route path="members" element={<Members />} />
-              <Route path="markets" element={<LotteryMarkets />} />
-              <Route path="results" element={<Results />} />
-              <Route path="bets" element={<BetsList />} />
-              <Route path="restricted" element={<RestrictedNumbers />} />
-              <Route path="wheel" element={<WheelAdmin />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="appearance" element={<Appearance />} />
-              <Route path="sliders" element={<Sliders />} />
-              <Route path="promotions" element={<Promotions />} />
-              <Route path="articles" element={<Articles />} />
-              <Route path="banks" element={<Banks />} />
+              <Route path="deposits"   element={<PermGuard perm="deposits">   <Deposits />        </PermGuard>} />
+              <Route path="withdrawals" element={<PermGuard perm="withdrawals"><Withdrawals />     </PermGuard>} />
+              <Route path="members"    element={<PermGuard perm="members">    <Members />         </PermGuard>} />
+              <Route path="markets"    element={<PermGuard perm="markets">    <LotteryMarkets />  </PermGuard>} />
+              <Route path="results"    element={<PermGuard perm="markets">    <Results />         </PermGuard>} />
+              <Route path="bets"       element={<PermGuard perm="bets">       <BetsList />        </PermGuard>} />
+              <Route path="restricted" element={<PermGuard perm="restricted"> <RestrictedNumbers /></PermGuard>} />
+              <Route path="wheel"      element={<PermGuard perm="wheel">      <WheelAdmin />      </PermGuard>} />
+              <Route path="settings"   element={<PermGuard perm="settings">   <Settings />        </PermGuard>} />
+              <Route path="appearance" element={<PermGuard perm="appearance"> <Appearance />      </PermGuard>} />
+              <Route path="sliders"    element={<PermGuard perm="sliders">    <Sliders />         </PermGuard>} />
+              <Route path="promotions" element={<PermGuard perm="promotions"> <Promotions />      </PermGuard>} />
+              <Route path="articles"   element={<PermGuard perm="articles">   <Articles />        </PermGuard>} />
+              <Route path="banks"      element={<PermGuard perm="banks">      <Banks />           </PermGuard>} />
               <Route path="admins" element={<Admins />} />
             </Route>
             <Route path="/test" element={<AdminGuard><TestConnection /></AdminGuard>} />
