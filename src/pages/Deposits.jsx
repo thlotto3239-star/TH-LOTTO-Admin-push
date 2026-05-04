@@ -38,7 +38,7 @@ export default function Deposits() {
   const load = async () => {
     setLoading(true)
     let q = supabase.from('deposit_requests')
-      .select('id,amount,slip_url,status,admin_note,created_at,promo_code,approved_at,approved_by,profiles(full_name,member_id,phone,bank_name,bank_account_number),approver:approved_by(full_name)')
+      .select('id,amount,slip_url,status,admin_note,created_at,promo_code,approved_at,approved_by,profiles!user_id(full_name,member_id,phone,bank_name,bank_account_number),approver:profiles!approved_by(full_name)')
       .order('created_at', { ascending: false })
     if (status !== 'ALL') q = q.eq('status', status)
     if (search) {

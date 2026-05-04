@@ -39,7 +39,7 @@ export default function Withdrawals() {
   const load = async () => {
     setLoading(true)
     let q = supabase.from('withdraw_requests')
-      .select('id,amount,status,admin_note,bank_name,bank_account_number,bank_account_name,created_at,approved_at,approved_by,profiles(full_name,member_id,phone),approver:approved_by(full_name)')
+      .select('id,amount,status,admin_note,bank_name,bank_account_number,bank_account_name,created_at,approved_at,approved_by,profiles!user_id(full_name,member_id,phone),approver:profiles!approved_by(full_name)')
       .order('created_at', { ascending: false })
     if (status !== 'ALL') q = q.eq('status', status)
     if (search) {
