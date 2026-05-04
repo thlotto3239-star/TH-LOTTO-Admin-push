@@ -39,12 +39,16 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const pinToPassword = (phone, pin) => `THLT_${pin}_${phone}`
+  const pinToPassword = async (phone, pin) => {
+    const raw = new TextEncoder().encode(pin + phone);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', raw);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
   const signIn = async (phone, pin) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: `${phone}@thlotto.app`,
-      password: pinToPassword(phone, pin),
+      password: await pinToPassword(phone, pin),
     })
     if (!error && data?.user) {
       const { data: prof } = await supabase.from('profiles').select('is_admin').eq('id', data.user.id).single()
