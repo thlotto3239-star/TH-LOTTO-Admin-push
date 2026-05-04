@@ -55,7 +55,7 @@ export default function App() {
               <Route path="banks" element={<Banks />} />
               <Route path="admins" element={<Admins />} />
             </Route>
-            <Route path="/test" element={<TestConnection />} />
+            <Route path="/test" element={<AdminGuard><TestConnection /></AdminGuard>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

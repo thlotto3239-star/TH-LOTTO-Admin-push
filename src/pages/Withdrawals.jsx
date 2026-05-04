@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 import { CheckCircle, XCircle, Copy, Search, Filter, Loader2 } from 'lucide-react'
 import BankBadge from '../components/BankBadge'
@@ -34,11 +34,14 @@ export default function Withdrawals() {
     setLoading(false)
   }
 
+  const loadRef = useRef(load)
+  useEffect(() => { loadRef.current = load })
+
   useEffect(() => { load() }, [status, search])
 
   useEffect(() => {
     const ch = supabase.channel('withdrawals-admin')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdraw_requests' }, load)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'withdraw_requests' }, () => loadRef.current())
       .subscribe()
     return () => supabase.removeChannel(ch)
   }, [])
