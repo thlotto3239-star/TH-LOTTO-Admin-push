@@ -28,6 +28,7 @@ const Promotions       = lazy(() => import('./pages/Promotions'))
 const Articles         = lazy(() => import('./pages/Articles'))
 const Banks            = lazy(() => import('./pages/Banks'))
 const Admins           = lazy(() => import('./pages/Admins'))
+const DataManagement   = lazy(() => import('./pages/DataManagement'))
 const TestConnection   = lazy(() => import('./pages/TestConnection'))
 
 const PageLoader = () => (
@@ -60,6 +61,7 @@ export default function App() {
               <Route path="articles"   element={<PermGuard perm="articles">   <Articles />        </PermGuard>} />
               <Route path="banks"      element={<PermGuard perm="banks">      <Banks />           </PermGuard>} />
               <Route path="admins" element={<Admins />} />
+              <Route path="data-management" element={<PermGuard perm="settings"><DataManagement /></PermGuard>} />
             </Route>
             <Route path="/test" element={<AdminGuard><TestConnection /></AdminGuard>} />
             <Route path="*" element={<Navigate to="/" replace />} />

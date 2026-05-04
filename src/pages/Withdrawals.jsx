@@ -1,11 +1,30 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { supabase } from '../supabaseClient'
-import { CheckCircle, XCircle, Copy, Search, Filter, Loader2 } from 'lucide-react'
+import { CheckCircle, XCircle, Copy, Search, Loader2, Download } from 'lucide-react'
 import BankBadge from '../components/BankBadge'
 import { toast } from '../components/Toast'
 
 const STATUS_LABEL = { PENDING: { label: 'รอดำเนินการ', cls: 'bg-warning-container text-on-warning-container' }, APPROVED: { label: 'โอนแล้ว', cls: 'bg-secondary-container text-on-secondary-container' }, REJECTED: { label: 'ปฏิเสธ', cls: 'bg-error-container text-on-error-container' } }
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
+
+const exportCSV = (rows) => {
+  const headers = ['วันที่','ชื่อ','Member ID','เบอร์','ยอด','ธนาคาร','เลขบัญชี','ชื่อบัญชี','สถานะ','ผู้ดำเนินการ','วันที่อนุมัติ','หมายเหตุ']
+  const escape = v => `"${String(v ?? '').replace(/"/g,'""')}"`
+  const lines = rows.map(r => [
+    new Date(r.created_at).toLocaleString('th-TH'),
+    r.profiles?.full_name, r.profiles?.member_id, r.profiles?.phone,
+    r.amount, r.bank_name || '', r.bank_account_number || '', r.bank_account_name || '',
+    r.status, r.approver?.full_name || '',
+    r.approved_at ? new Date(r.approved_at).toLocaleString('th-TH') : '',
+    r.admin_note || ''
+  ].map(escape).join(','))
+  const csv = '\uFEFF' + [headers.join(','), ...lines].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a'); a.href = url
+  a.download = `withdrawals_${new Date().toISOString().slice(0,10)}.csv`
+  a.click(); URL.revokeObjectURL(url)
+}
 
 export default function Withdrawals() {
   const [rows, setRows]       = useState([])
@@ -92,6 +111,10 @@ export default function Withdrawals() {
               {s === 'ALL' ? 'ทั้งหมด' : STATUS_LABEL[s]?.label || s}
             </button>
           ))}
+          <button onClick={() => exportCSV(rows)} disabled={rows.length === 0}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium bg-secondary-container text-on-secondary-container hover:bg-secondary/20 transition disabled:opacity-40">
+            <Download size={14}/> Export CSV
+          </button>
         </div>
       </div>
 
