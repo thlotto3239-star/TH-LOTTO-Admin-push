@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 import { CheckCircle, XCircle, Copy, Search, Filter, Loader2 } from 'lucide-react'
 import BankBadge from '../components/BankBadge'
+import { toast } from '../components/Toast'
 
 const STATUS_LABEL = { PENDING: { label: 'รอดำเนินการ', cls: 'bg-warning-container text-on-warning-container' }, APPROVED: { label: 'โอนแล้ว', cls: 'bg-secondary-container text-on-secondary-container' }, REJECTED: { label: 'ปฏิเสธ', cls: 'bg-error-container text-on-error-container' } }
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
@@ -50,16 +51,18 @@ export default function Withdrawals() {
     setWorking(true)
     const { error } = await supabase.rpc('admin_approve_withdraw', { p_request_id: modal.id, p_note: note || null })
     setWorking(false)
-    if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); return }
+    if (error) { toast.error(error.message, 'อนุมัติไม่สำเร็จ'); return }
+    toast.success('อนุมัติถอนเงินสำเร็จ')
     setModal(null); setNote(''); load()
   }
 
   const reject = async () => {
-    if (!note) { alert('กรุณาระบุเหตุผลที่ปฏิเสธ'); return }
+    if (!note) { toast.warning('กรุณาระบุเหตุผลที่ปฏิเสธ'); return }
     setWorking(true)
     const { error } = await supabase.rpc('admin_reject_withdraw', { p_request_id: modal.id, p_note: note })
     setWorking(false)
-    if (error) { alert('เกิดข้อผิดพลาด: ' + error.message); return }
+    if (error) { toast.error(error.message, 'ปฏิเสธไม่สำเร็จ'); return }
+    toast.success('ปฏิเสธรายการถอนเงินแล้ว')
     setModal(null); setNote(''); load()
   }
 

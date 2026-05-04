@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { ToastContainer, initToast } from './Toast'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
 import { supabase } from '../supabaseClient'
@@ -73,6 +74,10 @@ export default function Layout() {
   const [siteSettings, setSiteSettings] = useState({ site_logo_url: '', site_name: 'THLotto' })
   
   // Notification state
+  const [toasts, setToasts] = useState([])
+  const closeToast = (id) => setToasts(prev => prev.filter(t => t.id !== id))
+  useEffect(() => { initToast(setToasts) }, [])
+
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -359,6 +364,7 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+      <ToastContainer toasts={toasts} onClose={closeToast} />
     </div>
   )
 }

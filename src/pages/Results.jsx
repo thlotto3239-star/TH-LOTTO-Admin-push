@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Loader2, X, Award, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
+import { toast } from '../components/Toast'
 
 const EMPTY = { result_main:'', p_3top:'', p_3front:'', p_3bottom:'', p_2top:'', p_2bottom:'' }
 const fmtDate = (d) => new Date(d + 'T00:00:00').toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'numeric' })
@@ -67,9 +68,9 @@ export default function Results() {
   const submit = async () => {
     const mkt = modal?.lottery_markets
     const isGov = mkt?.type === 'GOVERNMENT'
-    if (isGov && form.result_main.length !== 6) { alert('กรุณากรอกรางวัลที่ 1 ให้ครบ 6 หลัก'); return }
-    if (!isGov && !form.p_3top) { alert('กรุณากรอก 3 ตัวบน'); return }
-    if (!form.p_2bottom) { alert('กรุณากรอก 2 ตัวล่าง'); return }
+    if (isGov && form.result_main.length !== 6) { toast.warning('กรุณากรอกรางวัลที่ 1 ให้ครบ 6 หลัก'); return }
+    if (!isGov && !form.p_3top) { toast.warning('กรุณากรอก 3 ตัวบน'); return }
+    if (!form.p_2bottom) { toast.warning('กรุณากรอก 2 ตัวล่าง'); return }
 
     setWorking(true)
     const { data, error } = await supabase.rpc('admin_set_result_and_settle', {
@@ -84,7 +85,7 @@ export default function Results() {
     })
     if (error) {
       setWorking(false)
-      alert('เกิดข้อผิดพลาด: ' + error.message)
+      toast.error(error.message, 'ประกาศผลไม่สำเร็จ')
       return
     }
     // Query actual bet counts — trigger may settle before the RPC loop
@@ -197,6 +198,7 @@ export default function Results() {
                   <tr>
                     <th className="px-4 py-3 font-medium">ตลาด</th>
                     <th className="px-4 py-3 font-medium">งวดวันที่</th>
+                    <th className="px-4 py-3 font-medium">เลขหลัก</th>
                     <th className="px-4 py-3 font-medium">3 ตัวบน</th>
                     <th className="px-4 py-3 font-medium">2 ตัวบน</th>
                     <th className="px-4 py-3 font-medium">2 ตัวล่าง</th>
@@ -211,6 +213,7 @@ export default function Results() {
                         <div className="text-xs text-outline font-mono">{r.lottery_markets?.code}</div>
                       </td>
                       <td className="px-4 py-3 text-on-surface">{fmtDate(r.draw_date)}</td>
+                      <td className="px-4 py-3 font-bold font-mono text-base tracking-widest text-amber-600">{r.result_main || '-'}</td>
                       <td className="px-4 py-3 font-bold text-primary font-mono text-base">{r.result_3top || '-'}</td>
                       <td className="px-4 py-3 font-mono text-on-surface">{r.result_2top || '-'}</td>
                       <td className="px-4 py-3 font-mono text-on-surface">{r.result_2bottom || '-'}</td>
