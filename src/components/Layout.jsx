@@ -368,9 +368,12 @@ export default function Layout() {
         <main className="flex-1 overflow-y-auto p-4 lg:p-6 pt-6">
           <Outlet />
         </main>
+        {/* Version footer */}
+        <footer className="px-6 py-2 text-right text-[10px] text-outline/50">
+          v{__APP_VERSION__}
+        </footer>
       </div>
       <ToastContainer toasts={toasts} onClose={closeToast} />
     </div>
   )
 }
-
