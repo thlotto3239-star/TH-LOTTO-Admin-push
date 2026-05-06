@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
-import { Search, Edit, Loader2, X, Save, PlusCircle, MinusCircle } from 'lucide-react'
+import { Search, Edit, Loader2, X, Save, PlusCircle, MinusCircle, Eye } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from '../components/Toast'
 import BankBadge from '../components/BankBadge'
 
@@ -8,6 +9,7 @@ const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
 const BANKS = ['KBANK','SCB','KTB','BBL','BAY','TMB','CIMB','TTB','GSB','BAAC']
 
 export default function Members() {
+  const navigate = useNavigate()
   const [rows, setRows]       = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch]   = useState('')
@@ -122,6 +124,10 @@ export default function Members() {
                         <button onClick={() => { setWalletModal(r); setDelta(''); setDeltaNote('') }}
                           className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition" title="ปรับยอดเงิน">
                           <PlusCircle size={15}/>
+                        </button>
+                        <button onClick={() => navigate(`/members/${r.id}`)}
+                          className="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition" title="ดูรายละเอียด">
+                          <Eye size={15}/>
                         </button>
                       </div>
                     </td>

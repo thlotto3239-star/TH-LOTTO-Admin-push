@@ -29,6 +29,7 @@ const Articles         = lazy(() => import('./pages/Articles'))
 const Banks            = lazy(() => import('./pages/Banks'))
 const Admins           = lazy(() => import('./pages/Admins'))
 const DataManagement   = lazy(() => import('./pages/DataManagement'))
+const MemberDetail     = lazy(() => import('./pages/MemberDetail'))
 const TestConnection   = lazy(() => import('./pages/TestConnection'))
 
 const PageLoader = () => (
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="deposits"   element={<PermGuard perm="deposits">   <Deposits />        </PermGuard>} />
               <Route path="withdrawals" element={<PermGuard perm="withdrawals"><Withdrawals />     </PermGuard>} />
               <Route path="members"    element={<PermGuard perm="members">    <Members />         </PermGuard>} />
+              <Route path="members/:id" element={<PermGuard perm="members">    <MemberDetail />    </PermGuard>} />
               <Route path="markets"    element={<PermGuard perm="markets">    <LotteryMarkets />  </PermGuard>} />
               <Route path="results"    element={<PermGuard perm="markets">    <Results />         </PermGuard>} />
               <Route path="bets"       element={<PermGuard perm="bets">       <BetsList />        </PermGuard>} />
