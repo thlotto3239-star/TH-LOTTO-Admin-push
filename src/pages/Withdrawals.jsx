@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient'
 import { CheckCircle, XCircle, Copy, Search, Loader2, Download } from 'lucide-react'
 import BankBadge from '../components/BankBadge'
 import { toast } from '../components/Toast'
+import { useModal } from '../contexts/ModalContext'
 
 const STATUS_LABEL = { PENDING: { label: 'รอดำเนินการ', cls: 'bg-warning-container text-on-warning-container' }, APPROVED: { label: 'โอนแล้ว', cls: 'bg-secondary-container text-on-secondary-container' }, REJECTED: { label: 'ปฏิเสธ', cls: 'bg-error-container text-on-error-container' } }
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
@@ -35,6 +36,7 @@ export default function Withdrawals() {
   const [note, setNote]       = useState('')
   const [working, setWorking] = useState(false)
   const [copied, setCopied]   = useState('')
+  const { showSuccess, showError, showWarning, showConfirm } = useModal()
 
   const load = async () => {
     setLoading(true)
@@ -66,23 +68,52 @@ export default function Withdrawals() {
     return () => supabase.removeChannel(ch)
   }, [])
 
-  const approve = async () => {
+  const doApprove = async () => {
     setWorking(true)
     const { error } = await supabase.rpc('admin_approve_withdraw', { p_request_id: modal.id, p_note: note || null })
     setWorking(false)
-    if (error) { toast.error(error.message, 'อนุมัติไม่สำเร็จ'); return }
-    toast.success('อนุมัติถอนเงินสำเร็จ')
+    if (error) { 
+      showError('อนุมัติไม่สำเร็จ', error.message)
+      return 
+    }
+    showSuccess('อนุมัติสำเร็จ!', `อนุมัติการถอนเงิน ฿${Number(modal?.amount || 0).toLocaleString()} แล้ว`)
     setModal(null); setNote(''); load()
   }
 
-  const reject = async () => {
-    if (!note) { toast.warning('กรุณาระบุเหตุผลที่ปฏิเสธ'); return }
+  const doReject = async () => {
+    if (!note) { 
+      showWarning('กรุณาระบุเหตุผล', 'ต้องระบุเหตุผลที่ปฏิเสธก่อน')
+      return 
+    }
     setWorking(true)
     const { error } = await supabase.rpc('admin_reject_withdraw', { p_request_id: modal.id, p_note: note })
     setWorking(false)
-    if (error) { toast.error(error.message, 'ปฏิเสธไม่สำเร็จ'); return }
-    toast.success('ปฏิเสธรายการถอนเงินแล้ว')
+    if (error) { 
+      showError('ปฏิเสธไม่สำเร็จ', error.message)
+      return 
+    }
+    showSuccess('ปฏิเสธสำเร็จ!', 'รายการถอนเงินถูกปฏิเสธแล้ว')
     setModal(null); setNote(''); load()
+  }
+
+  const handleApprove = () => {
+    showConfirm(
+      'ยืนยันการอนุมัติ?',
+      `อนุมัติการถอนเงิน ฿${Number(modal?.amount || 0).toLocaleString()}\nสมาชิก: ${modal?.profiles?.full_name || '-'}`,
+      doApprove,
+      'ยืนยันอนุมัติ',
+      'ยกเลิก'
+    )
+  }
+
+  const handleReject = () => {
+    showConfirm(
+      'ยืนยันการปฏิเสธ?',
+      `ปฏิเสธการถอนเงิน ฿${Number(modal?.amount || 0).toLocaleString()}\nสมาชิก: ${modal?.profiles?.full_name || '-'}\n\nเหตุผล: ${note || '(ยังไม่ระบุ)'}`,
+      doReject,
+      'ยืนยันปฏิเสธ',
+      'ยกเลิก'
+    )
   }
 
   const copyText = (text) => {
@@ -209,11 +240,11 @@ export default function Withdrawals() {
               placeholder="หมายเหตุ (ถ้ามี)"
               className="w-full bg-surface-container-low border-none rounded-xl px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-primary resize-none h-20"/>
             <div className="flex gap-3">
-              <button onClick={approve} disabled={working}
+              <button onClick={handleApprove} disabled={working}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary hover:bg-primary/90 text-on-primary rounded-full font-semibold text-sm transition disabled:opacity-60">
                 {working ? <Loader2 size={16} className="animate-spin"/> : <CheckCircle size={16}/>} โอนแล้ว / อนุมัติ
               </button>
-              <button onClick={reject} disabled={working}
+              <button onClick={handleReject} disabled={working}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-error hover:bg-error/90 text-on-error rounded-full font-semibold text-sm transition disabled:opacity-60">
                 {working ? <Loader2 size={16} className="animate-spin"/> : <XCircle size={16}/>} ปฏิเสธ
               </button>

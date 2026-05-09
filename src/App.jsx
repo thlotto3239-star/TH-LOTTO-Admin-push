@@ -1,6 +1,7 @@
 import React, { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './AuthContext'
+import { ModalProvider } from './contexts/ModalContext'
 import AdminGuard from './AdminGuard'
 import Layout from './components/Layout'
 import { Loader2 } from 'lucide-react'
@@ -41,8 +42,9 @@ const PageLoader = () => (
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Suspense fallback={<PageLoader />}>
+      <ModalProvider>
+        <BrowserRouter>
+          <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<AdminGuard><Layout /></AdminGuard>}>
@@ -69,7 +71,8 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
-      </BrowserRouter>
+        </BrowserRouter>
+      </ModalProvider>
     </AuthProvider>
   )
 }
