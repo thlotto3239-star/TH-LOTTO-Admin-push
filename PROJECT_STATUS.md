@@ -3,8 +3,8 @@
 ## Current State
 
 ### Version
-- **Current Version**: v1.0.3 (2026-05-14)
-- **Previous Version**: v1.0.2 (2026-05-14)
+- **Current Version**: v1.0.4 (2026-05-15)
+- **Previous Version**: v1.0.3 (2026-05-14)
 
 ### Admin Panel Features
 - ✅ Dashboard - ภาพรวมระบบ

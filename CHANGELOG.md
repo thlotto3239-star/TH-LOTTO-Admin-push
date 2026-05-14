@@ -1,5 +1,18 @@
 # CHANGELOG - TH-LOTTO Admin Panel
 
+## [2026-05-15] - v1.0.4
+
+### Fixed
+- Rollback deployment ไป deployment ใหม่ (dpl_HvB4HDP1EiuwgG4FZppautEPtXeD) ที่มี commit 53dcb41 (force deploy: include instant lottery changes)
+- ยืนยันว่า th-lotto-admin.vercel.app ชี้ไป deployment ใหม่ที่มีเมนู "หวยหนึ่งนาที"
+- ยืนยันว่าหวยหนึ่งนาทีแสดงที่ https://th-lotto-admin.vercel.app สำเร็จ
+
+### Changed
+- Rollback deployment ไป commit ล่าสุด (53dcb41) ที่มีเมนู "หวยหนึ่งนาที"
+- th-lotto-admin.vercel.app ชี้ไป deployment ใหม่ที่มีเมนู "หวยหนึ่งนาที"
+
+---
+
 ## [2026-05-14] - v1.0.3
 
 ### Fixed
