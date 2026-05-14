@@ -24,18 +24,29 @@ git add -A && git commit -m "checkpoint: before ai changes"
 
 2. AI แก้โค้ด (ทำงานตามคำสั่ง)
 
-3. ทดสอบ build
+3. ตรวจสอบ Vercel project ก่อน deploy
+// turbo
+```bash
+cat .vercel/project.json
+```
+> ตรวจสอบว่า "projectName" เป็น `th-lotto-admin` (มี dash) ถ้าไม่ใช่ ให้ลบ .vercel แล้ว link ใหม่:
+> ```bash
+> Remove-Item .vercel -Recurse -Force
+> npx vercel link --project=th-lotto-admin
+> ```
+
+4. ทดสอบ build
 // turbo
 ```bash
 npx vite build
 ```
 
-4. Commit งานใหม่
+5. Commit งานใหม่
 ```bash
 git add -A && git commit -m "feat: <description>"
 ```
 
-5. Push (Vercel auto-deploy)
+6. Push (Vercel auto-deploy)
 // turbo
 ```bash
 git push origin develop:master
