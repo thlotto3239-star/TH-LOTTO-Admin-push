@@ -1,6 +1,6 @@
 # CHANGELOG - TH-LOTTO Admin Panel
 
-## [Unreleased]
+## [2026-05-14] - v1.0.1
 
 ### Added - หวยหนึ่งนาที (Instant Lottery)
 - เพิ่ม 6 RPC สำหรับแอดมิน:

@@ -20,9 +20,9 @@
 - ✅ Banks - ธนาคาร
 - ✅ Admins - ผู้ดูแลระบบ
 - ✅ Data Management - Backup & ข้อมูล
-- ✅ **NEW: Instant Lottery** - หวยหนึ่งนาที (6 หน้า)
+- ✅ Instant Lottery - หวยหนึ่งนาที (6 หน้า)
 
-### Instant Lottery Features (NEW)
+### Instant Lottery Features
 - ✅ InstantOverview - ภาพรวมหวยหนึ่งนาที
 - ✅ InstantBetTypes - จัดการประเภทเดิมพัน
 - ✅ InstantDraws - จัดการงวดออกรางวัล
@@ -30,7 +30,7 @@
 - ✅ InstantSettings - ตั้งค่าระบบ
 - ✅ InstantResults - ผลรางวัล
 
-### Admin RPCs (NEW)
+### Admin RPCs
 - ✅ admin_get_instant_bet_types - ดึงข้อมูลประเภทเดิมพัน
 - ✅ admin_get_instant_draws - ดึงข้อมูลงวดออกรางวัล
 - ✅ admin_get_instant_bets - ดึงข้อมูลรายการแทง
