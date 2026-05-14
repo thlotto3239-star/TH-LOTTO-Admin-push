@@ -32,6 +32,12 @@ const Admins           = lazy(() => import('./pages/Admins'))
 const DataManagement   = lazy(() => import('./pages/DataManagement'))
 const MemberDetail     = lazy(() => import('./pages/MemberDetail'))
 const TestConnection   = lazy(() => import('./pages/TestConnection'))
+const InstantOverview  = lazy(() => import('./pages/InstantOverview'))
+const InstantBetTypes  = lazy(() => import('./pages/InstantBetTypes'))
+const InstantDraws     = lazy(() => import('./pages/InstantDraws'))
+const InstantBets      = lazy(() => import('./pages/InstantBets'))
+const InstantResults   = lazy(() => import('./pages/InstantResults'))
+const InstantSettings  = lazy(() => import('./pages/InstantSettings'))
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -58,6 +64,12 @@ export default function App() {
               <Route path="bets"       element={<PermGuard perm="bets">       <BetsList />        </PermGuard>} />
               <Route path="restricted" element={<PermGuard perm="restricted"> <RestrictedNumbers /></PermGuard>} />
               <Route path="wheel"      element={<PermGuard perm="wheel">      <WheelAdmin />      </PermGuard>} />
+              <Route path="instant-overview"  element={<InstantOverview />} />
+              <Route path="instant-bet-types"  element={<InstantBetTypes />} />
+              <Route path="instant-draws"     element={<InstantDraws />} />
+              <Route path="instant-bets"      element={<InstantBets />} />
+              <Route path="instant-results"   element={<InstantResults />} />
+              <Route path="instant-settings"  element={<InstantSettings />} />
               <Route path="settings"   element={<PermGuard perm="settings">   <Settings />        </PermGuard>} />
               <Route path="appearance" element={<PermGuard perm="appearance"> <Appearance />      </PermGuard>} />
               <Route path="sliders"    element={<PermGuard perm="sliders">    <Sliders />         </PermGuard>} />

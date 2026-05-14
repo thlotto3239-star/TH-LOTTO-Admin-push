@@ -44,6 +44,17 @@ const NAV_GROUPS = [
     ]
   },
   {
+    label: 'หวยหนึ่งนาที',
+    items: [
+      { to: '/instant-overview',    label: 'ภาพรวม',           icon: 'dashboard',     perm: null },
+      { to: '/instant-bet-types',  label: 'ประเภทเดิมพัน',  icon: 'list_alt',      perm: null },
+      { to: '/instant-draws',      label: 'งวดออกรางวัล',  icon: 'event',         perm: null },
+      { to: '/instant-bets',       label: 'รายการแทง',     icon: 'receipt_long',  perm: null },
+      { to: '/instant-results',    label: 'ผลรางวัล',       icon: 'emoji_events',  perm: null },
+      { to: '/instant-settings',   label: 'ตั้งค่า',         icon: 'settings',       perm: null },
+    ]
+  },
+  {
     label: 'เกม',
     items: [
       { to: '/wheel', label: 'วงล้อโชคดี', icon: 'casino', perm: 'wheel' },
