@@ -2,6 +2,10 @@
 
 ## Current State
 
+### Version
+- **Current Version**: v1.0.2 (2026-05-14)
+- **Previous Version**: v1.0.1 (2026-05-14)
+
 ### Admin Panel Features
 - ✅ Dashboard - ภาพรวมระบบ
 - ✅ Members - จัดการสมาชิก
@@ -46,6 +50,7 @@
 - **Live URL:** https://thlotto-admin.vercel.app
 - **GitHub:** thlotto3239-star/TH-LOTTO-Admin-push (branch: master)
 - **Deploy Command:** git push origin master then npx vercel --prod --yes
+- **Latest Deployment:** v1.0.2 (2026-05-14) - Deploy หวยหนึ่งนาทีไป production สำเร็จ
 
 ### Database
 - **Supabase** (shared with User App)

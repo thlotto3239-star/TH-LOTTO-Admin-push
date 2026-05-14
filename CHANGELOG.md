@@ -1,5 +1,13 @@
 # CHANGELOG - TH-LOTTO Admin Panel
 
+## [2026-05-14] - v1.0.2
+
+### Changed
+- Deploy หวยหนึ่งนาที (Instant Lottery) ไป production
+- ยืนยันว่าหวยหนึ่งนาที deploy สำเร็จและใช้งานได้ที่ https://th-lotto-admin.vercel.app
+
+---
+
 ## [2026-05-14] - v1.0.1
 
 ### Added - หวยหนึ่งนาที (Instant Lottery)
