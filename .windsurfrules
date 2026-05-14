@@ -1,12 +1,34 @@
 # TH-LOTTO Admin Panel Rules (Auto-loaded)
 
+## 🔴 STOP — Read PROJECT_GUIDE.md FIRST
+Before doing ANYTHING, read `PROJECT_GUIDE.md` — it has all project info, URLs, and protection rules.
+DO NOT ask the user for GitHub URL, repo info, or project structure. It's all there.
+
 ## MANDATORY: Read these files FIRST
-1. Read DEVELOPMENT_GUIDE.md in User App repo for full system overview
-2. This is the ADMIN PANEL repo (TH-LOTTO-Admin-push)
+1. Read PROJECT_GUIDE.md (MOST IMPORTANT - project protection)
+2. Read DEVELOPMENT_GUIDE.md in User App repo for full system overview
+3. This is the ADMIN PANEL repo (TH-LOTTO-Admin-push)
 
 ## Project Structure
 - THIS REPO: thlotto3239-star/TH-LOTTO-Admin-push | branch master | https://th-lotto-admin.vercel.app
 - User App (separate repo): thlotto3239-star/thlotto-premium | branch main | https://th-lotto-app.vercel.app
+
+## BEFORE editing code
+1. Verify correct repo (Admin Panel)
+2. Check .vercel/project.json is correct BEFORE deploy
+   - Admin Panel: must point to "thlotto-admin" (prj_qcbZ2uJ6PACcOUQIXiw6mt8ZP75N)
+3. Read the ORIGINAL code first - preserve working logic
+4. Compare frontend field names with RPC/DB column names
+5. commit checkpoint before making changes
+
+## AFTER editing code
+1. git add + commit (describe changes clearly)
+2. git push origin master
+3. npx vercel --prod --yes
+4. Verify live site works
+5. Update CHANGELOG.md (new version on top, same format)
+6. Update PROJECT_STATUS.md (version + date + bug table)
+7. commit + push + deploy docs
 
 ## Deploy: git push origin master then npx vercel --prod --yes
 ## FORBIDDEN: DO NOT push to wrong repo, DO NOT touch User App from here
