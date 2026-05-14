@@ -1,5 +1,19 @@
 # CHANGELOG - TH-LOTTO Admin Panel
 
+## [2026-05-14] - v1.0.3
+
+### Fixed
+- แก้ไขปัญหา deployment ที่ deploy ไป project ID ผิด
+- ยืนยันว่าระบบแอดมินเดิมกลับมาทำงานได้
+- ยืนยันว่าหวยหนึ่งนาทีเพิ่มเข้าไปในระบบแอดมินเดิมสำเร็จ
+- Deploy สำเร็จไป https://th-lotto-admin.vercel.app
+
+### Changed
+- อัพเดทโดเมนให้ถูกต้อง: https://th-lotto-admin.vercel.app
+- อัพเดท project ID ให้ถูกต้อง: prj_z4DBCsWGhIm3Pht4Ocq2kI3jCJPj
+
+---
+
 ## [2026-05-14] - v1.0.2
 
 ### Changed
