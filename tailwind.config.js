@@ -81,6 +81,15 @@ export default {
         sm: '8px',
         unit: '4px',
       },
+      fontSize: {
+        'body-lg': ['18px', { lineHeight: '1.6', letterSpacing: '0', fontWeight: '400' }],
+        'body-md': ['16px', { lineHeight: '1.6', letterSpacing: '0', fontWeight: '400' }],
+        h1: ['48px', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '600' }],
+        h2: ['32px', { lineHeight: '1.3', letterSpacing: '-0.01em', fontWeight: '600' }],
+        'label-sm': ['14px', { lineHeight: '1.2', letterSpacing: '0.05em', fontWeight: '500' }],
+        h3: ['24px', { lineHeight: '1.4', letterSpacing: '0', fontWeight: '500' }],
+        button: ['16px', { lineHeight: '1', letterSpacing: '0.02em', fontWeight: '600' }],
+      },
       boxShadow: {
         'capsule':  '0 20px 50px rgba(6,78,59,0.08)',
         'capsule-md': '0 8px 20px rgba(6,78,59,0.12)',

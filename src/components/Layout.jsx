@@ -194,7 +194,7 @@ export default function Layout() {
       {/* Sidebar — glassmorphic floating pill */}
       <aside className={`
         fixed left-0 top-0 z-40 h-screen w-72 flex flex-col
-        bg-white/60 backdrop-blur-xl border border-white/20
+        bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-white/20 backdrop-blur-md border-r border-white/10
         shadow-[0_20px_50px_rgba(6,78,59,0.15)]
         rounded-none lg:rounded-[40px] lg:m-4 lg:h-[calc(100vh-32px)]
         transition-transform duration-300
@@ -276,10 +276,10 @@ export default function Layout() {
       </aside>
 
       {/* Main area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-[304px]">
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-[312px] min-h-screen flex flex-col max-w-[1440px] w-full">
         {/* Header — glassmorphic floating pill */}
-        <header className="sticky top-0 z-20 mt-4 mx-auto max-w-[1440px] w-[calc(100%-2rem)]">
-          <div className="bg-slate-50/40 dark:bg-slate-950/40 backdrop-blur-md rounded-full px-6 py-2 border border-white/20 shadow-sm flex items-center h-20 gap-4">
+        <header className="sticky top-0 z-50 mt-4 mx-auto max-w-[1440px] w-[calc(100%-2rem)]">
+          <div className="bg-slate-50/40 dark:bg-slate-950/40 backdrop-blur-md rounded-full px-6 py-2 border border-white/20 shadow-sm flex justify-between items-center h-20 gap-4 font-['Prompt'] text-sm tracking-wide text-emerald-900 dark:text-emerald-400">
             {/* Mobile hamburger */}
             <button
               className="lg:hidden p-2 rounded-full text-on-surface-variant hover:bg-primary/5 active:scale-95 transition-all"
