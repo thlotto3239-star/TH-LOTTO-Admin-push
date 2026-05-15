@@ -18,7 +18,7 @@ function KPICard({ icon: Icon, label, value, sub, color = 'emerald', alert }) {
     rose:    'bg-error-container text-on-error-container',
   }
   return (
-    <div className={`glass-panel rounded-2xl p-5 shadow-glass ${alert ? 'ring-2 ring-error' : ''}`}>
+    <div className={`bg-surface-container-lowest rounded-xl p-lg shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white ${alert ? 'ring-2 ring-error' : ''}`}>
       <div className="flex items-start justify-between mb-3">
         <div className={`p-2.5 rounded-xl ${colors[color]}`}>
           <Icon size={20}/>
@@ -124,31 +124,31 @@ export default function Dashboard() {
       </div>
 
       {/* Secondary KPI */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="glass-panel rounded-2xl p-4 shadow-glass">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-gutter">
+        <div className="bg-surface-container-lowest rounded-[32px] p-lg shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white">
           <div className="text-xs text-on-surface-variant mb-1">ยอดแทงวันนี้</div>
           <div className="text-xl font-bold text-on-surface">฿{fmt(s.today_bets)}</div>
         </div>
-        <div className="glass-panel rounded-2xl p-4 shadow-glass">
+        <div className="bg-surface-container-lowest rounded-[32px] p-lg shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white">
           <div className="text-xs text-on-surface-variant mb-1">จ่ายรางวัลวันนี้</div>
           <div className="text-xl font-bold text-error">฿{fmt(s.today_payouts)}</div>
         </div>
-        <div className="glass-panel rounded-2xl p-4 shadow-glass">
+        <div className="bg-surface-container-lowest rounded-[32px] p-lg shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white">
           <div className="text-xs text-on-surface-variant mb-1">กำไรสุทธิวันนี้</div>
           <div className={`text-xl font-bold ${(s.today_bets - s.today_payouts) >= 0 ? 'text-secondary' : 'text-error'}`}>
             ฿{fmt(s.today_bets - s.today_payouts)}
           </div>
         </div>
-        <div className="glass-panel rounded-2xl p-4 shadow-glass">
+        <div className="bg-surface-container-lowest rounded-[32px] p-lg shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white">
           <div className="text-xs text-on-surface-variant mb-1">ตลาดเปิดอยู่</div>
           <div className="text-xl font-bold text-secondary">{markets.filter(m => m.is_open).length} ตลาด</div>
         </div>
       </div>
 
       {/* Charts + Markets */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
         {/* Bar Chart */}
-        <div className="lg:col-span-2 glass-panel rounded-2xl shadow-glass p-5">
+        <div className="lg:col-span-2 bg-surface-container-lowest rounded-[32px] p-container-padding shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white">
           <h3 className="text-sm font-semibold text-on-surface-variant mb-4">รายได้ 7 วันย้อนหลัง (บาท)</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chart} barSize={16}>
@@ -165,7 +165,7 @@ export default function Dashboard() {
         </div>
 
         {/* Market Status */}
-        <div className="glass-panel rounded-2xl shadow-glass p-5">
+        <div className="bg-surface-container-lowest rounded-[32px] p-container-padding shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white">
           <h3 className="text-sm font-semibold text-on-surface-variant mb-4">สถานะตลาด</h3>
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {markets.length === 0 && <div className="text-outline text-sm text-center py-4">ไม่มีตลาด</div>}
@@ -182,7 +182,7 @@ export default function Dashboard() {
       </div>
 
       {/* Feed */}
-      <div className="glass-panel rounded-2xl shadow-glass p-5">
+      <div className="bg-surface-container-lowest rounded-[32px] p-container-padding shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white">
         <h3 className="text-sm font-semibold text-on-surface-variant mb-4 flex items-center gap-2">
           <TrendingUp size={15}/> กิจกรรมล่าสุด (Realtime)
         </h3>

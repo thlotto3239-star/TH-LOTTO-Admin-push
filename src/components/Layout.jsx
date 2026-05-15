@@ -278,8 +278,8 @@ export default function Layout() {
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0 lg:ml-[304px]">
         {/* Header — glassmorphic floating pill */}
-        <header className="sticky top-0 z-20 mx-4 mt-4">
-          <div className="bg-white/60 backdrop-blur-md rounded-full border border-white/30 shadow-glass px-6 py-0 flex items-center h-16 gap-4">
+        <header className="sticky top-0 z-20 mt-4 mx-auto max-w-[1440px] w-[calc(100%-2rem)]">
+          <div className="bg-slate-50/40 dark:bg-slate-950/40 backdrop-blur-md rounded-full px-6 py-2 border border-white/20 shadow-sm flex items-center h-20 gap-4">
             {/* Mobile hamburger */}
             <button
               className="lg:hidden p-2 rounded-full text-on-surface-variant hover:bg-primary/5 active:scale-95 transition-all"

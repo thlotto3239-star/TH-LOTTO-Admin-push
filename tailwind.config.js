@@ -63,6 +63,23 @@ export default {
       fontFamily: {
         sans: ['Prompt', 'sans-serif'],
         prompt: ['Prompt', 'sans-serif'],
+        'body-lg': ['Prompt', 'sans-serif'],
+        'body-md': ['Prompt', 'sans-serif'],
+        h1: ['Prompt', 'sans-serif'],
+        h2: ['Prompt', 'sans-serif'],
+        'label-sm': ['Prompt', 'sans-serif'],
+        h3: ['Prompt', 'sans-serif'],
+        button: ['Prompt', 'sans-serif'],
+      },
+      spacing: {
+        xs: '4px',
+        'container-padding': '32px',
+        lg: '24px',
+        gutter: '24px',
+        md: '16px',
+        xl: '40px',
+        sm: '8px',
+        unit: '4px',
       },
       boxShadow: {
         'capsule':  '0 20px 50px rgba(6,78,59,0.08)',
