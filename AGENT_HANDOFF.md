@@ -64,7 +64,7 @@ TH-LOTTO Admin Panel - ระบบจัดการแอดมินสำห
 
 ## Current Features
 
-### Admin Panel Features (v1.0.4)
+### Admin Panel Features (v1.0.6)
 - ✅ Dashboard - ภาพรวมระบบ
 - ✅ Members - จัดการสมาชิก
 - ✅ Deposits - รายการฝากเงิน
@@ -221,5 +221,5 @@ TH-LOTTO Admin Panel - ระบบจัดการแอดมินสำห
 
 ## Last Updated
 - **Date:** 2026-05-15
-- **Version:** v1.0.4
+- **Version:** v1.0.6
 - **Updated by:** AI Agent

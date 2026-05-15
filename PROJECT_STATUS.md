@@ -47,10 +47,10 @@
 ## System Information
 
 ### Deployment
-- **Live URL:** https://thlotto-admin.vercel.app
+- **Live URL:** https://th-lotto-admin.vercel.app
 - **GitHub:** thlotto3239-star/TH-LOTTO-Admin-push (branch: master)
 - **Deploy Command:** git push origin master then npx vercel --prod --yes
-- **Latest Deployment:** v1.0.3 (2026-05-14) - แก้ไข deployment และยืนยันหวยหนึ่งนาทีทำงานได้
+- **Latest Deployment:** v1.0.6 (2026-05-15) - แก้ไข RPC functions ของหวยหนึ่งนาที
 
 ### Database
 - **Supabase** (shared with User App)

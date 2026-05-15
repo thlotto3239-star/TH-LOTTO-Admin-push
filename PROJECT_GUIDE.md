@@ -91,7 +91,7 @@ npx vercel --prod --yes
 
 ## 📊 สถานะปัจจุบัน
 
-### Admin Panel v1.0.1 (2026-05-14)
+### Admin Panel v1.0.6 (2026-05-15)
 - ✅ Instant Lottery - หวยหนึ่งนาที (6 หน้า)
 - ✅ 6 RPC สำหรับ admin
 - ✅ เมนูหวยหนึ่งนาทีใน sidebar
@@ -164,8 +164,8 @@ npx vercel --prod --yes
 
 ---
 
-**อัพเดทล่าสุด: 2026-05-14 (19:59)**
-- ✅ สร้าง PROJECT_GUIDE.md
-- ✅ อัพเดท .windsurfrules ให้บังคับให้อ่าน PROJECT_GUIDE.md
-- ✅ อัพเดทข้อมูลโปรเจคล่าสุด
-- ✅ Deploy ทั้ง 2 ฝั่ง (GitHub + Vercel)
+**อัพเดทล่าสุด: 2026-05-15**
+- ✅ แก้ไข RPC functions ของหวยหนึ่งนาที
+- ✅ อัพเดทเอกสารให้ตรงกับ v1.0.6
+- ✅ แก้ไข URL ให้ถูกต้อง
+- ✅ อัพเดทสถานะ deployment
