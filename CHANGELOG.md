@@ -1,5 +1,20 @@
 # CHANGELOG - TH-LOTTO Admin Panel
 
+## [2026-05-15] - v1.0.5
+
+### Added - เอกสารกฎและมาตรฐาน
+- สร้าง AGENT_HANDOFF.md - เอกสารรวมข้อมูลโปรเจคทั้งหมดสำหรับ AI agents
+- อัพเดท AI_WORKFLOW.md - เพิ่มส่วน DOCUMENTATION SEPARATION (CRITICAL) และ forbidden actions
+- อัพเดท .windsurfrules - เพิ่มเอกสารที่ต้องอ่านก่อนทำงาน และคำเตือนเรื่องการแยก repo
+
+### Changed
+- เปลี่ยนจาก PROJECT_GUIDE.md เป็น AGENT_HANDOFF.md เป็นไฟล์แรกที่ต้องอ่าน
+- เพิ่ม PROJECT_STATUS.md, CHANGELOG.md, AI_WORKFLOW.md ในรายการเอกสารที่ต้องอ่าน
+- เพิ่มคำเตือนเรื่องการแยก repo (User App vs Admin Panel)
+- อัพเดท project ID ให้ถูกต้องใน .windsurfrules (prj_Un7pZtGDhtaxXOGaOXDajtLDpPWM)
+
+---
+
 ## [2026-05-15] - v1.0.4
 
 ### Fixed
