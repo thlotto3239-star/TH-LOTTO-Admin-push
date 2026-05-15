@@ -1,5 +1,23 @@
 # CHANGELOG - TH-LOTTO Admin Panel
 
+## [2026-05-15] - v1.0.6
+
+### Fixed - แก้ไข RPC functions ของหวยหนึ่งนาที
+- เพิ่ม column `status` และ `settled_at` ในตาราง `instant_draws`
+- เพิ่ม column `is_win` ในตาราง `instant_bets`
+- แก้ไข `admin_get_instant_bet_types()` - แก้ปัญหา ambiguous column reference
+- แก้ไข `admin_get_instant_draws()` - ใช้ column ที่มีจริงในตาราง
+- แก้ไข `admin_get_instant_bets()` - ใช้ column ที่มีจริงในตาราง
+- แก้ไข `admin_get_instant_stats()` - ใช้ column ที่มีจริงในตาราง
+- สร้าง `fn_get_instant_result()` - RPC function ที่ขาดหาย
+- ทดสอบ RPC functions ทั้งหมด - ทำงานได้ปกติแล้ว
+
+### Changed
+- Schema ของตาราง `instant_draws` และ `instant_bets` ตรงกับ RPC functions แล้ว
+- Admin Panel สามารถดึงข้อมูลหวยหนึ่งนาทีได้แล้ว
+
+---
+
 ## [2026-05-15] - v1.0.5
 
 ### Added - เอกสารกฎและมาตรฐาน
