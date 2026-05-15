@@ -1,5 +1,20 @@
 # CHANGELOG - TH-LOTTO Admin Panel
 
+## [2026-05-16] - v1.0.7
+
+### Changed - อัพเดทเอกสารให้ตรงกับ v1.0.6
+- แก้ไข PROJECT_STATUS.md - แก้ URL ให้ถูกต้อง (th-lotto-admin.vercel.app)
+- แก้ไข PROJECT_STATUS.md - อัพเดท Latest Deployment เป็น v1.0.6
+- แก้ไข PROJECT_GUIDE.md - อัพเดทเวอร์ชันเป็น v1.0.6
+- แก้ไข PROJECT_GUIDE.md - อัพเดทวันที่เป็น 2026-05-15
+- แก้ไข AGENT_HANDOFF.md - อัพเดทเวอร์ชันเป็น v1.0.6
+- สร้าง DEVELOPMENT_GUIDE.md - เพิ่มคู่มือการพัฒนาสำหรับ Admin Panel
+
+### Removed - ลบไฟล์ขยะ
+- ไม่มีไฟล์ขยะใน Admin Panel
+
+---
+
 ## [2026-05-15] - v1.0.6
 
 ### Fixed - แก้ไข RPC functions ของหวยหนึ่งนาที
