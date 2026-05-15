@@ -1,25 +1,36 @@
 # TH-LOTTO Admin Panel Rules (Auto-loaded)
 
-## 🔴 STOP — Read PROJECT_GUIDE.md FIRST
-Before doing ANYTHING, read `PROJECT_GUIDE.md` — it has all project info, URLs, and protection rules.
+## 🔴 STOP — Read AGENT_HANDOFF.md FIRST
+Before doing ANYTHING, read `AGENT_HANDOFF.md` — it has all URLs, architecture, known bugs, project structure.
 DO NOT ask the user for GitHub URL, repo info, or project structure. It's all there.
 
 ## MANDATORY: Read these files FIRST
-1. Read PROJECT_GUIDE.md (MOST IMPORTANT - project protection)
-2. Read DEVELOPMENT_GUIDE.md in User App repo for full system overview
-3. This is the ADMIN PANEL repo (TH-LOTTO-Admin-push)
+1. Read AGENT_HANDOFF.md (MOST IMPORTANT - all URLs, architecture, known bugs)
+2. Read PROJECT_GUIDE.md (project protection rules and structure)
+3. Read PROJECT_STATUS.md (current version, features, deployment status)
+4. Read CHANGELOG.md (version history and recent changes)
+5. Read AI_WORKFLOW.md (workflow for AI agents)
+6. This is the ADMIN PANEL repo (TH-LOTTO-Admin-push)
 
-## Project Structure
+## Project Structure (CRITICAL - READ CAREFULLY)
 - THIS REPO: thlotto3239-star/TH-LOTTO-Admin-push | branch master | https://th-lotto-admin.vercel.app
 - User App (separate repo): thlotto3239-star/thlotto-premium | branch main | https://th-lotto-app.vercel.app
+- These are TWO SEPARATE repos deployed independently via Vercel
+- NEVER work on User App when assigned to Admin Panel
+- NEVER work on Admin Panel when assigned to User App
+- NEVER mix code between repos
+- NEVER reference User App docs when working on Admin Panel
+- NEVER reference Admin Panel docs when working on User App
 
 ## BEFORE editing code
-1. Verify correct repo (Admin Panel)
+1. Verify correct repo (Admin Panel - TH-LOTTO-Admin-push, branch master)
 2. Check .vercel/project.json is correct BEFORE deploy
-   - Admin Panel: must point to "thlotto-admin" (prj_qcbZ2uJ6PACcOUQIXiw6mt8ZP75N)
+   - Admin Panel: must point to "th-lotto-admin" (prj_Un7pZtGDhtaxXOGaOXDajtLDpPWM)
+   - User App: prj_tJriP88kWcWOSUQOo8E0UrwSJb7v (DO NOT deploy to this project)
 3. Read the ORIGINAL code first - preserve working logic
 4. Compare frontend field names with RPC/DB column names
 5. commit checkpoint before making changes
+6. Request "อนุญาต" from user before proceeding with code changes
 
 ## AFTER editing code
 1. git add + commit (describe changes clearly)

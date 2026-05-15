@@ -2,11 +2,19 @@
 
 ## 🚨 MANDATORY RULES FOR ALL AI AGENTS
 
-### 1. BEFORE ANY WORK - READ THESE FILES FIRST
+### 1. BEFORE ANY WORK - READ THESE FILES FIRST (MANDATORY)
+- **AGENT_HANDOFF.md** - All URLs, architecture, known bugs, project structure
 - **PROJECT_GUIDE.md** - Project protection rules and structure
 - **PROJECT_STATUS.md** - Current version, features, deployment status
 - **CHANGELOG.md** - Version history and recent changes
-- **AGENT_HANDOFF.md** - All URLs, architecture, known bugs
+
+### 1.1 DOCUMENTATION SEPARATION (CRITICAL)
+- **User App (thlotto-premium)**: Has its own documentation in its repo
+- **Admin Panel (TH-LOTTO-Admin-push)**: Has its own documentation in this repo
+- **NEVER mix documentation between repos**
+- **NEVER reference User App docs when working on Admin Panel**
+- **NEVER reference Admin Panel docs when working on User App**
+- **Each repo has its own AGENT_HANDOFF.md, PROJECT_STATUS.md, CHANGELOG.md**
 
 ### 2. SOURCE OF TRUTH
 - **GitHub Repository**: https://github.com/thlotto3239-star/TH-LOTTO-Admin-push (branch: master)
@@ -24,20 +32,24 @@
 - ❌ NEVER skip documentation updates
 - ❌ NEVER rewrite functions without preserving original field names/logic
 - ❌ NEVER assume - ALWAYS verify from GitHub/Vercel API
+- ❌ NEVER work on User App when assigned to Admin Panel
+- ❌ NEVER work on Admin Panel when assigned to User App
+- ❌ NEVER mix code between repos
 
 ---
 
 ## 📋 STANDARD WORKFLOW FOR ALL AI AGENTS
 
 ### STEP 1: INITIAL ANALYSIS (MANDATORY)
-1. **Read PROJECT_GUIDE.md, PROJECT_STATUS.md, CHANGELOG.md** - Understand current state
-2. **Check current deployment status** via Vercel API:
+1. **Read AGENT_HANDOFF.md, PROJECT_GUIDE.md, PROJECT_STATUS.md, CHANGELOG.md** - Understand current state
+2. **Verify correct repo** - Confirm you are working on Admin Panel (TH-LOTTO-Admin-push, branch master)
+3. **Check current deployment status** via Vercel API:
    - Get current deployment: `mcp0_get_deployment` for `th-lotto-admin.vercel.app`
    - Check deployment state and commit SHA
-3. **Check GitHub commit history** to understand what was done:
+4. **Check GitHub commit history** to understand what was done:
    - List recent deployments: `mcp0_list_deployments`
    - Read commit messages to understand changes
-4. **Verify deployment is working**:
+5. **Verify deployment is working**:
    - Fetch live URL: `mcp0_web_fetch_vercel_url` for `th-lotto-admin.vercel.app`
    - Check HTTP status (should be 200)
    - Check for runtime errors: `mcp0_get_runtime_logs`
