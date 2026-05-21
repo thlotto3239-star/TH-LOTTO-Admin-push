@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
-import { ArrowLeft, Loader2, User, Wallet, ListOrdered, ArrowUpDown, LogIn } from 'lucide-react'
+import { ArrowLeft, Loader2, User, Wallet, ListOrdered, ArrowUpDown, LogIn, CreditCard, Phone, Calendar, Shield, Star } from 'lucide-react'
 import BankBadge from '../components/BankBadge'
+import IconWrapper from '../components/IconWrapper'
+import StatusBadge from '../components/StatusBadge'
 
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH')
 const fmtDate = (d) => d ? new Date(d).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' }) : '-'
@@ -149,12 +151,13 @@ function OverviewTab({ profile, wallet }) {
       {/* Wallet Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'ยอดเงิน', value: `฿${fmt(wallet?.balance)}`, color: 'text-secondary' },
-          { label: 'คอมมิชชั่น', value: `฿${fmt(wallet?.commission_balance)}`, color: 'text-primary' },
-          { label: 'แทงรวม', value: `฿${fmt(wallet?.total_bets)}`, color: 'text-on-surface' },
-          { label: 'ถูกรางวัลรวม', value: `฿${fmt(wallet?.total_won)}`, color: 'text-secondary' },
+          { label: 'ยอดเงิน', value: `฿${fmt(wallet?.balance)}`, color: 'text-secondary', icon: Wallet },
+          { label: 'คอมมิชชั่น', value: `฿${fmt(wallet?.commission_balance)}`, color: 'text-primary', icon: Star },
+          { label: 'แทงรวม', value: `฿${fmt(wallet?.total_bets)}`, color: 'text-on-surface', icon: ListOrdered },
+          { label: 'ถูกรางวัลรวม', value: `฿${fmt(wallet?.total_won)}`, color: 'text-secondary', icon: User },
         ].map(c => (
-          <div key={c.label} className="bg-surface-container rounded-xl p-4 text-center">
+          <div key={c.label} className="glass-panel rounded-xl p-4 text-center">
+            <IconWrapper icon={c.icon} variant="default" size={16} className="mx-auto mb-2" />
             <div className="text-xs text-on-surface-variant mb-1">{c.label}</div>
             <div className={`text-lg font-bold ${c.color}`}>{c.value}</div>
           </div>
@@ -162,32 +165,48 @@ function OverviewTab({ profile, wallet }) {
       </div>
 
       {/* Profile Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {[
-          { label: 'Member ID', value: profile.member_id },
-          { label: 'เบอร์โทร', value: profile.phone },
-          { label: 'ชื่อ', value: profile.full_name },
-          { label: 'Username', value: profile.username },
-          { label: 'VIP', value: profile.vip_level },
-          { label: 'สถานะ', value: profile.status },
-          { label: 'สมัครเมื่อ', value: fmtDate(profile.created_at) },
-          { label: 'อัปเดตล่าสุด', value: fmtDate(profile.updated_at) },
+          { label: 'Member ID', value: profile.member_id, icon: User },
+          { label: 'เบอร์โทร', value: profile.phone, icon: Phone },
+          { label: 'ชื่อ', value: profile.full_name, icon: User },
+          { label: 'Username', value: profile.username, icon: User },
+          { label: 'VIP', value: profile.vip_level, icon: Star },
+          { label: 'สถานะ', value: profile.status, icon: Shield },
+          { label: 'สมัครเมื่อ', value: fmtDate(profile.created_at), icon: Calendar },
+          { label: 'อัปเดตล่าสุด', value: fmtDate(profile.updated_at), icon: Calendar },
         ].map(r => (
-          <div key={r.label} className="flex items-center justify-between py-2 border-b border-outline-variant/30">
-            <span className="text-sm text-on-surface-variant">{r.label}</span>
-            <span className="text-sm font-medium text-on-surface">{r.value || '-'}</span>
+          <div key={r.label} className="flex items-center gap-3 p-3 bg-surface-container-low rounded-xl">
+            <IconWrapper icon={r.icon} variant="default" size={14} />
+            <div className="flex-1">
+              <div className="text-xs text-on-surface-variant">{r.label}</div>
+              <div className="text-sm font-medium text-on-surface">{r.value || '-'}</div>
+            </div>
           </div>
         ))}
       </div>
 
       {/* Bank Info */}
       {profile.bank_name && (
-        <div className="bg-surface-container rounded-xl p-4">
-          <div className="text-xs text-on-surface-variant mb-2">ข้อมูลธนาคาร</div>
-          <BankBadge code={profile.bank_name} showName />
-          <div className="mt-2 text-sm text-on-surface">
-            <div>เลขบัญชี: <span className="font-medium">{profile.bank_account_number || '-'}</span></div>
-            <div>ชื่อบัญชี: <span className="font-medium">{profile.bank_account_name || '-'}</span></div>
+        <div className="glass-panel rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <IconWrapper icon={CreditCard} variant="default" size={16} />
+            <span className="text-sm font-semibold text-on-surface">ข้อมูลธนาคาร</span>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <BankBadge code={profile.bank_name} showName size="md" />
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm text-on-surface">
+              <div>
+                <div className="text-xs text-on-surface-variant mb-1">เลขบัญชี</div>
+                <div className="font-mono font-medium">{profile.bank_account_number || '-'}</div>
+              </div>
+              <div>
+                <div className="text-xs text-on-surface-variant mb-1">ชื่อบัญชี</div>
+                <div className="font-medium">{profile.bank_account_name || '-'}</div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -206,6 +225,27 @@ function EmptyState({ text }) {
 function BetsTab({ data, loading }) {
   if (loading) return <TabLoader />
   if (!data.length) return <EmptyState text="ไม่มีประวัติการแทง" />
+  
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'PENDING': return 'รอผล';
+      case 'WON': return 'ถูกรางวัล';
+      case 'LOST': return 'ไม่ถูก';
+      case 'CANCELLED': return 'ยกเลิก';
+      default: return status;
+    }
+  };
+  
+  const getStatusVariant = (status) => {
+    switch (status) {
+      case 'PENDING': return 'pending';
+      case 'WON': return 'success';
+      case 'LOST': return 'inactive';
+      case 'CANCELLED': return 'error';
+      default: return 'pending';
+    }
+  };
+  
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -230,9 +270,7 @@ function BetsTab({ data, loading }) {
               <td className="px-4 py-3 font-semibold text-on-surface">฿{fmt(r.amount)}</td>
               <td className="px-4 py-3 font-semibold text-secondary">{r.payout_amount > 0 ? `฿${fmt(r.payout_amount)}` : '-'}</td>
               <td className="px-4 py-3">
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BET[r.status] || ''}`}>
-                  {r.status === 'PENDING' ? 'รอผล' : r.status === 'WON' ? '✓ ถูก' : r.status === 'LOST' ? 'ไม่ถูก' : r.status}
-                </span>
+                <StatusBadge status={getStatusVariant(r.status)} label={getStatusLabel(r.status)} size="sm" />
               </td>
               <td className="px-4 py-3 text-xs text-outline">{r.draw_date || '-'}</td>
               <td className="px-4 py-3 text-xs text-outline">{fmtDate(r.created_at)}</td>
