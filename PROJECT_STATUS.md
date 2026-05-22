@@ -3,8 +3,14 @@
 ## Current State
 
 ### Version
-- **Current Version**: v1.0.8 (2026-05-16)
-- **Previous Version**: v1.0.7 (2026-05-16)
+- **Current Version**: v1.0.9 (2026-05-22)
+- **Previous Version**: v1.0.8 (2026-05-16)
+
+### Project Information
+- **GitHub:** https://github.com/thlotto3239-star/TH-LOTTO-Admin-push (branch: master)
+- **Live URL:** https://th-lotto-admin.vercel.app
+- **Vercel Project:** th-lotto-admin (prj_Un7pZtGDhtaxXOGaOXDajtLDpPWM)
+- **Local Path:** D:\TH-LOTTO-Projects\TH-LOTTO-Admin-push
 
 ### Admin Panel Features
 - ✅ Dashboard - ภาพรวมระบบ

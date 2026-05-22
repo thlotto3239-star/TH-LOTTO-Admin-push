@@ -3,11 +3,13 @@
 ## 🚨 สำคัญ - อ่านก่อนทำงานทุกครั้ง
 
 **กฎเหล็ก:**
-1. อ่านเอกสารนี้ก่อนทำงานทุกครั้ง
+1. **อ่านเอกสารนี้ก่อนทำงานทุกครั้ง** - ห้ามข้ามเด็ดขาด
 2. ใช้ฟังก์ชั่นที่มีอยู่แล้วเท่านั้น ห้ามสร้างใหม่
 3. ตรวจสอบ field name จาก RPC/DB ก่อนเรียก
 4. อัพเดทเอกสารทุกครั้งหลังทำงาน
 5. Commit + push + deploy หลังทำงานเสร็จ
+6. **ตรวจสอบสถานะล่าสุดก่อนแก้ไขทุกครั้ง** - ใช้ฟังก์ชั่นป้องกันโปรเจคพัง
+7. **วิเคราะห์และอ่านรายละเอียดก่อนเสมอ** - ห้ามเดาหรือคิดแทน
 
 ---
 
@@ -24,7 +26,8 @@
 - **Repo**: https://github.com/thlotto3239-star/TH-LOTTO-Admin-push
 - **Branch**: master (ไม่ใช่ main)
 - **Live URL**: https://th-lotto-admin.vercel.app
-- **Local**: D:\TH-LOTTO-Projects\thlotto-admin
+- **Local**: D:\TH-LOTTO-Projects\TH-LOTTO-Admin-push
+- **Vercel Project**: th-lotto-admin (prj_Un7pZtGDhtaxXOGaOXDajtLDpPWM)
 
 ---
 
@@ -48,12 +51,16 @@
 - DEVELOPMENT_GUIDE.md (ถ้ามี)
 - CHANGELOG.md
 
-### 2. ตรวจสอบ
+### 2. ตรวจสอบสถานะล่าสุด (บังคับ)
+- ตรวจสอบ Git status: `git status`
+- ตรวจสอบ Git diff: `git diff`
+- ตรวจสอบ Git log: `git log --oneline -5`
 - ตรวจสอบว่าอยู่ใน repo ที่ถูกต้อง (User App vs Admin Panel)
 - ตรวจสอบ branch (User App = main, Admin Panel = master)
 - ตรวจสอบ field name จาก RPC/DB
+- ตรวจสอบ deployment status ล่าสุด
 
-### 3. รัน workflow /checkpoint
+### 3. รัน workflow /checkpoint (บังคับ)
 ```bash
 git add -A
 git commit -m "checkpoint: before work"
@@ -62,12 +69,19 @@ git push origin <branch>
 git push --tags
 ```
 
-### 4. ทำงาน
+### 4. วิเคราะห์และทำความเข้าใจ (บังคับ)
+- อ่าน code ที่เกี่ยวข้องทั้งหมด
+- วิเคราะห์ flow การทำงาน
+- ตรวจสอบจุดเชื่อมต่อทั้งหมด
+- เข้าใจระบบทั้งหมดก่อนแก้ไข
+- ห้ามเดาหรือคิดแทน
+
+### 5. ทำงาน
 - ใช้ฟังก์ชั่นที่มีอยู่แล้วเท่านั้น
 - ตรวจสอบ field name จาก RPC/DB ก่อนเรียก
 - ทำงานตามที่ต้องการ
 
-### 5. Commit + Push + Deploy
+### 6. Commit + Push + Deploy
 ```bash
 git add -A
 git commit -m "describe changes clearly"
@@ -75,11 +89,11 @@ git push origin <branch>
 npx vercel --prod --yes
 ```
 
-### 6. อัพเดทเอกสาร
+### 7. อัพเดทเอกสาร
 - CHANGELOG.md (เพิ่ม version ใหม่ด้านบน)
 - PROJECT_STATUS.md (อัพเดท version + date)
 
-### 7. Commit Docs + Push + Deploy
+### 8. Commit Docs + Push + Deploy
 ```bash
 git add CHANGELOG.md PROJECT_STATUS.md
 git commit -m "docs: update CHANGELOG and PROJECT_STATUS"
@@ -145,6 +159,10 @@ npx vercel --prod --yes
 - User App deploy ไป https://th-lotto-app.vercel.app
 - Admin Panel deploy ไป https://th-lotto-admin.vercel.app
 - ห้าม deploy ไป domain อื่น
+- **ตรวจสอบ .vercel/project.json ก่อน deploy ทุกครั้ง**
+- **ตรวจสอบว่า project name ตรงกับ DEPLOY_MAP.md**
+- **User App Vercel Project: th-lotto-app (prj_tJriP88kWcWOSUQOo8E0UrwSJb7v)**
+- **Admin Panel Vercel Project: th-lotto-admin (prj_Un7pZtGDhtaxXOGaOXDajtLDpPWM)**
 
 ---
 
@@ -164,8 +182,8 @@ npx vercel --prod --yes
 
 ---
 
-**อัพเดทล่าสุด: 2026-05-15**
-- ✅ แก้ไข RPC functions ของหวยหนึ่งนาที
-- ✅ อัพเดทเอกสารให้ตรงกับ v1.0.6
-- ✅ แก้ไข URL ให้ถูกต้อง
-- ✅ อัพเดทสถานะ deployment
+**อัพเดทล่าสุด: 2026-05-22 (15:17)**
+- ✅ อัพเดทกฎเหล็กเพิ่มเติม (ตรวจสอบสถานะล่าสุด, วิเคราะห์ก่อนทำงาน)
+- ✅ อัพเดทขั้นตอนการทำงานให้ชัดเจนขึ้น
+- ✅ เพิ่มข้อมูล Vercel Project ID สำหรับการตรวจสอบก่อน deploy
+- ✅ อัพเดทข้อมูลโปรเจคล่าสุด (Repo, Branch, Live URL, Local, Vercel Project)
