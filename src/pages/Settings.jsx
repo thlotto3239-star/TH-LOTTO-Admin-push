@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
-import { Save, Loader2, AlertCircle } from 'lucide-react'
+import { Save, Loader2, AlertCircle, Wallet, Landmark, FerrisWheel, Youtube, MessageSquare, Settings as SettingsIcon } from 'lucide-react'
 import { toast } from '../components/Toast'
 
 const GROUPS = [
   {
     title: 'การเงิน',
+    icon: Wallet,
     keys: [
       { key: 'min_deposit',            label: 'ฝากขั้นต่ำ (บาท)',        type: 'number' },
       { key: 'min_withdraw',           label: 'ถอนขั้นต่ำ (บาท)',        type: 'number' },
@@ -19,6 +20,7 @@ const GROUPS = [
   },
   {
     title: 'บัญชีรับโอน',
+    icon: Landmark,
     keys: [
       { key: 'company_bank_name',          label: 'ชื่อธนาคาร',          type: 'text' },
       { key: 'company_bank_code',          label: 'รหัสธนาคาร',          type: 'text' },
@@ -30,6 +32,7 @@ const GROUPS = [
   },
   {
     title: 'วงล้อลุ้นโชค',
+    icon: FerrisWheel,
     keys: [
       { key: 'lucky_wheel_enabled',    label: 'เปิดใช้วงล้อ',           type: 'select', options: ['TRUE','FALSE'] },
       { key: 'lucky_wheel_cost',       label: 'ราคาหมุน (บาท)',         type: 'number' },
@@ -39,6 +42,7 @@ const GROUPS = [
   },
   {
     title: 'Live & ติดต่อ',
+    icon: Youtube,
     keys: [
       { key: 'live_stream_url',   label: 'YouTube Live URL',    type: 'text' },
       { key: 'contact_line_url',  label: 'LINE URL',            type: 'text' },
@@ -48,6 +52,7 @@ const GROUPS = [
   },
   {
     title: 'ประกาศ',
+    icon: MessageSquare,
     keys: [
       { key: 'announcement_enabled', label: 'เปิดข้อความวิ่ง', type: 'select', options: ['TRUE','FALSE'] },
       { key: 'announcement_text',    label: 'ข้อความวิ่ง',     type: 'text' },
@@ -55,6 +60,7 @@ const GROUPS = [
   },
   {
     title: 'ระบบ',
+    icon: SettingsIcon,
     keys: [
       { key: 'maintenance_mode', label: 'Maintenance Mode', type: 'select', options: ['FALSE','TRUE'] },
       { key: 'system_status',    label: 'สถานะระบบ',        type: 'select', options: ['ONLINE','OFFLINE'] },
@@ -96,41 +102,46 @@ export default function Settings() {
         <p className="text-on-surface-variant text-sm">เปลี่ยนค่าแล้วกด "บันทึก" แต่ละรายการ — ผู้ใช้เห็นทันที</p>
       </div>
 
-      {GROUPS.map(group => (
-        <div key={group.title} className="glass-panel rounded-2xl shadow-glass overflow-hidden">
-          <div className="px-5 py-3 border-b border-outline-variant bg-surface-container">
-            <h3 className="font-semibold text-on-surface-variant">{group.title}</h3>
-          </div>
-          <div className="p-5 space-y-4">
-            {group.keys.map(item => (
-              <div key={item.key} className="flex items-center gap-4 px-5 py-4 border-b border-outline-variant last:border-0">
-                <label className="w-52 text-sm text-on-surface-variant flex-shrink-0">{item.label}</label>
-                <div className="flex-1">
-                  {item.type === 'select' ? (
-                    <select
-                      value={settings[item.key] ?? ''}
-                      onChange={e => setSettings(s => ({ ...s, [item.key]: e.target.value }))}
-                      className="w-full sm:w-64 bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                      {item.options.map(o => <option key={o} value={o}>{o}</option>)}
-                    </select>
-                  ) : (
-                    <input
-                      type={item.type}
-                      value={settings[item.key] ?? ''}
-                      onChange={e => setSettings(s => ({ ...s, [item.key]: e.target.value }))}
-                      className="w-full sm:w-64 bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
-                  )}
-                </div>
-                <button onClick={() => save(item.key)} disabled={saving[item.key]}
-                  className={`px-4 py-2 bg-primary hover:bg-primary/90 text-on-primary rounded-full text-sm font-medium transition disabled:opacity-40`}>
-                  {saving[item.key] ? <Loader2 size={14} className="animate-spin"/> : <Save size={14}/>}
-                  {saved[item.key] ? 'บันทึกแล้ว ✓' : 'บันทึก'}
-                </button>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {GROUPS.map(group => {
+          const Icon = group.icon
+          return (
+            <div key={group.title} className="glass-panel rounded-2xl shadow-glass overflow-hidden">
+              <div className="px-5 py-3 border-b border-outline-variant bg-surface-container flex items-center gap-2">
+                <Icon size={18} className="text-primary"/>
+                <h3 className="font-semibold text-on-surface-variant">{group.title}</h3>
               </div>
-            ))}
-          </div>
-        </div>
-      ))}
+              <div className="p-5 space-y-4">
+                {group.keys.map(item => (
+                  <div key={item.key} className="space-y-2">
+                    <label className="text-xs font-medium text-on-surface-variant">{item.label}</label>
+                    <div className="flex gap-2">
+                      {item.type === 'select' ? (
+                        <select
+                          value={settings[item.key] ?? ''}
+                          onChange={e => setSettings(s => ({ ...s, [item.key]: e.target.value }))}
+                          className="flex-1 bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                          {item.options.map(o => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                      ) : (
+                        <input
+                          type={item.type}
+                          value={settings[item.key] ?? ''}
+                          onChange={e => setSettings(s => ({ ...s, [item.key]: e.target.value }))}
+                          className="flex-1 bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                      )}
+                      <button onClick={() => save(item.key)} disabled={saving[item.key]}
+                        className={`px-3 py-2 bg-primary hover:bg-primary/90 text-on-primary rounded-full text-sm font-medium transition disabled:opacity-40 flex-shrink-0`}>
+                        {saving[item.key] ? <Loader2 size={14} className="animate-spin"/> : <Save size={14}/>}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

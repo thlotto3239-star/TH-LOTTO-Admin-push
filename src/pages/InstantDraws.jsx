@@ -36,7 +36,7 @@ export default function InstantDraws() {
   }, [loadDraws])
 
   const filteredDraws = draws.filter(draw => {
-    const matchesSearch = draw.draw_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = String(draw.draw_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (draw.result_6d && draw.result_6d.includes(searchTerm))
     const matchesStatus = statusFilter === 'all' || draw.status === statusFilter
     return matchesSearch && matchesStatus

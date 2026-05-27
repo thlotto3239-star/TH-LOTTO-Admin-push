@@ -35,7 +35,7 @@ export default function InstantResults() {
   }, [loadDraws])
 
   const filteredDraws = draws.filter(draw => {
-    const matchesSearch = draw.draw_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = String(draw.draw_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (draw.result_6d && draw.result_6d.includes(searchTerm))
     const matchesDate = !dateFilter || 
                        new Date(draw.created_at).toISOString().split('T')[0] === dateFilter

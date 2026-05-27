@@ -138,30 +138,30 @@ export default function DataManagement() {
           <div className="text-center py-10 text-outline text-sm">ยังไม่มีไฟล์ backup</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-surface-container text-on-surface-variant">
+            <thead className="bg-surface-container text-left">
               <tr>
-                <th className="px-5 py-3 text-left font-medium">ชื่อไฟล์</th>
-                <th className="px-5 py-3 text-left font-medium">ขนาด</th>
-                <th className="px-5 py-3 text-left font-medium">วันที่สร้าง</th>
-                <th className="px-5 py-3 font-medium"></th>
+                <th className="px-5 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">ชื่อไฟล์</th>
+                <th className="px-5 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-right">ขนาด</th>
+                <th className="px-5 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">วันที่สร้าง</th>
+                <th className="px-5 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-right">จัดการ</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant">
+            <tbody className="divide-y divide-outline-variant/30">
               {files.map(f => (
-                <tr key={f.name} className="hover:bg-surface-container-low transition">
-                  <td className="px-5 py-3 font-mono text-on-surface">{f.name}</td>
-                  <td className="px-5 py-3 text-on-surface-variant">{fmtBytes(f.metadata?.size || 0)}</td>
-                  <td className="px-5 py-3 text-on-surface-variant text-xs">
+                <tr key={f.name} className="hover:bg-surface-container-low/50 transition-colors">
+                  <td className="px-5 py-3 whitespace-nowrap"><code className="font-mono text-on-surface text-sm">{f.name}</code></td>
+                  <td className="px-5 py-3 text-on-surface-variant text-right whitespace-nowrap">{fmtBytes(f.metadata?.size || 0)}</td>
+                  <td className="px-5 py-3 text-on-surface-variant text-xs whitespace-nowrap">
                     {f.created_at ? new Date(f.created_at).toLocaleString('th-TH') : '-'}
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="px-5 py-3 whitespace-nowrap">
                     <div className="flex items-center gap-2 justify-end">
                       <button onClick={() => downloadFile(f.name)}
-                        className="flex items-center gap-1 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-xs font-medium hover:bg-secondary/20 transition">
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-secondary-container text-on-secondary-container text-xs font-medium hover:bg-secondary/20 transition">
                         <Download size={12}/> ดาวน์โหลด
                       </button>
                       <button onClick={() => deleteFile(f.name)}
-                        className="flex items-center gap-1 px-3 py-1 rounded-full bg-error-container text-on-error-container text-xs font-medium hover:bg-error/20 transition">
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-error-container text-on-error-container text-xs font-medium hover:bg-error/20 transition">
                         <Trash2 size={12}/> ลบ
                       </button>
                     </div>

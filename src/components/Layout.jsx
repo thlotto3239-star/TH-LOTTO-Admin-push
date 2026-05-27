@@ -66,6 +66,7 @@ const NAV_GROUPS = [
       { to: '/sliders',    label: 'สไลเดอร์',  icon: 'view_carousel', perm: 'sliders' },
       { to: '/promotions', label: 'โปรโมชั่น', icon: 'campaign',      perm: 'promotions' },
       { to: '/articles',   label: 'บทความ',    icon: 'article',       perm: 'articles' },
+      { to: '/trending',   label: 'รายการมาแรง', icon: 'local_fire_department', perm: 'sliders' },
     ]
   },
   {
@@ -191,32 +192,31 @@ export default function Layout() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden" onClick={() => setOpen(false)} />
       )}
 
-      {/* Sidebar — glassmorphic floating pill */}
+      {/* Sidebar — Dark professional */}
       <aside className={`
         fixed left-0 top-0 z-40 h-screen w-72 flex flex-col
-        bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-white/20 backdrop-blur-md border-r border-white/10
-        shadow-[0_20px_50px_rgba(6,78,59,0.15)]
-        rounded-none lg:rounded-[40px] lg:m-4 lg:h-[calc(100vh-32px)]
+        bg-[#0f1f1a] border-r border-[#1a3329]
+        shadow-[4px_0_24px_rgba(0,0,0,0.3)]
         transition-transform duration-300
         ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo / Profile */}
-        <div className="p-6 flex flex-col items-center border-b border-white/20 flex-shrink-0">
+        <div className="p-6 flex flex-col items-center border-b border-[#1a3329] flex-shrink-0">
           {siteSettings.site_logo_url ? (
             <img
               src={siteSettings.site_logo_url}
               alt={siteSettings.site_name}
-              className="h-16 w-auto object-contain mb-3 drop-shadow-md"
+              className="h-14 w-auto object-contain mb-3 drop-shadow-lg"
               onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex' }}
             />
           ) : null}
           <div
-            className="h-16 w-16 rounded-full bg-primary-container items-center justify-center mb-3 border-2 border-white shadow-capsule-md"
+            className="h-14 w-14 rounded-full bg-emerald-800/50 items-center justify-center mb-3 border-2 border-emerald-600/30 shadow-lg"
             style={{ display: siteSettings.site_logo_url ? 'none' : 'flex' }}>
-            <span className="text-on-primary-container text-2xl font-black">{initial}</span>
+            <span className="text-emerald-300 text-xl font-black">{initial}</span>
           </div>
-          <div className="text-lg font-black tracking-tight text-primary">{siteSettings.site_name || 'THLotto'}</div>
-          <div className="text-on-surface-variant text-sm mt-1">{profile?.full_name || 'ผู้ดูแลระบบ'}</div>
+          <div className="text-base font-bold tracking-tight text-white">{siteSettings.site_name || 'THLotto'}</div>
+          <div className="text-emerald-400/70 text-xs mt-1 font-medium">{profile?.full_name || 'ผู้ดูแลระบบ'}</div>
         </div>
 
         {/* Nav links */}
@@ -227,7 +227,7 @@ export default function Layout() {
             return (
             <div key={gi} className="mb-1">
               <div className="px-4 pt-3 pb-1">
-                <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-outline">{group.label}</span>
+                <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-emerald-600/60">{group.label}</span>
               </div>
               <div className="space-y-0.5">
                 {visibleItems.map(item => (
@@ -239,8 +239,8 @@ export default function Layout() {
                     className={({ isActive }) =>
                       `flex items-center gap-3 mx-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all duration-200 ease-out
                       ${isActive
-                        ? 'bg-primary text-on-primary shadow-capsule-md'
-                        : 'text-on-surface-variant hover:bg-primary/8 hover:text-primary active:scale-95'
+                        ? 'bg-emerald-500/15 text-emerald-300 shadow-[inset_0_0_0_1px_rgba(16,185,129,0.2)]'
+                        : 'text-gray-400 hover:bg-white/5 hover:text-emerald-300 active:scale-95'
                       }`
                     }
                   >
@@ -264,10 +264,10 @@ export default function Layout() {
         </nav>
 
         {/* Logout */}
-        <div className="p-4 border-t border-white/20 flex-shrink-0">
+        <div className="p-4 border-t border-[#1a3329] flex-shrink-0">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-4 py-3 px-4 rounded-full text-sm font-medium text-on-surface-variant hover:bg-error/10 hover:text-error transition-all duration-200 active:scale-95"
+            className="w-full flex items-center gap-4 py-3 px-4 rounded-full text-sm font-medium text-gray-500 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 active:scale-95"
           >
             <span className="material-symbols-outlined text-[22px] leading-none">logout</span>
             ออกจากระบบ
@@ -276,35 +276,35 @@ export default function Layout() {
       </aside>
 
       {/* Main area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-[312px] min-h-screen flex flex-col max-w-[1440px] w-full">
-        {/* Header — glassmorphic floating pill */}
-        <header className="sticky top-0 z-50 mt-4 mx-auto max-w-[1440px] w-[calc(100%-2rem)]">
-          <div className="bg-slate-50/40 dark:bg-slate-950/40 backdrop-blur-md rounded-full px-6 py-2 border border-white/20 shadow-sm flex justify-between items-center h-20 gap-4 font-['Prompt'] text-sm tracking-wide text-emerald-900 dark:text-emerald-400">
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-72 min-h-screen max-w-[1440px] w-full">
+        {/* Header — dark professional */}
+        <header className="sticky top-0 z-50 px-4 lg:px-6 pt-4">
+          <div className="bg-[#0f1f1a] backdrop-blur-md rounded-2xl px-6 py-3 border border-[#1a3329] shadow-lg flex justify-between items-center gap-4 font-['Prompt'] text-sm">
             {/* Mobile hamburger */}
             <button
-              className="lg:hidden p-2 rounded-full text-on-surface-variant hover:bg-primary/5 active:scale-95 transition-all"
+              className="lg:hidden p-2 rounded-xl text-gray-400 hover:bg-white/10 hover:text-white active:scale-95 transition-all"
               onClick={() => setOpen(true)}
             >
               <span className="material-symbols-outlined">menu</span>
             </button>
 
             {/* Search */}
-            <div className="flex-1 max-w-sm hidden md:flex items-center gap-2 bg-surface-container-low rounded-full px-4 py-2 border border-outline-variant/30">
-              <span className="material-symbols-outlined text-outline text-[18px]">search</span>
-              <span className="text-sm text-outline">ค้นหา...</span>
+            <div className="flex-1 max-w-sm hidden md:flex items-center gap-2 bg-white/5 rounded-xl px-4 py-2 border border-white/10">
+              <span className="material-symbols-outlined text-gray-500 text-[18px]">search</span>
+              <span className="text-sm text-gray-500">ค้นหา...</span>
             </div>
 
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-3">
               {/* Online indicator */}
-              <div className="hidden sm:flex items-center gap-2 bg-secondary-container/40 text-on-secondary-container px-3 py-1.5 rounded-full text-xs font-medium">
-                <span className="w-2 h-2 rounded-full bg-secondary animate-pulse inline-block"></span>
-                ระบบออนไลน์
+              <div className="hidden sm:flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-full text-xs font-medium border border-emerald-500/20">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
+                ออนไลน์
               </div>
               {/* Notification */}
               <div className="relative" ref={notifRef}>
                 <button 
                   onClick={() => setNotifOpen(!notifOpen)}
-                  className="p-2 rounded-full text-on-surface-variant hover:bg-primary/5 transition-all relative"
+                  className="p-2 rounded-xl text-gray-400 hover:bg-white/10 hover:text-white transition-all relative"
                 >
                   <span className="material-symbols-outlined">notifications</span>
                   {unreadCount > 0 && (
@@ -368,7 +368,7 @@ export default function Layout() {
                 )}
               </div>
               {/* Avatar */}
-              <div className="h-9 w-9 rounded-full bg-primary-container flex items-center justify-center border-2 border-white shadow-sm text-on-primary-container font-bold text-sm">
+              <div className="h-9 w-9 rounded-full bg-emerald-700/50 flex items-center justify-center border-2 border-emerald-500/30 text-emerald-300 font-bold text-sm">
                 {initial}
               </div>
             </div>

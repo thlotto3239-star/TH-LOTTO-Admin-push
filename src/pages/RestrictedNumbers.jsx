@@ -31,20 +31,26 @@ export default function RestrictedNumbers() {
     setWorking(true)
     const numList = numbers.split(/[\s,]+/).filter(Boolean)
     for (const n of numList) {
-      await supabase.from('restricted_numbers').insert({ market_id: market, number: n.trim(), bet_type: betType })
+      await supabase.rpc('admin_add_restricted_number', {
+        p_market_id: market,
+        p_number: n.trim(),
+        p_bet_type: betType
+      })
     }
     setNumbers('')
     const { data } = await supabase.from('restricted_numbers').select('id,number,bet_type,created_at,lottery_markets(name)').order('created_at', { ascending: false })
     setRows(data || [])
     setWorking(false)
+    toast.success('เพิ่มเลขอั้นเรียบร้อย')
   }
 
   const remove = async (id) => {
     if (!confirm('ลบเลขอั้นนี้?')) return
     try {
-      const { error } = await supabase.from('restricted_numbers').delete().eq('id', id)
+      const { error } = await supabase.rpc('admin_delete_restricted_number', { p_id: id })
       if (error) throw error
       setRows(r => r.filter(x => x.id !== id))
+      toast.success('ลบเลขอั้นเรียบร้อย')
     } catch (e) {
       toast.error('เกิดข้อผิดพลาด: ' + e.message)
     }
@@ -86,24 +92,24 @@ export default function RestrictedNumbers() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-surface-container text-on-surface-variant text-left">
+              <thead className="bg-surface-container text-left">
                 <tr>
-                  <th className="px-4 py-3 font-medium">ตลาด</th>
-                  <th className="px-4 py-3 font-medium">เลข</th>
-                  <th className="px-4 py-3 font-medium">ประเภท</th>
-                  <th className="px-4 py-3 font-medium">เพิ่มเมื่อ</th>
-                  <th className="px-4 py-3 font-medium">ลบ</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">ตลาด</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">เลข</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">ประเภท</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">เพิ่มเมื่อ</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-center">ลบ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-outline-variant">
+              <tbody className="divide-y divide-outline-variant/30">
                 {rows.map(r => (
-                  <tr key={r.id} className="hover:bg-surface-container-low transition">
-                    <td className="px-4 py-3 text-on-surface">{r.lottery_markets?.name || '-'}</td>
-                    <td className="px-4 py-3 font-bold text-lg text-error">{r.number}</td>
-                    <td className="px-4 py-3"><span className="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-xs font-medium">{r.bet_type}</span></td>
-                    <td className="px-4 py-3 text-xs text-outline">{new Date(r.created_at).toLocaleString('th-TH')}</td>
-                    <td className="px-4 py-3">
-                      <button onClick={() => remove(r.id)} className="p-1.5 text-error hover:bg-error/10 rounded-lg transition"><Trash2 size={15}/></button>
+                  <tr key={r.id} className="hover:bg-surface-container-low/50 transition-colors">
+                    <td className="px-4 py-3 text-on-surface text-sm whitespace-nowrap">{r.lottery_markets?.name || '-'}</td>
+                    <td className="px-4 py-3 whitespace-nowrap"><code className="font-mono font-bold text-error bg-error-container/30 px-2 py-0.5 rounded text-sm">{r.number}</code></td>
+                    <td className="px-4 py-3 whitespace-nowrap"><span className="inline-flex items-center px-2.5 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-medium">{r.bet_type}</span></td>
+                    <td className="px-4 py-3 text-xs text-on-surface-variant whitespace-nowrap">{new Date(r.created_at).toLocaleString('th-TH')}</td>
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                      <button onClick={() => remove(r.id)} className="p-2 text-error hover:bg-error/10 rounded-full transition"><Trash2 size={14}/></button>
                     </td>
                   </tr>
                 ))}

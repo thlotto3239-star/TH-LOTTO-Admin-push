@@ -87,47 +87,53 @@ export default function Members() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-surface-container text-on-surface-variant text-left">
+              <thead className="bg-surface-container text-left">
                 <tr>
-                  <th className="px-4 py-3 font-medium">สมาชิก</th>
-                  <th className="px-4 py-3 font-medium">ยอดเงิน</th>
-                  <th className="px-4 py-3 font-medium">แทงรวม</th>
-                  <th className="px-4 py-3 font-medium">ถูกรางวัล</th>
-                  <th className="px-4 py-3 font-medium">สถานะ</th>
-                  <th className="px-4 py-3 font-medium">สมัครเมื่อ</th>
-                  <th className="px-4 py-3 font-medium">จัดการ</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">สมาชิก</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-right">ยอดเงิน</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-right">แทงรวม</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-right">ถูกรางวัล</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">สถานะ</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">สมัครเมื่อ</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-center">จัดการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-container">
                 {rows.map(r => (
                   <tr key={r.id} className="hover:bg-surface-container-low transition">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-on-surface">{r.full_name || '-'}</div>
-                      <div className="text-xs text-outline">{r.member_id} · {r.phone}</div>
-                      {r.bank_name && <div className="mt-1"><BankBadge code={r.bank_name} showName /></div>}
+                    <td className="px-4 py-3 min-w-[200px]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary-container/40 flex items-center justify-center text-on-primary-container font-bold text-xs flex-shrink-0">
+                          {(r.full_name || '?')[0]}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-on-surface text-sm truncate">{r.full_name || '-'}</div>
+                          <div className="text-[11px] text-outline">{r.member_id} · {r.phone}</div>
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-4 py-3 font-bold text-secondary">฿{fmt(r.wallets?.balance)}</td>
-                    <td className="px-4 py-3 text-on-surface-variant">฿{fmt(r.wallets?.total_bets)}</td>
-                    <td className="px-4 py-3 text-on-surface-variant">฿{fmt(r.wallets?.total_won)}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${r.status === 'active' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container text-on-error-container'}`}>
-                        {r.status === 'active' ? 'ปกติ' : 'ระงับ'}
+                    <td className="px-4 py-3 font-bold text-secondary text-right whitespace-nowrap">฿{fmt(r.wallets?.balance)}</td>
+                    <td className="px-4 py-3 text-on-surface-variant text-right whitespace-nowrap">฿{fmt(r.wallets?.total_bets)}</td>
+                    <td className="px-4 py-3 text-on-surface-variant text-right whitespace-nowrap">฿{fmt(r.wallets?.total_won)}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${r.status === 'active' ? 'bg-primary-container text-on-primary-container' : 'bg-error-container text-on-error-container'}`}>
+                        {r.status === 'active' ? '✓ ปกติ' : '✕ ระงับ'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-outline">{new Date(r.created_at).toLocaleDateString('th-TH')}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
+                    <td className="px-4 py-3 text-xs text-on-surface-variant whitespace-nowrap">{new Date(r.created_at).toLocaleDateString('th-TH')}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex gap-1.5 justify-center">
                         <button onClick={() => setModal({ ...r })}
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="แก้ไข">
-                          <Edit size={15}/>
+                          className="p-2 bg-surface-container text-on-surface-variant hover:bg-surface-container-high rounded-full transition" title="แก้ไข">
+                          <Edit size={14}/>
                         </button>
                         <button onClick={() => { setWalletModal(r); setDelta(''); setDeltaNote('') }}
-                          className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition" title="ปรับยอดเงิน">
-                          <PlusCircle size={15}/>
+                          className="p-2 bg-primary-container text-on-primary-container hover:bg-primary-container/70 rounded-full transition" title="ปรับยอดเงิน">
+                          <PlusCircle size={14}/>
                         </button>
                         <button onClick={() => navigate(`/members/${r.id}`)}
-                          className="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition" title="ดูรายละเอียด">
-                          <Eye size={15}/>
+                          className="p-2 bg-surface-container text-on-surface-variant hover:bg-surface-container-high rounded-full transition" title="ดูรายละเอียด">
+                          <Eye size={14}/>
                         </button>
                       </div>
                     </td>

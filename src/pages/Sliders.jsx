@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
-import { Plus, Trash2, Loader2, X, Save, ArrowUp, ArrowDown } from 'lucide-react'
+import { Plus, Trash2, Loader2, X, Save, ArrowUp, ArrowDown, Upload } from 'lucide-react'
 import { toast } from '../components/Toast'
 
 const EMPTY = { title:'', description:'', image_url:'', link_url:'', button_text:'', display_order:0, is_active:true }
@@ -10,6 +10,8 @@ export default function Sliders() {
   const [loading, setLoading] = useState(true)
   const [modal, setModal]   = useState(null)
   const [working, setWorking] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const load = async () => {
     const { data } = await supabase.from('sliders').select('*').order('display_order')
@@ -47,6 +49,30 @@ export default function Sliders() {
     await supabase.from('sliders').update({ display_order: b.display_order }).eq('id', a.id)
     await supabase.from('sliders').update({ display_order: a.display_order }).eq('id', b.id)
     load()
+  }
+
+  const handleFileUpload = async (file) => {
+    if (!file) return
+    if (file.size > 5 * 1024 * 1024) { toast.error('ขนาดไฟล์ต้องไม่เกิน 5MB'); return }
+    setUploading(true)
+    setUploadProgress(0)
+    
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `sliders/${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage.from('sliders').upload(fileName, file, { upsert: true })
+      if (upErr) throw upErr
+      
+      setUploadProgress(100)
+      const { data: { publicUrl } } = supabase.storage.from('sliders').getPublicUrl(fileName)
+      setModal(m => ({ ...m, image_url: publicUrl }))
+      toast.success('อัปโหลดสำเร็จ')
+    } catch (err) {
+      toast.error('อัปโหลดล้มเหลว: ' + err.message)
+    } finally {
+      setUploading(false)
+      setUploadProgress(0)
+    }
   }
 
   if (loading) return <div className="flex justify-center h-32 items-center"><Loader2 className="animate-spin text-primary" size={24}/></div>
@@ -99,7 +125,6 @@ export default function Sliders() {
               {[
                 { key:'title', label:'ชื่อ (ใช้ภายใน)', type:'text', placeholder:'เช่น แบนเนอร์โปรต้อนรับ' },
                 { key:'description', label:'คำบรรยาย', type:'text', placeholder:'ข้อความใต้แบนเนอร์' },
-                { key:'image_url', label:'URL รูปภาพ', type:'text', placeholder:'https://...' },
                 { key:'link_url', label:'URL ลิงค์ (ถ้ากดแล้วไปไหน)', type:'text', placeholder:'https://...' },
                 { key:'button_text', label:'ข้อความปุ่ม', type:'text', placeholder:'เช่น รับสิทธิ์เลย' },
                 { key:'display_order', label:'ลำดับ', type:'number', placeholder:'1' },
@@ -111,7 +136,32 @@ export default function Sliders() {
                     className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
               ))}
-              {modal.image_url && <img src={modal.image_url} alt="" className="w-full rounded-xl object-cover max-h-40 border border-outline-variant"/>}
+              
+              {/* File Upload */}
+              <div>
+                <label className="text-xs font-medium text-on-surface-variant mb-1 block">รูปภาพ Slider</label>
+                <label className="flex items-center justify-center gap-2 border-2 border-dashed border-outline-variant rounded-xl py-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all">
+                  <input type="file" className="hidden" accept="image/*" onChange={e => handleFileUpload(e.target.files[0])} disabled={uploading}/>
+                  {uploading ? (
+                    <><Loader2 size={18} className="animate-spin text-primary"/> <span className="text-sm text-on-surface-variant">กำลังอัปโหลด... {uploadProgress}%</span></>
+                  ) : (
+                    <><Upload size={18} className="text-outline"/> <span className="text-sm text-on-surface-variant">เลือกไฟล์ภาพ (JPG, PNG, WebP — สูงสุด 5MB)</span></>
+                  )}
+                </label>
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div className="mt-2 h-2 bg-surface-container rounded-full overflow-hidden">
+                    <div className="h-full bg-primary transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                  </div>
+                )}
+              </div>
+
+              {/* Preview */}
+              {modal.image_url && (
+                <div>
+                  <label className="text-xs font-medium text-on-surface-variant mb-1 block">ตัวอย่าง</label>
+                  <img src={modal.image_url} alt="" className="w-full rounded-xl object-cover max-h-48 border border-outline-variant"/>
+                </div>
+              )}
               <div className="flex items-center gap-3">
                 <label className="text-sm text-on-surface-variant">แสดง:</label>
                 <input type="checkbox" checked={modal.is_active} onChange={e => setModal(m => ({ ...m, is_active: e.target.checked }))} className="w-4 h-4"/>

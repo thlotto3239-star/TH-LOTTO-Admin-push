@@ -64,9 +64,10 @@ export default function InstantSettings() {
       ]
       
       for (const update of updates) {
-        const { error } = await supabase
-          .from('settings')
-          .upsert(update, { onConflict: 'key' })
+        const { error } = await supabase.rpc('admin_update_settings', {
+          p_key: update.key,
+          p_value: JSON.stringify({ value: update.value })
+        })
         
         if (error) throw error
       }

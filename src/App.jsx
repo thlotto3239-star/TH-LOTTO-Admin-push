@@ -27,6 +27,7 @@ const Appearance       = lazy(() => import('./pages/Appearance'))
 const Sliders          = lazy(() => import('./pages/Sliders'))
 const Promotions       = lazy(() => import('./pages/Promotions'))
 const Articles         = lazy(() => import('./pages/Articles'))
+const TrendingItems    = lazy(() => import('./pages/TrendingItems'))
 const Banks            = lazy(() => import('./pages/Banks'))
 const Admins           = lazy(() => import('./pages/Admins'))
 const DataManagement   = lazy(() => import('./pages/DataManagement'))
@@ -75,6 +76,7 @@ export default function App() {
               <Route path="sliders"    element={<PermGuard perm="sliders">    <Sliders />         </PermGuard>} />
               <Route path="promotions" element={<PermGuard perm="promotions"> <Promotions />      </PermGuard>} />
               <Route path="articles"   element={<PermGuard perm="articles">   <Articles />        </PermGuard>} />
+              <Route path="trending"   element={<PermGuard perm="sliders">    <TrendingItems />   </PermGuard>} />
               <Route path="banks"      element={<PermGuard perm="banks">      <Banks />           </PermGuard>} />
               <Route path="admins" element={<Admins />} />
               <Route path="data-management" element={<PermGuard perm="settings"><DataManagement /></PermGuard>} />

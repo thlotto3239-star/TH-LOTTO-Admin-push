@@ -157,35 +157,42 @@ export default function Withdrawals() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-surface-container text-on-surface-variant text-left">
+              <thead className="bg-surface-container text-left">
                 <tr>
-                  <th className="px-4 py-3 font-medium">สมาชิก</th>
-                  <th className="px-4 py-3 font-medium">ยอด</th>
-                  <th className="px-4 py-3 font-medium">บัญชีปลายทาง</th>
-                  <th className="px-4 py-3 font-medium">สถานะ</th>
-                  <th className="px-4 py-3 font-medium">วันที่</th>
-                  <th className="px-4 py-3 font-medium">ผู้ดำเนินการ</th>
-                  <th className="px-4 py-3 font-medium">จัดการ</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">สมาชิก</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-right">ยอด</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">บัญชีปลายทาง</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">สถานะ</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">วันที่</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">ผู้ดำเนินการ</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-center">จัดการ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
                 {rows.map(r => (
                   <tr key={r.id} className="hover:bg-surface-container-low transition">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-on-surface">{r.profiles?.full_name || '-'}</div>
-                      <div className="text-xs text-on-surface-variant">{r.profiles?.member_id} · {r.profiles?.phone}</div>
-                    </td>
-                    <td className="px-4 py-3 font-bold text-error">฿{fmt(r.amount)}</td>
-                    <td className="px-4 py-3">
-                      <div className="text-xs space-y-1">
-                        <BankBadge code={r.bank_name} showName />
-                        <div className="flex items-center gap-1 text-on-surface-variant">
-                          <span className="font-mono">{r.bank_account_number}</span>
-                          <button onClick={() => copyText(r.bank_account_number)} className="text-primary hover:text-primary/70">
-                            {copied === r.bank_account_number ? '✓' : <Copy size={11}/>}
-                          </button>
+                    <td className="px-4 py-3 min-w-[200px]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary-container/40 flex items-center justify-center text-on-primary-container font-bold text-xs flex-shrink-0">
+                          {(r.profiles?.full_name || '?')[0]}
                         </div>
-                        <div className="text-outline">{r.bank_account_name}</div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-on-surface text-sm truncate">{r.profiles?.full_name || '-'}</div>
+                          <div className="text-[11px] text-on-surface-variant">{r.profiles?.member_id} · {r.profiles?.phone}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 font-bold text-error text-right whitespace-nowrap">฿{fmt(r.amount)}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <BankBadge code={r.bank_name} />
+                        <span className="text-xs text-on-surface-variant truncate max-w-[120px]" title={r.bank_account_name}>{r.bank_account_name}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-[11px] font-mono text-outline">
+                        {r.bank_account_number}
+                        <button onClick={() => copyText(r.bank_account_number)} className="text-primary hover:text-primary/70">
+                          {copied === r.bank_account_number ? '✓' : <Copy size={11}/>}
+                        </button>
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -193,10 +200,10 @@ export default function Withdrawals() {
                         {STATUS_LABEL[r.status]?.label || r.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-on-surface-variant">{new Date(r.created_at).toLocaleString('th-TH')}</td>
-                    <td className="px-4 py-3 text-xs">
+                    <td className="px-4 py-3 text-xs text-on-surface-variant whitespace-nowrap">{new Date(r.created_at).toLocaleString('th-TH')}</td>
+                    <td className="px-4 py-3 text-xs whitespace-nowrap">
                       {r.approver?.full_name
-                        ? <span className="text-on-surface font-medium">{r.approver.full_name}<br/><span className="text-outline">{r.approved_at ? new Date(r.approved_at).toLocaleString('th-TH') : ''}</span></span>
+                        ? <span className="text-on-surface font-medium" title={r.approved_at ? new Date(r.approved_at).toLocaleString('th-TH') : ''}>{r.approver.full_name}</span>
                         : <span className="text-outline">-</span>}
                     </td>
                     <td className="px-4 py-3">

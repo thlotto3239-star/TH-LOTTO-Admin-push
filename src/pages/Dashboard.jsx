@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
 import {
   Users, Wallet, ArrowDownCircle, ArrowUpCircle, TrendingUp,
-  ListOrdered, AlertTriangle, RefreshCw, Clock
+  ListOrdered, AlertTriangle, RefreshCw, Clock, Banknote, Receipt, Trophy, Gift, Wrench
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -10,33 +10,31 @@ import {
 
 const fmt = (n) => Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 0 })
 
-function KPICard({ icon: Icon, label, value, sub, color = 'emerald', alert }) {
-  const colors = {
-    emerald: 'bg-surface-container text-primary',
-    blue:    'bg-surface-container text-primary',
-    amber:   'bg-surface-container text-on-surface-variant',
-    rose:    'bg-surface-container text-primary',
-  }
+function KPICard({ icon: Icon, label, value, sub, alert, iconBg = 'bg-primary/10 text-primary' }) {
   return (
-    <div className={`bg-surface-container-lowest rounded-xl p-lg shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white relative overflow-hidden group hover:shadow-[0_20px_50px_rgba(6,78,59,0.1)] transition-shadow duration-300 ${alert ? 'ring-2 ring-error' : ''}`}>
-      <div className={`absolute -right-8 -top-8 w-32 h-32 bg-primary-container/5 rounded-full blur-2xl group-hover:bg-primary-container/10 transition-colors`}></div>
-      <div className="flex justify-between items-start mb-6 relative z-10">
-        <div className={`p-3 bg-surface-container rounded-full text-primary`}>
-          <Icon size={20}/>
+    <div className={`bg-surface-container-lowest rounded-2xl p-5 shadow-glass border border-outline-variant/20 relative overflow-hidden group hover:shadow-capsule transition-all duration-300 ${alert ? 'ring-2 ring-error/60' : ''}`}>
+      <div className="flex items-center gap-4">
+        <div className={`p-3 rounded-xl ${iconBg}`}>
+          <Icon size={22} strokeWidth={2}/>
         </div>
-        {alert && <span className="bg-surface-container text-on-surface-variant px-3 py-1 rounded-full font-label-sm text-label-sm flex items-center">รอตรวจสอบ</span>}
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">{label}</p>
+          <h2 className="text-2xl font-bold text-on-surface mt-0.5 truncate">{value}</h2>
+          {sub && <p className="text-xs text-outline mt-0.5">{sub}</p>}
+        </div>
+        {alert && (
+          <span className="flex-shrink-0 px-2.5 py-1 bg-error/10 text-error rounded-full text-[10px] font-bold uppercase tracking-wide animate-pulse">
+            รอดำเนินการ
+          </span>
+        )}
       </div>
-      <div className="relative z-10">
-        <p className="font-body-md text-body-md text-on-surface-variant mb-1">{label}</p>
-        <h2 className="font-h2 text-h2 text-on-surface">{value}</h2>
-      </div>
-      {sub && <div className="relative z-10 text-xs text-outline mt-1">{sub}</div>}
     </div>
   )
 }
 
 export default function Dashboard() {
   const [stats, setStats]     = useState(null)
+  const [advancedStats, setAdvancedStats] = useState(null)
   const [chart, setChart]     = useState([])
   const [feed, setFeed]       = useState([])
   const [markets, setMarkets] = useState([])
@@ -44,20 +42,22 @@ export default function Dashboard() {
   const [lastUpdate, setLastUpdate] = useState(new Date())
 
   const loadAll = useCallback(async () => {
-    const [statsRes, chartRes, feedRes, marketsRes] = await Promise.all([
+    const [statsRes, advancedRes, chartRes, feedRes, marketsRes] = await Promise.all([
       supabase.rpc('admin_dashboard_stats'),
+      supabase.rpc('admin_dashboard_advanced_stats'),
       supabase.from('transactions')
         .select('type,amount,created_at')
         .in('type', ['DEPOSIT','WIN','PAYOUT','BET'])
         .gte('created_at', new Date(Date.now() - 7*24*60*60*1000).toISOString())
         .order('created_at'),
       supabase.from('transactions')
-        .select('type,amount,note,created_at,profiles(full_name,member_id)')
+        .select('type,amount,note,created_at,profiles(full_name,member_id),market_id,lottery_markets(name,logo_url,code)')
         .order('created_at', { ascending: false })
         .limit(20),
       supabase.rpc('get_markets_with_countdown'),
     ])
     if (statsRes.data) setStats(statsRes.data)
+    if (advancedRes.data) setAdvancedStats(advancedRes.data)
     if (feedRes.data) setFeed(feedRes.data)
     if (marketsRes.data) setMarkets(marketsRes.data)
 
@@ -90,9 +90,27 @@ export default function Dashboard() {
     return () => { supabase.removeChannel(ch); clearInterval(timer) }
   }, [loadAll])
 
-  const feedIcon = (type) => {
-    const m = { DEPOSIT:'⬇️', WITHDRAW:'⬆️', BET:'🎰', WIN:'🎉', PAYOUT:'💰', BONUS:'🎁', COMMISSION:'💼', ADMIN_CREDIT:'🔧' }
-    return m[type] || '📌'
+  const FeedIcon = ({ type, logoUrl }) => {
+    if (type === 'BET' && logoUrl) {
+      return <img src={logoUrl} alt="" className="w-6 h-6 rounded-full object-contain"/>
+    }
+    const map = {
+      DEPOSIT:     { icon: ArrowDownCircle, bg: 'bg-emerald-50 text-emerald-600' },
+      WITHDRAW:    { icon: ArrowUpCircle, bg: 'bg-red-50 text-red-500' },
+      BET:         { icon: Receipt, bg: 'bg-blue-50 text-blue-600' },
+      WIN:         { icon: Trophy, bg: 'bg-amber-50 text-amber-600' },
+      PAYOUT:      { icon: Banknote, bg: 'bg-amber-50 text-amber-600' },
+      BONUS:       { icon: Gift, bg: 'bg-purple-50 text-purple-600' },
+      COMMISSION:  { icon: Wallet, bg: 'bg-teal-50 text-teal-600' },
+      ADMIN_CREDIT:{ icon: Wrench, bg: 'bg-gray-50 text-gray-600' },
+    }
+    const config = map[type] || { icon: Receipt, bg: 'bg-surface-container text-on-surface-variant' }
+    const IconComp = config.icon
+    return (
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${config.bg}`}>
+        <IconComp size={18}/>
+      </div>
+    )
   }
 
   if (loading) return (
@@ -104,160 +122,154 @@ export default function Dashboard() {
   const s = stats || {}
 
   return (
-    <div className="p-gutter pt-8 space-y-xl flex-1 pb-16">
-      {/* Page Title */}
-      <div>
-        <h1 className="font-h1 text-h1 text-primary">ภาพรวมระบบ</h1>
-        <p className="font-body-lg text-body-lg text-on-surface-variant mt-2">ข้อมูลแบบเรียลไทม์ของแพลตฟอร์ม THLotto</p>
-      </div>
+    <div className="space-y-6 pb-10">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-on-surface-variant text-sm mt-0.5 flex items-center gap-1">
-            <Clock size={13}/> อัพเดทล่าสุด: {lastUpdate.toLocaleTimeString('th-TH')}
+          <h1 className="text-2xl font-bold text-on-surface">ภาพรวมระบบ</h1>
+          <p className="text-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
+            <Clock size={13}/> อัพเดท: {lastUpdate.toLocaleTimeString('th-TH')}
           </p>
         </div>
-        <button onClick={loadAll} className="flex items-center gap-2 px-4 py-2 glass-panel rounded-full text-sm text-on-surface-variant hover:bg-surface-container shadow-glass transition">
-          <RefreshCw size={15}/> รีเฟรช
+        <button onClick={loadAll} className="flex items-center gap-2 px-4 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface-variant rounded-full text-sm transition">
+          <RefreshCw size={14}/> รีเฟรช
         </button>
       </div>
 
-      {/* KPI */}
-      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-gutter">
-        <KPICard icon={Users}          label="สมาชิกทั้งหมด"   value={fmt(s.total_members)}    sub={`ใหม่วันนี้ ${fmt(s.new_today)} คน`}        color="blue" />
-        <KPICard icon={Wallet}         label="ยอดเงินรวมในระบบ" value={`฿${fmt(s.total_balance)}`} sub={`ฝากวันนี้ ฿${fmt(s.today_deposit)}`}   color="emerald" />
-        <KPICard icon={ArrowDownCircle} label="รอ Approve ฝาก"  value={fmt(s.pending_deposits)}  sub="รายการรอดำเนินการ"                          color="amber" alert={s.pending_deposits > 0} />
-        <KPICard icon={ArrowUpCircle}   label="รอ Approve ถอน"  value={fmt(s.pending_withdraws)} sub="รายการรอดำเนินการ"                          color="rose"  alert={s.pending_withdraws > 0} />
+      {/* KPI Row */}
+      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <KPICard icon={Users}           label="สมาชิกทั้งหมด"   value={fmt(s.total_members)}     sub={`ใหม่วันนี้ +${fmt(s.new_today)}`}   iconBg="bg-blue-50 text-blue-600" />
+        <KPICard icon={Wallet}          label="เงินรวมในระบบ"    value={`฿${fmt(s.total_balance)}`} sub={`ฝากวันนี้ ฿${fmt(s.today_deposit)}`} iconBg="bg-emerald-50 text-emerald-600" />
+        <KPICard icon={ArrowDownCircle} label="รออนุมัติฝาก"   value={fmt(s.pending_deposits)}  alert={s.pending_deposits > 0} iconBg="bg-amber-50 text-amber-600" />
+        <KPICard icon={ArrowUpCircle}   label="รออนุมัติถอน"   value={fmt(s.pending_withdraws)} alert={s.pending_withdraws > 0} iconBg="bg-red-50 text-red-500" />
       </section>
 
-      {/* Secondary KPI */}
-      <section className="grid grid-cols-1 gap-md h-[400px]">
-        <div className="bg-surface-container-lowest rounded-[32px] p-lg shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white flex items-center justify-between hover:shadow-[0_20px_50px_rgba(6,78,59,0.1)] transition-shadow">
-          <div>
-            <p className="font-body-md text-body-md text-on-surface-variant">ยอดแทงวันนี้</p>
-            <h3 className="font-h3 text-h3 text-on-surface">฿{fmt(s.today_bets)}</h3>
+      {/* Secondary Stats Row */}
+      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <KPICard icon={ListOrdered}  label="ยอดแทงวันนี้"  value={`฿${fmt(s.today_bets)}`}       iconBg="bg-blue-50 text-blue-600" />
+        <KPICard icon={AlertTriangle} label="จ่ายรางวัลวันนี้" value={`฿${fmt(s.today_payouts)}`} iconBg="bg-orange-50 text-orange-600" />
+        <div className="bg-primary rounded-2xl p-5 shadow-capsule-md flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-primary-container/30 text-primary-fixed">
+            <TrendingUp size={22}/>
           </div>
-          <div className="h-12 w-12 rounded-full bg-surface-container flex items-center justify-center text-primary">
-            <ListOrdered size={24}/>
+          <div>
+            <p className="text-xs font-medium text-primary-fixed-dim uppercase tracking-wider">กำไรสุทธิ</p>
+            <h2 className="text-2xl font-bold text-on-primary mt-0.5">฿{fmt(s.today_bets - s.today_payouts)}</h2>
           </div>
         </div>
-        <div className="bg-surface-container-lowest rounded-[32px] p-lg shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white flex items-center justify-between hover:shadow-[0_20px_50px_rgba(6,78,59,0.1)] transition-shadow">
-          <div>
-            <p className="font-body-md text-body-md text-on-surface-variant">จ่ายรางวัลทั้งหมด</p>
-            <h3 className="font-h3 text-h3 text-on-surface">฿{fmt(s.today_payouts)}</h3>
-          </div>
-          <div className="h-12 w-12 rounded-full bg-surface-container flex items-center justify-center text-primary">
-            <AlertTriangle size={24}/>
-          </div>
-        </div>
-        <div className={`bg-primary rounded-[32px] p-lg shadow-lg border border-primary-container flex items-center justify-between text-on-primary transform hover:scale-[1.01] transition-transform`}>
-          <div>
-            <p className="font-body-md text-body-md text-primary-fixed-dim">กำไรสุทธิ</p>
-            <h3 className="font-h3 text-h3">฿{fmt(s.today_bets - s.today_payouts)}</h3>
-          </div>
-          <div className="h-12 w-12 rounded-full bg-primary-container flex items-center justify-center text-primary-fixed">
-            <TrendingUp size={24}/>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest rounded-[32px] p-lg shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white flex items-center justify-between hover:shadow-[0_20px_50px_rgba(6,78,59,0.1)] transition-shadow">
-          <div>
-            <p className="font-body-md text-body-md text-on-surface-variant">ตลาดที่เปิดอยู่</p>
-            <h3 className="font-h3 text-h3 text-on-surface">{markets.filter(m => m.is_open).length}</h3>
-          </div>
-          <div className="h-12 w-12 rounded-full bg-surface-container flex items-center justify-center text-primary">
-            <ListOrdered size={24}/>
-          </div>
-        </div>
+        <KPICard icon={ListOrdered} label="ตลาดเปิดอยู่" value={markets.filter(m => m.is_open).length} sub={`จากทั้งหมด ${markets.length} ตลาด`} iconBg="bg-teal-50 text-teal-600" />
       </section>
 
-      {/* Charts + Markets */}
-      <section className="grid grid-cols-1 xl:grid-cols-3 gap-gutter">
+      {/* Advanced Stats Row */}
+      {advancedStats && (
+        <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <KPICard icon={Users} label="สมาชิกใช้งาน (7 วัน)" value={fmt(advancedStats.active_members_7d)} sub="สมาชิกที่แทงหวย" iconBg="bg-purple-50 text-purple-600" />
+          <KPICard icon={Receipt} label="อัตราแทงต่อคน" value={fmt(advancedStats.bet_rate_per_person)} sub="ครั้งต่อคน" iconBg="bg-indigo-50 text-indigo-600" />
+          <KPICard icon={ArrowUpCircle} label="อัตราการถอน" value={`${fmt(advancedStats.withdrawal_rate)}%`} sub="เทียบกับฝาก" iconBg="bg-pink-50 text-pink-600" />
+          <KPICard icon={Trophy} label="คนแทงสูงสุด (7 วัน)" value={advancedStats.top_10_bettors?.[0]?.full_name || '-'} sub={`฿${fmt(advancedStats.top_10_bettors?.[0]?.total_bet)}`} iconBg="bg-amber-50 text-amber-600" />
+        </section>
+      )}
+
+      {/* Chart + Markets */}
+      <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         {/* Bar Chart */}
-        <div className="xl:col-span-2 bg-surface-container-lowest rounded-[32px] p-container-padding shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white flex flex-col h-[400px]">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="font-h3 text-h3 text-on-surface font-semibold">วิเคราะห์รายได้ (7 วัน)</h3>
-            <div className="flex gap-2">
-              <button className="px-4 py-1.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm hover:bg-surface-container-high transition-colors">รายวัน</button>
-              <button className="px-4 py-1.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm shadow-sm">รายสัปดาห์</button>
-            </div>
+        <div className="xl:col-span-2 glass-panel rounded-2xl shadow-glass p-6 flex flex-col">
+          <div className="flex justify-between items-center mb-5">
+            <h3 className="font-semibold text-on-surface">วิเคราะห์รายได้ (7 วัน)</h3>
           </div>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={chart} barSize={16}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
-              <Tooltip formatter={(v) => [`฿${fmt(v)}`, '']} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="ฝาก"      fill="#10b981" radius={[4,4,0,0]} />
-              <Bar dataKey="แทง"      fill="#3b82f6" radius={[4,4,0,0]} />
-              <Bar dataKey="จ่ายรางวัล" fill="#f43f5e" radius={[4,4,0,0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="flex-1 min-h-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chart} barSize={18}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5eeff" vertical={false}/>
+                <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#707974' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#707974' }} tickFormatter={v => `${(v/1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
+                <Tooltip formatter={(v) => [`฿${fmt(v)}`, '']} contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} />
+                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+                <Bar dataKey="ฝาก"       fill="#10b981" radius={[6,6,0,0]} />
+                <Bar dataKey="แทง"       fill="#3b82f6" radius={[6,6,0,0]} />
+                <Bar dataKey="จ่ายรางวัล" fill="#f43f5e" radius={[6,6,0,0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        {/* Market Status */}
-        <div className="bg-surface-container-lowest rounded-[32px] p-container-padding shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white flex flex-col h-[400px] overflow-hidden">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-h3 text-h3 text-on-surface font-semibold">ตลาดที่เปิดรับ</h3>
-            <button className="text-primary font-label-sm text-label-sm hover:underline">ดูทั้งหมด</button>
+        {/* Market Status — with logos */}
+        <div className="glass-panel rounded-2xl shadow-glass p-6 flex flex-col max-h-[420px]">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-semibold text-on-surface">ตลาดที่เปิดรับ</h3>
+            <span className="text-xs text-on-surface-variant bg-surface-container px-2.5 py-1 rounded-full">{markets.filter(m => m.is_open).length} ตลาด</span>
           </div>
-          <div className="flex-1 overflow-y-auto no-scrollbar pr-2">
-            <div className="space-y-2">
-              {markets.length === 0 && <div className="text-outline text-sm text-center py-4">ไม่มีตลาด</div>}
-              {markets.map(m => (
-                <div key={m.id} className="flex items-center justify-between p-4 rounded-[12px] bg-surface hover:bg-surface-container-highest transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-primary-container/10 flex items-center justify-center text-primary">
-                      <ListOrdered size={20}/>
-                    </div>
-                    <div>
-                      <p className="font-body-md text-body-md text-on-surface font-medium">{m.name}</p>
-                      <p className="font-label-sm text-label-sm text-on-surface-variant">ออกรางวัล: {m.draw_date ? new Date(m.draw_date).toLocaleDateString('th-TH') : 'ทุกวัน'}</p>
-                    </div>
+          <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+            {markets.length === 0 && <div className="text-outline text-sm text-center py-8">ไม่มีตลาด</div>}
+            {markets.map(m => (
+              <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low/50 hover:bg-surface-container transition-colors">
+                {/* Market Logo */}
+                {m.logo_url ? (
+                  <img src={m.logo_url} alt={m.name} className="w-9 h-9 rounded-lg object-contain border border-outline-variant/30 bg-white flex-shrink-0"/>
+                ) : (
+                  <div className="w-9 h-9 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary font-bold text-xs flex-shrink-0">
+                    {m.code?.slice(0,2) || m.name?.slice(0,1)}
                   </div>
-                  <div className="text-right">
-                    <span className={`px-3 py-1 rounded-full font-label-sm text-label-sm ${m.is_open ? 'bg-[#f0fdf4] text-secondary' : 'bg-surface-variant text-on-surface-variant'}`}>
-                      {m.is_open ? 'กำลังเปิดรับแทง' : 'ปิดรับแทง'}
-                    </span>
-                    {m.countdown && <p className="font-body-md text-body-md text-primary mt-1 font-mono">{m.countdown}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Feed */}
-      <section className="bg-surface-container-lowest rounded-[32px] p-container-padding shadow-[0_15px_40px_rgba(6,78,59,0.05)] border border-white flex flex-col h-[500px] overflow-hidden">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="font-h3 text-h3 text-on-surface font-semibold">รายการเรียลไทม์</h3>
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
-            </span>
-            <span className="font-label-sm text-label-sm text-secondary">สด</span>
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto no-scrollbar pr-2">
-          <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-surface-container-highest">
-            {feed.map((f, i) => (
-              <div key={i} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-surface-container-lowest ${['DEPOSIT','BONUS'].includes(f.type) ? 'bg-[#f0fdf4] text-secondary' : f.type === 'WITHDRAW' ? 'bg-error-container text-on-error-container' : 'bg-surface-container text-primary'} shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10`}>
-                  <span className="text-[18px]">{feedIcon(f.type)}</span>
-                </div>
-                <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-surface p-4 rounded-[16px] shadow-sm border border-white/50">
-                  <div className="flex justify-between mb-1">
-                    <span className={`font-label-sm text-label-sm font-semibold ${['DEPOSIT','BONUS'].includes(f.type) ? 'text-secondary' : f.type === 'WITHDRAW' ? 'text-error' : 'text-primary'}`}>{f.type === 'DEPOSIT' ? 'ฝากเงิน' : f.type === 'WITHDRAW' ? 'ถอนเงิน' : f.type === 'BET' ? 'แทงหวย' : f.type}</span>
-                    <span className="font-label-sm text-label-sm text-on-surface-variant">{new Date(f.created_at).toLocaleString('th-TH')}</span>
-                  </div>
-                  <p className="font-body-md text-body-md text-on-surface">
-                    {f.profiles?.full_name || f.profiles?.member_id || 'ระบบ'} — {f.note || f.type}
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-on-surface truncate">{m.name}</p>
+                  <p className="text-[11px] text-on-surface-variant">
+                    {m.draw_date ? new Date(m.draw_date).toLocaleDateString('th-TH', { day:'numeric', month:'short' }) : 'ทุกวัน'}
+                    {m.countdown && <span className="ml-1.5 font-mono text-primary font-medium">{m.countdown}</span>}
                   </p>
                 </div>
+                <span className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-semibold ${m.is_open ? 'bg-emerald-50 text-emerald-700' : 'bg-surface-container text-on-surface-variant'}`}>
+                  {m.is_open ? '● เปิด' : '○ ปิด'}
+                </span>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Realtime Feed — Professional table-style */}
+      <section className="glass-panel rounded-2xl shadow-glass overflow-hidden">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-outline-variant/20">
+          <div className="flex items-center gap-3">
+            <h3 className="font-semibold text-on-surface">รายการเรียลไทม์</h3>
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-secondary"></span>
+            </span>
+          </div>
+          <span className="text-xs text-on-surface-variant">{feed.length} รายการล่าสุด</span>
+        </div>
+        <div className="max-h-[400px] overflow-y-auto">
+          <div className="divide-y divide-outline-variant/20">
+            {feed.map((f, i) => {
+              const typeLabel = { DEPOSIT:'ฝากเงิน', WITHDRAW:'ถอนเงิน', BET:'แทงหวย', WIN:'ถูกรางวัล', PAYOUT:'จ่ายรางวัล', BONUS:'โบนัส', COMMISSION:'คอมมิชชั่น', ADMIN_CREDIT:'Admin เพิ่ม' }
+              const typeColor = { DEPOSIT:'text-emerald-600', WITHDRAW:'text-red-500', BET:'text-blue-600', WIN:'text-amber-600', PAYOUT:'text-amber-600', BONUS:'text-purple-600' }
+              return (
+                <div key={i} className="flex items-center gap-3 px-6 py-3 hover:bg-surface-container-low/30 transition-colors">
+                  <FeedIcon type={f.type} logoUrl={f.lottery_markets?.logo_url} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-semibold ${typeColor[f.type] || 'text-on-surface-variant'}`}>
+                        {typeLabel[f.type] || f.type}
+                      </span>
+                      {f.lottery_markets?.name && (
+                        <span className="text-[10px] bg-surface-container text-on-surface-variant px-1.5 py-0.5 rounded font-medium">{f.lottery_markets.name}</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-on-surface truncate">
+                      {f.profiles?.full_name || f.profiles?.member_id || 'ระบบ'}
+                      {f.note && <span className="text-on-surface-variant"> — {f.note}</span>}
+                    </p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className={`text-sm font-bold ${f.amount >= 0 ? 'text-on-surface' : 'text-error'}`}>
+                      {f.amount >= 0 ? '+' : ''}฿{fmt(Math.abs(f.amount))}
+                    </p>
+                    <p className="text-[10px] text-outline">{new Date(f.created_at).toLocaleTimeString('th-TH', { hour:'2-digit', minute:'2-digit' })}</p>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>

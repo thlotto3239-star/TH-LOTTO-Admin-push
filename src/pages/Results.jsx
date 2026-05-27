@@ -140,41 +140,41 @@ export default function Results() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-surface-container text-on-surface-variant text-left">
+                <thead className="bg-surface-container text-left">
                   <tr>
-                    <th className="px-4 py-3 font-medium">ตลาด</th>
-                    <th className="px-4 py-3 font-medium">งวดวันที่</th>
-                    <th className="px-4 py-3 font-medium">ปิดรับแทง</th>
-                    <th className="px-4 py-3 font-medium">สถานะ</th>
-                    <th className="px-4 py-3 font-medium">ดำเนินการ</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">ตลาด</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">งวดวันที่</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">ปิดรับแทง</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">สถานะ</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-center">ดำเนินการ</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-outline-variant">
+                <tbody className="divide-y divide-outline-variant/30">
                   {schedules.map(s => {
                     const hasResult = !!resultMap[`${s.market_id}_${s.draw_date}`]
                     return (
-                      <tr key={s.id} className="hover:bg-surface-container-low transition">
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-on-surface">{s.lottery_markets?.name}</div>
+                      <tr key={s.id} className="hover:bg-surface-container-low/50 transition-colors">
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="font-medium text-on-surface text-sm">{s.lottery_markets?.name}</div>
                           <div className="text-xs text-outline font-mono">{s.lottery_markets?.code}</div>
                         </td>
-                        <td className="px-4 py-3 text-on-surface">{fmtDate(s.draw_date)}</td>
-                        <td className="px-4 py-3 text-xs text-on-surface-variant">{fmtDt(s.close_time)}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 text-on-surface text-sm whitespace-nowrap">{fmtDate(s.draw_date)}</td>
+                        <td className="px-4 py-3 text-xs text-on-surface-variant whitespace-nowrap">{fmtDt(s.close_time)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">
                           {hasResult ? (
-                            <span className="px-2 py-1 rounded-full text-xs bg-secondary-container text-on-secondary-container">ออกผลแล้ว</span>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-container text-on-primary-container">✓ ออกผลแล้ว</span>
                           ) : (
-                            <span className="px-2 py-1 rounded-full text-xs bg-surface-container-high text-on-surface-variant">{s.status}</span>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-warning-container text-on-warning-container">● {s.status}</span>
                           )}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3 text-center whitespace-nowrap">
                           {hasResult ? (
-                            <span className="text-xs text-on-surface-variant flex items-center gap-1">
+                            <span className="text-xs text-on-surface-variant inline-flex items-center gap-1">
                               <CheckCircle2 size={13} className="text-primary"/> เรียบร้อย
                             </span>
                           ) : (
                             <button onClick={() => openModal(s)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary/90 text-on-primary rounded-full text-xs font-medium transition">
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary/90 text-on-primary rounded-full text-xs font-medium transition shadow-sm">
                               <Award size={13}/> ออกผล
                             </button>
                           )}
@@ -194,30 +194,30 @@ export default function Results() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-surface-container text-on-surface-variant text-left">
+                <thead className="bg-surface-container text-left">
                   <tr>
-                    <th className="px-4 py-3 font-medium">ตลาด</th>
-                    <th className="px-4 py-3 font-medium">งวดวันที่</th>
-                    <th className="px-4 py-3 font-medium">เลขหลัก</th>
-                    <th className="px-4 py-3 font-medium">3 ตัวบน</th>
-                    <th className="px-4 py-3 font-medium">2 ตัวบน</th>
-                    <th className="px-4 py-3 font-medium">2 ตัวล่าง</th>
-                    <th className="px-4 py-3 font-medium">ประกาศเมื่อ</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">ตลาด</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">งวดวันที่</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">เลขหลัก</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">3 ตัวบน</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">2 ตัวบน</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">2 ตัวล่าง</th>
+                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">ประกาศเมื่อ</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-outline-variant">
+                <tbody className="divide-y divide-outline-variant/30">
                   {recent.map(r => (
-                    <tr key={r.id} className="hover:bg-surface-container-low transition">
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-on-surface">{r.lottery_markets?.name}</div>
+                    <tr key={r.id} className="hover:bg-surface-container-low/50 transition-colors">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="font-medium text-on-surface text-sm">{r.lottery_markets?.name}</div>
                         <div className="text-xs text-outline font-mono">{r.lottery_markets?.code}</div>
                       </td>
-                      <td className="px-4 py-3 text-on-surface">{fmtDate(r.draw_date)}</td>
-                      <td className="px-4 py-3 font-bold font-mono text-base tracking-widest text-amber-600">{r.result_main || '-'}</td>
-                      <td className="px-4 py-3 font-bold text-primary font-mono text-base">{r.result_3top || '-'}</td>
-                      <td className="px-4 py-3 font-mono text-on-surface">{r.result_2top || '-'}</td>
-                      <td className="px-4 py-3 font-mono text-on-surface">{r.result_2bottom || '-'}</td>
-                      <td className="px-4 py-3 text-xs text-on-surface-variant">{r.announced_at ? fmtDt(r.announced_at) : '-'}</td>
+                      <td className="px-4 py-3 text-on-surface text-sm whitespace-nowrap">{fmtDate(r.draw_date)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap"><code className="font-mono font-bold text-base tracking-widest text-amber-600 bg-amber-50 px-2 py-0.5 rounded">{r.result_main || '-'}</code></td>
+                      <td className="px-4 py-3 font-bold text-primary font-mono text-base whitespace-nowrap">{r.result_3top || '-'}</td>
+                      <td className="px-4 py-3 font-mono text-on-surface whitespace-nowrap">{r.result_2top || '-'}</td>
+                      <td className="px-4 py-3 font-mono text-on-surface whitespace-nowrap">{r.result_2bottom || '-'}</td>
+                      <td className="px-4 py-3 text-xs text-on-surface-variant whitespace-nowrap">{r.announced_at ? fmtDt(r.announced_at) : '-'}</td>
                     </tr>
                   ))}
                 </tbody>

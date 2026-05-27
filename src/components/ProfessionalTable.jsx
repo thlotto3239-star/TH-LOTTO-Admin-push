@@ -33,7 +33,7 @@ const ProfessionalTable = ({ columns, data, emptyMessage = 'ไม่มีข�
               {columns.map(col => (
                 <th 
                   key={col.key} 
-                  className="px-4 py-3 text-left text-xs font-semibold text-on-surface-variant uppercase tracking-wider cursor-pointer hover:bg-primary/10 transition-colors"
+                  className="px-4 py-3 text-left text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap cursor-pointer hover:bg-primary/10 transition-colors"
                   onClick={() => col.sortable !== false && handleSort(col.key)}
                 >
                   <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ const ProfessionalTable = ({ columns, data, emptyMessage = 'ไม่มีข�
                   className="hover:bg-primary/[0.02] transition-colors border-b border-white/5 last:border-0"
                 >
                   {columns.map(col => (
-                    <td key={col.key} className="px-4 py-3 text-sm text-on-surface">
+                    <td key={col.key} className="px-4 py-3 text-sm text-on-surface whitespace-nowrap">
                       {col.render ? col.render(row[col.key], row) : row[col.key]}
                     </td>
                   ))}
