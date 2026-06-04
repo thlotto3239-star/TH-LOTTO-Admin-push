@@ -13,22 +13,25 @@ const fmt = (n) => Number(n || 0).toLocaleString('th-TH', { minimumFractionDigit
 
 function KPICard({ icon: Icon, label, value, sub, alert, iconBg = 'bg-primary/10 text-primary' }) {
   return (
-    <div className={`bg-surface-container-lowest rounded-2xl p-5 shadow-glass border border-outline-variant/20 relative overflow-hidden group hover:shadow-capsule transition-all duration-300 ${alert ? 'ring-2 ring-error/60' : ''}`}>
-      <div className="flex items-center gap-4">
-        <div className={`p-3 rounded-xl ${iconBg}`}>
-          <Icon size={22} strokeWidth={2}/>
+    <div className={`bg-surface-container-lowest rounded-2xl p-3 md:p-5 shadow-glass border border-outline-variant/20 relative overflow-hidden group hover:shadow-capsule transition-all duration-300 ${alert ? 'ring-2 ring-error/60' : ''}`}>
+      <div className="flex items-center gap-2.5 md:gap-4">
+        <div className={`p-2 md:p-3 rounded-xl ${iconBg} shrink-0`}>
+          <Icon size={18} className="md:size-[22px]" strokeWidth={2}/>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">{label}</p>
-          <h2 className="text-2xl font-bold text-on-surface mt-0.5 truncate">{value}</h2>
-          {sub && <p className="text-xs text-outline mt-0.5">{sub}</p>}
+          <p className="text-[10px] md:text-xs font-medium text-on-surface-variant uppercase tracking-wider truncate">{label}</p>
+          <h2 className="text-lg md:text-2xl font-bold text-on-surface mt-0.5 truncate">{value}</h2>
+          {sub && <p className="text-[10px] md:text-xs text-outline mt-0.5 truncate">{sub}</p>}
         </div>
         {alert && (
-          <span className="flex-shrink-0 px-2.5 py-1 bg-error/10 text-error rounded-full text-[10px] font-bold uppercase tracking-wide animate-pulse">
+          <span className="hidden md:inline-flex flex-shrink-0 px-2.5 py-1 bg-error/10 text-error rounded-full text-[10px] font-bold uppercase tracking-wide animate-pulse">
             รอดำเนินการ
           </span>
         )}
       </div>
+      {alert && (
+        <span className="md:hidden absolute top-2 right-2 w-2 h-2 bg-error rounded-full animate-pulse"></span>
+      )}
     </div>
   )
 }
@@ -287,7 +290,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Row */}
-      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <section className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
         <KPICard icon={Users}           label="สมาชิกทั้งหมด"   value={fmt(s.total_members)}     sub={`ใหม่วันนี้ +${fmt(s.new_today)}`}   iconBg="bg-blue-50 text-blue-600" />
         <KPICard icon={Wallet}          label="เงินรวมในระบบ"    value={`฿${fmt(s.total_balance)}`} sub={`ฝากวันนี้ ฿${fmt(s.today_deposit)}`} iconBg="bg-emerald-50 text-emerald-600" />
         <KPICard icon={ArrowDownCircle} label="รออนุมัติฝาก"   value={fmt(s.pending_deposits)}  alert={s.pending_deposits > 0} iconBg="bg-amber-50 text-amber-600" />
@@ -295,7 +298,7 @@ export default function Dashboard() {
       </section>
 
       {/* Secondary Stats Row */}
-      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <section className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
         <KPICard icon={ListOrdered}  label="ยอดแทงวันนี้"  value={`฿${fmt(s.today_bets)}`}       iconBg="bg-blue-50 text-blue-600" />
         <KPICard icon={AlertTriangle} label="จ่ายรางวัลวันนี้" value={`฿${fmt(s.today_payouts)}`} iconBg="bg-orange-50 text-orange-600" />
         <div className="bg-primary rounded-2xl p-5 shadow-capsule-md flex items-center gap-4">
@@ -312,7 +315,7 @@ export default function Dashboard() {
 
       {/* Advanced Stats Row */}
       {advancedStats && (
-        <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <section className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
           <KPICard icon={Users} label="สมาชิกใช้งาน (7 วัน)" value={fmt(advancedStats.active_members_7d)} sub="สมาชิกที่แทงหวย" iconBg="bg-purple-50 text-purple-600" />
           <KPICard icon={Receipt} label="อัตราแทงต่อคน" value={advancedStats.bet_rate_per_person} sub="ครั้งต่อคน" iconBg="bg-indigo-50 text-indigo-600" />
           <KPICard icon={ArrowUpCircle} label="อัตราการถอน" value={`${advancedStats.withdrawal_rate}%`} sub="เทียบกับฝาก" iconBg="bg-pink-50 text-pink-600" />
