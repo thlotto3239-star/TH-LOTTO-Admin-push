@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 import { Loader2 } from 'lucide-react'
 import { alert } from '../utils/alert'
+import BankSelector from '../components/BankSelector'
 
 // ─── Modal Backdrop ───────────────────────────────────────────────────────────
 function Modal({ open, onClose, title, icon, children, footer }) {
@@ -345,14 +346,16 @@ export default function Settings() {
         }
       >
         <div className="p-8 space-y-5">
-          <div className="grid grid-cols-2 gap-5">
-            <Field label="ชื่อธนาคาร">
-              <TextInput value={settings.company_bank_name} onChange={v => set('company_bank_name', v)} placeholder="ธนาคารกสิกรไทย"/>
-            </Field>
-            <Field label="รหัสธนาคาร">
-              <TextInput value={settings.company_bank_code} onChange={v => set('company_bank_code', v)} placeholder="KBANK"/>
-            </Field>
-          </div>
+          <Field label="ธนาคาร" hint="เลือกจากรายการธนาคารในระบบ (จัดการได้ที่เมนู ธนาคาร)">
+            <BankSelector
+              value={settings.company_bank_code}
+              onChange={(code, bank) => {
+                set('company_bank_code', code);
+                set('company_bank_name', bank?.name || '');
+              }}
+              placeholder="เลือกธนาคาร"
+            />
+          </Field>
           <Field label="เลขที่บัญชี">
             <input
               type="text"
