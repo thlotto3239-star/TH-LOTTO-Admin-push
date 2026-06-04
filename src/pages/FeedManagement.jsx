@@ -1,34 +1,30 @@
 import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
-import { Loader2, Save, Eye, Star, TrendingUp } from 'lucide-react'
-import { toast } from '../components/Toast'
+import { Loader2, Star, TrendingUp, Settings as SettingsIcon, ExternalLink } from 'lucide-react'
 
-// ─── DayPill or Toggle Switch ──────────────────────────────────────────────────
-function Toggle({ checked, onChange, activeColor = 'bg-[#064e3b]' }) {
-  return (
-    <button
-      type="button"
-      onClick={onChange}
-      className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${checked ? activeColor : 'bg-slate-200'}`}
-    >
-      <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow border border-slate-200 transition-transform duration-200 ${checked ? 'translate-x-5' : ''}`} />
-    </button>
-  )
-}
-
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Feed Preview Page (Read-only) ─────────────────────────────────────────────
+// หน้านี้แสดง preview รายการที่ถูกเปิด toggle Popular/Trending จากในหน้า "ตลาดหวย"
+// การตั้งค่าให้ทำที่ LotteryMarkets เท่านั้น (single source of truth)
 export default function FeedManagement() {
   const [markets, setMarkets] = useState([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [instantSettings, setInstantSettings] = useState({ name: 'หวย 1 นาที', logo_url: '', show_popular: false, show_trending: true })
 
-  const loadInstantSettings = async () => {
-    const { data } = await supabase.from('settings').select('key,value')
-      .in('key', ['instant_name','instant_logo_url','instant_show_popular','instant_show_trending'])
-    if (data) {
+  const loadAll = async () => {
+    setLoading(true)
+    const [marketsRes, instantRes] = await Promise.all([
+      supabase.from('lottery_markets')
+        .select('id, name, code, show_in_popular, show_in_trending, display_order, logo_url')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true }),
+      supabase.from('settings').select('key,value')
+        .in('key', ['instant_name','instant_logo_url','instant_show_popular','instant_show_trending'])
+    ])
+    setMarkets(marketsRes.data || [])
+    if (instantRes.data) {
       const m = {}
-      data.forEach(s => { m[s.key] = s.value })
+      instantRes.data.forEach(s => { m[s.key] = s.value })
       setInstantSettings({
         name: m.instant_name || 'หวย 1 นาที',
         logo_url: m.instant_logo_url || '',
@@ -36,262 +32,110 @@ export default function FeedManagement() {
         show_trending: m.instant_show_trending !== 'false',
       })
     }
-  }
-
-  const loadMarkets = async () => {
-    setLoading(true)
-    const { data, error } = await supabase
-      .from('lottery_markets')
-      .select('id, name, type, code, show_in_popular, show_in_trending, display_order, image_url, logo_url')
-      .order('display_order', { ascending: true })
-      .order('created_at', { ascending: true })
-    
-    if (error) {
-      toast.error('โหลดข้อมูลตลาดหวยล้มเหลว: ' + error.message)
-    } else {
-      setMarkets(data || [])
-    }
     setLoading(false)
   }
 
-  useEffect(() => {
-    loadMarkets()
-    loadInstantSettings()
-  }, [])
-
-  const toggleFeed = (id, field) => {
-    setMarkets(prev => prev.map(m => 
-      m.id === id ? { ...m, [field]: !m[field] } : m
-    ))
-  }
-
-  const moveUp = (index) => {
-    if (index === 0) return
-    const newMarkets = [...markets]
-    const temp = newMarkets[index]
-    newMarkets[index] = newMarkets[index - 1]
-    newMarkets[index - 1] = temp
-    
-    // Update display orders
-    newMarkets.forEach((m, i) => m.display_order = i + 1)
-    setMarkets(newMarkets)
-  }
-
-  const moveDown = (index) => {
-    if (index === markets.length - 1) return
-    const newMarkets = [...markets]
-    const temp = newMarkets[index]
-    newMarkets[index] = newMarkets[index + 1]
-    newMarkets[index + 1] = temp
-    
-    // Update display orders
-    newMarkets.forEach((m, i) => m.display_order = i + 1)
-    setMarkets(newMarkets)
-  }
-
-  const saveChanges = async () => {
-    setSaving(true)
-    try {
-      const promises = markets.map(m => 
-        supabase.from('lottery_markets').update({
-          show_in_popular: m.show_in_popular,
-          show_in_trending: m.show_in_trending,
-          display_order: m.display_order
-        }).eq('id', m.id)
-      )
-      await Promise.all(promises)
-      toast.success('บันทึกการตั้งค่าฟีดสำเร็จ')
-      loadMarkets()
-    } catch (e) {
-      toast.error('เกิดข้อผิดพลาดในการบันทึก: ' + e.message)
-    } finally {
-      setSaving(false)
-    }
-  }
+  useEffect(() => { loadAll() }, [])
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="animate-spin text-emerald-800" size={32}/>
-      </div>
-    )
+    return <div className="flex justify-center items-center h-64"><Loader2 className="animate-spin text-emerald-800" size={32}/></div>
   }
 
+  const popular = markets.filter(m => m.show_in_popular)
+  const trending = markets.filter(m => m.show_in_trending)
+
+  const FeedCard = ({ icon, color, title, items, instantOn, accentBg, accentText, accentBorder }) => (
+    <div className="rounded-3xl p-6" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 4px 16px -4px rgba(6,78,59,0.07)' }}>
+      <div className="flex items-center gap-2 mb-5">
+        {icon}
+        <h3 className="font-bold text-[#022c22] text-base">{title}</h3>
+        <span className="ml-auto text-xs font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
+          {items.length + (instantOn ? 1 : 0)} รายการ
+        </span>
+      </div>
+      <div className="space-y-2">
+        {/* หวย 1 นาที */}
+        {instantOn && (
+          <div className={`flex items-center gap-3 ${accentBg} border ${accentBorder} rounded-2xl px-4 py-3`}>
+            {instantSettings.logo_url
+              ? <img src={instantSettings.logo_url} className="w-10 h-10 rounded-full object-cover" alt="" />
+              : <div className="w-10 h-10 rounded-full bg-white/60 flex items-center justify-center text-xl">🎲</div>}
+            <div className="flex-1 min-w-0">
+              <div className={`font-bold ${accentText} truncate`}>{instantSettings.name}</div>
+              <div className="text-[10px] font-mono text-slate-500">หวย 1 นาที</div>
+            </div>
+          </div>
+        )}
+        {/* หวยหลัก */}
+        {items.map(m => (
+          <div key={m.id} className={`flex items-center gap-3 ${accentBg} border ${accentBorder} rounded-2xl px-4 py-3`}>
+            {m.logo_url
+              ? <img src={m.logo_url} className="w-10 h-10 rounded-full object-cover" alt="" />
+              : <div className="w-10 h-10 rounded-full bg-white/60 flex items-center justify-center text-xs font-black text-slate-500">{m.code?.slice(0,2)}</div>}
+            <div className="flex-1 min-w-0">
+              <div className={`font-bold ${accentText} truncate`}>{m.name}</div>
+              <div className="text-[10px] font-mono text-slate-500">{m.code}</div>
+            </div>
+          </div>
+        ))}
+        {items.length === 0 && !instantOn && (
+          <p className="text-sm text-slate-400 italic text-center py-6">ไม่มีรายการ</p>
+        )}
+      </div>
+    </div>
+  )
+
   return (
-    <div className="space-y-8 pb-12" style={{ fontFamily: 'Prompt, sans-serif' }}>
-      
+    <div className="space-y-6 pb-12" style={{ fontFamily: 'Prompt, sans-serif' }}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-[#022c22]">จัดการหน้าฟีดตลาดหวย</h1>
-          <p className="text-slate-500 mt-2 text-base">
-            เลือกหวยที่ต้องการแสดงในหมวด "ยอดนิยม" (Popular) และ "มาแรง" (Trending) บนหน้าแรก พร้อมจัดลำดับการแสดงผล
+          <h1 className="text-3xl font-bold tracking-tight text-[#022c22]">หน้าฟีด (ดูเฉย ๆ)</h1>
+          <p className="text-slate-500 mt-1 text-sm">
+            แสดงรายการที่ถูกเปิด toggle จากหน้า <strong>ตลาดหวย</strong> และ <strong>ตั้งค่าหวย 1 นาที</strong>
           </p>
         </div>
-        <button 
-          onClick={saveChanges}
-          disabled={saving}
-          className="flex items-center gap-3 bg-[#064e3b] hover:bg-[#043d2e] text-white px-8 py-4 rounded-full font-bold shadow-xl shadow-emerald-900/20 transition-all active:scale-95 disabled:opacity-50"
-        >
-          {saving ? <Loader2 size={18} className="animate-spin" /> : (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          )}
-          บันทึกการจัดอันดับ
-        </button>
-      </div>
-
-      {/* Table Card */}
-      <div 
-        className="rounded-3xl p-6 overflow-hidden"
-        style={{
-          background: 'rgba(255,255,255,0.82)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.35)',
-          boxShadow: '0 4px 16px -4px rgba(6,78,59,0.07)',
-        }}
-      >
-        {/* Table Head */}
-        <div className="grid grid-cols-12 gap-4 pb-4 border-b border-slate-100 font-bold text-sm text-[#022c22] px-4">
-          <div className="col-span-2 text-center">จัดลำดับ</div>
-          <div className="col-span-4">รายการหวย</div>
-          <div className="col-span-3 text-center">ยอดนิยม (Popular)</div>
-          <div className="col-span-3 text-center">มาแรง (Trending)</div>
-        </div>
-
-        {/* Table Rows */}
-        <div className="space-y-3 mt-4">
-          {markets.map((m, idx) => {
-            const imgToUse = m.logo_url || m.image_url
-
-            return (
-              <div 
-                key={m.id} 
-                className="grid grid-cols-12 gap-4 items-center bg-white/70 hover:bg-white p-4 rounded-2xl border border-slate-100 shadow-sm transition-all duration-300"
-              >
-                {/* Order buttons */}
-                <div className="col-span-2 flex items-center justify-center gap-2">
-                  <button 
-                    onClick={() => moveUp(idx)} 
-                    disabled={idx === 0} 
-                    className="w-8 h-8 rounded-full bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-[#064e3b] flex items-center justify-center transition disabled:opacity-30"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-                  </button>
-                  <span className="font-mono font-bold text-emerald-950 w-6 text-center">{idx + 1}</span>
-                  <button 
-                    onClick={() => moveDown(idx)} 
-                    disabled={idx === markets.length - 1} 
-                    className="w-8 h-8 rounded-full bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-[#064e3b] flex items-center justify-center transition disabled:opacity-30"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                  </button>
-                </div>
-                
-                {/* Market info */}
-                <div className="col-span-4 flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
-                    {imgToUse ? (
-                      <img src={imgToUse} alt={m.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-xs font-black text-slate-400">{m.code?.slice(0, 2)}</span>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-bold text-emerald-950 truncate">{m.name}</div>
-                    <div className="text-xs font-mono font-bold text-slate-400 mt-0.5">{m.code}</div>
-                  </div>
-                </div>
-
-                {/* Popular toggle */}
-                <div className="col-span-3 flex justify-center">
-                  <Toggle 
-                    checked={!!m.show_in_popular} 
-                    onChange={() => toggleFeed(m.id, 'show_in_popular')} 
-                    activeColor="bg-[#064e3b]" 
-                  />
-                </div>
-
-                {/* Trending toggle */}
-                <div className="col-span-3 flex justify-center">
-                  <Toggle 
-                    checked={!!m.show_in_trending} 
-                    onChange={() => toggleFeed(m.id, 'show_in_trending')} 
-                    activeColor="bg-[#ba1a1a]" 
-                  />
-                </div>
-              </div>
-            )
-          })}
+        <div className="flex gap-2">
+          <Link to="/markets" className="flex items-center gap-2 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 px-4 py-2.5 rounded-2xl text-sm font-bold transition">
+            <SettingsIcon size={16}/> จัดการตลาดหวย
+            <ExternalLink size={12}/>
+          </Link>
+          <Link to="/instant-settings" className="flex items-center gap-2 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 px-4 py-2.5 rounded-2xl text-sm font-bold transition">
+            <SettingsIcon size={16}/> หวย 1 นาที
+            <ExternalLink size={12}/>
+          </Link>
         </div>
       </div>
 
-      {/* ── Preview Section ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {/* Popular Preview */}
-        <div className="rounded-3xl p-5" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 4px 16px -4px rgba(6,78,59,0.07)' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Star size={16} className="text-[#064e3b]" />
-            <span className="font-bold text-[#022c22] text-sm">ตัวอย่าง — ยอดนิยม (Popular)</span>
-            <span className="ml-auto text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-              {markets.filter(m => m.show_in_popular).length + (instantSettings.show_popular ? 1 : 0)} รายการ
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {instantSettings.show_popular && (
-              <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1.5">
-                {instantSettings.logo_url
-                  ? <img src={instantSettings.logo_url} className="w-5 h-5 rounded-full object-cover" alt="" />
-                  : <span className="text-sm">🎲</span>}
-                <span className="text-xs font-bold text-emerald-900">{instantSettings.name}</span>
-              </div>
-            )}
-            {markets.filter(m => m.show_in_popular).map(m => (
-              <div key={m.id} className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1.5">
-                {(m.logo_url || m.image_url)
-                  ? <img src={m.logo_url || m.image_url} className="w-5 h-5 rounded-full object-cover" alt="" />
-                  : <span className="text-xs font-black text-slate-400">{m.code?.slice(0,2)}</span>}
-                <span className="text-xs font-bold text-emerald-900 truncate max-w-[80px]">{m.name}</span>
-              </div>
-            ))}
-            {markets.filter(m => m.show_in_popular).length === 0 && !instantSettings.show_popular && (
-              <p className="text-xs text-slate-400 italic">ยังไม่มีรายการ — เปิด toggle ยอดนิยมเพื่อแสดง</p>
-            )}
-          </div>
-        </div>
-
-        {/* Trending Preview */}
-        <div className="rounded-3xl p-5" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 4px 16px -4px rgba(6,78,59,0.07)' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp size={16} className="text-[#ba1a1a]" />
-            <span className="font-bold text-[#022c22] text-sm">ตัวอย่าง — มาแรง (Trending)</span>
-            <span className="ml-auto text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-              {markets.filter(m => m.show_in_trending).length + (instantSettings.show_trending ? 1 : 0)} รายการ
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {instantSettings.show_trending && (
-              <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-full px-3 py-1.5">
-                {instantSettings.logo_url
-                  ? <img src={instantSettings.logo_url} className="w-5 h-5 rounded-full object-cover" alt="" />
-                  : <span className="text-sm">🎲</span>}
-                <span className="text-xs font-bold text-red-900">{instantSettings.name}</span>
-              </div>
-            )}
-            {markets.filter(m => m.show_in_trending).map(m => (
-              <div key={m.id} className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-full px-3 py-1.5">
-                {(m.logo_url || m.image_url)
-                  ? <img src={m.logo_url || m.image_url} className="w-5 h-5 rounded-full object-cover" alt="" />
-                  : <span className="text-xs font-black text-slate-400">{m.code?.slice(0,2)}</span>}
-                <span className="text-xs font-bold text-red-900 truncate max-w-[80px]">{m.name}</span>
-              </div>
-            ))}
-            {markets.filter(m => m.show_in_trending).length === 0 && !instantSettings.show_trending && (
-              <p className="text-xs text-slate-400 italic">ยังไม่มีรายการ — เปิด toggle มาแรงเพื่อแสดง</p>
-            )}
-          </div>
+      {/* แจ้งเตือนผู้ใช้งาน */}
+      <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-900 flex items-start gap-2">
+        <span className="text-base">ℹ️</span>
+        <div>
+          <strong>หน้านี้ดูเฉย ๆ ไม่สามารถแก้ไขได้</strong> — การตั้งค่าให้ไปที่หน้า "ตลาดหวย" (toggle Popular/Hot ในแต่ละตลาด) หรือ "ตั้งค่าหวย 1 นาที"
         </div>
       </div>
 
+      {/* 2 Feed Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FeedCard
+          icon={<Star size={20} className="text-[#064e3b]"/>}
+          title="ยอดนิยม (Popular)"
+          items={popular}
+          instantOn={instantSettings.show_popular}
+          accentBg="bg-emerald-50"
+          accentText="text-emerald-900"
+          accentBorder="border-emerald-200"
+        />
+        <FeedCard
+          icon={<TrendingUp size={20} className="text-[#ba1a1a]"/>}
+          title="มาแรง (Trending)"
+          items={trending}
+          instantOn={instantSettings.show_trending}
+          accentBg="bg-red-50"
+          accentText="text-red-900"
+          accentBorder="border-red-200"
+        />
+      </div>
     </div>
   )
 }
