@@ -1,8 +1,18 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
+import { createClient } from '@supabase/supabase-js'
 import { Shield, ShieldOff, ShieldCheck, UserPlus, X, Search, Loader2, ChevronDown, ChevronUp, Lock } from 'lucide-react'
 import { useAuth } from '../AuthContext'
 import { toast } from '../components/Toast'
+import * as authService from '../services/authService'
+
+const getTempSupabase = () => {
+  const url = import.meta.env.VITE_SUPABASE_URL
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY
+  if (!url || !key) return supabase;
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
+}
+
 
 const ALL_PERMISSIONS = [
   { key: 'deposits',    label: 'ฝากเงิน',       icon: 'payments' },
@@ -10,6 +20,7 @@ const ALL_PERMISSIONS = [
   { key: 'members',     label: 'สมาชิก',         icon: 'group' },
   { key: 'bets',        label: 'รายการโพย',      icon: 'list_alt' },
   { key: 'markets',     label: 'ตลาดหวย',        icon: 'confirmation_number' },
+  { key: 'instant',     label: 'หวย 1 นาที',     icon: 'timer' },
   { key: 'restricted',  label: 'เลขอั้น',        icon: 'block' },
   { key: 'wheel',       label: 'วงล้อโชคดี',     icon: 'casino' },
   { key: 'settings',    label: 'ตั้งค่าระบบ',    icon: 'settings' },
@@ -18,6 +29,7 @@ const ALL_PERMISSIONS = [
   { key: 'promotions',  label: 'โปรโมชั่น',      icon: 'campaign' },
   { key: 'articles',    label: 'บทความ',         icon: 'article' },
   { key: 'sliders',     label: 'สไลด์เดอร์',     icon: 'view_carousel' },
+  { key: 'feeds',       label: 'จัดการฟีด',      icon: 'dynamic_feed' },
 ]
 
 const RoleBadge = ({ role }) => {
@@ -41,10 +53,19 @@ export default function Admins() {
   const [expandedId, setExpandedId] = useState(null)
 
   const [showAdd, setShowAdd]     = useState(false)
+  const [addMode, setAddMode]     = useState('search') // 'search' or 'create'
+  
+  // Search states
   const [query, setQuery]         = useState('')
   const [searching, setSearching] = useState(false)
   const [results, setResults]     = useState([])
   const [selected, setSelected]   = useState(null)
+  
+  // Create states
+  const [newPhone, setNewPhone]   = useState('')
+  const [newName, setNewName]     = useState('')
+  const [newPin, setNewPin]       = useState('')
+
   const [newRole, setNewRole]     = useState('admin')
   const [newPerms, setNewPerms]   = useState([])
 
@@ -81,9 +102,75 @@ export default function Admins() {
       toast.error(error?.message || data?.error || 'เกิดข้อผิดพลาด')
     } else {
       toast.success(`เพิ่ม ${selected.full_name || selected.phone} เป็น ${newRole === 'super_admin' ? 'Super Admin' : 'Admin'} แล้ว`)
-      setShowAdd(false); setSelected(null); setResults([]); setQuery(''); setNewPerms([])
+      closeAddModal()
       load()
     }
+  }
+
+  const createNewAdmin = async () => {
+    if (!newPhone || !newName || !newPin) {
+      toast.error('กรุณากรอกข้อมูลให้ครบถ้วน')
+      return
+    }
+    if (newPhone.length < 9) {
+      toast.error('เบอร์โทรศัพท์ไม่ถูกต้อง')
+      return
+    }
+    setWorking('add')
+    try {
+      const tempClient = getTempSupabase()
+      const email = `${newPhone}@thlotto.app`
+      const password = await authService.pinToPassword(newPhone, newPin)
+      
+      // 1. SignUp
+      const { data: signUpData, error: signUpError } = await tempClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: newName }
+        }
+      })
+
+      if (signUpError) {
+        if (signUpError.message.includes('already registered')) throw new Error('เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว (มีในระบบแล้ว)')
+        throw signUpError
+      }
+
+      if (!signUpData?.user) throw new Error('ไม่สามารถสร้างบัญชีได้')
+
+      // Wait a moment for the handle_new_user trigger to insert into profiles
+      await new Promise(r => setTimeout(r, 1000))
+
+      // 2. Promote to Admin
+      const perms = newRole === 'super_admin' ? ['*'] : newPerms
+      const { data: rpcData, error: rpcError } = await supabase.rpc('admin_set_admin_permissions', {
+        p_target_id: signUpData.user.id,
+        p_role: newRole,
+        p_permissions: perms
+      })
+
+      if (rpcError || rpcData?.ok === false) throw (rpcError || new Error(rpcData?.error))
+
+      toast.success(`สร้างและเพิ่มแอดมินใหม่สำเร็จ`)
+      closeAddModal()
+      load()
+    } catch (e) {
+      toast.error(e.message || 'เกิดข้อผิดพลาดในการสร้างแอดมิน')
+    } finally {
+      setWorking(null)
+    }
+  }
+
+  const closeAddModal = () => {
+    setShowAdd(false)
+    setSelected(null)
+    setResults([])
+    setQuery('')
+    setNewPhone('')
+    setNewName('')
+    setNewPin('')
+    setNewPerms([])
+    setAddMode('search')
   }
 
   const savePermissions = async (admin, role, perms) => {
@@ -127,7 +214,7 @@ export default function Admins() {
           <p className="text-on-surface-variant text-sm">จัดการสิทธิ์ Admin — เฉพาะ Super Admin เท่านั้น</p>
         </div>
         {isSuperAdmin() && (
-          <button onClick={() => { setShowAdd(true); setSelected(null); setResults([]); setQuery('') }}
+          <button onClick={() => setShowAdd(true)}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-full text-sm font-semibold hover:bg-primary/90 transition">
             <UserPlus size={15}/> เพิ่ม Admin
           </button>
@@ -198,44 +285,79 @@ export default function Admins() {
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b">
               <h2 className="text-lg font-bold text-on-surface flex items-center gap-2"><UserPlus size={18}/> เพิ่ม Admin ใหม่</h2>
-              <button onClick={() => setShowAdd(false)} className="p-1.5 rounded-full hover:bg-surface-container"><X size={18}/></button>
+              <button onClick={closeAddModal} className="p-1.5 rounded-full hover:bg-surface-container"><X size={18}/></button>
             </div>
-            <div className="p-5 space-y-4">
-              {/* Search */}
-              <div>
-                <label className="text-sm font-medium text-on-surface-variant mb-1.5 block">ค้นหาสมาชิก (ชื่อ / เบอร์ / Member ID)</label>
-                <div className="flex gap-2">
-                  <input value={query} onChange={e => setQuery(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && searchUsers()}
-                    placeholder="กรอกเบอร์หรือชื่อ..."
-                    className="flex-1 border border-outline-variant rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
-                  <button onClick={searchUsers} disabled={searching}
-                    className="px-4 py-2 bg-primary text-on-primary rounded-full text-sm font-medium hover:bg-primary/90 transition disabled:opacity-60">
-                    {searching ? <Loader2 size={14} className="animate-spin"/> : <Search size={14}/>}
-                  </button>
-                </div>
-              </div>
 
-              {results.length > 0 && (
-                <div className="border border-outline-variant rounded-2xl overflow-hidden">
-                  {results.map(u => (
-                    <button key={u.id} onClick={() => setSelected(u)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-primary/5 transition border-b border-outline-variant/30 last:border-0 ${selected?.id === u.id ? 'bg-primary/10' : ''}`}>
-                      <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface font-bold text-sm flex-shrink-0">
-                        {(u.full_name || 'U')[0]}
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-on-surface">{u.full_name || '-'}</div>
-                        <div className="text-xs text-outline">{u.phone} · {u.member_id}</div>
-                      </div>
-                      {selected?.id === u.id && <span className="ml-auto text-primary text-xs font-bold">✓ เลือก</span>}
-                    </button>
-                  ))}
+            <div className="flex border-b border-outline-variant/30">
+              <button onClick={() => { setAddMode('search'); setSelected(null); }} className={`flex-1 py-3 text-sm font-semibold text-center transition border-b-2 ${addMode === 'search' ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:bg-surface-container'}`}>
+                ค้นหาจากสมาชิกที่มี
+              </button>
+              <button onClick={() => { setAddMode('create'); setSelected(null); }} className={`flex-1 py-3 text-sm font-semibold text-center transition border-b-2 ${addMode === 'create' ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant hover:bg-surface-container'}`}>
+                สร้างแอดมินใหม่
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {addMode === 'search' ? (
+                <>
+                  {/* Search */}
+                  <div>
+                    <label className="text-sm font-medium text-on-surface-variant mb-1.5 block">ค้นหาสมาชิก (ชื่อ / เบอร์ / Member ID)</label>
+                    <div className="flex gap-2">
+                      <input value={query} onChange={e => setQuery(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && searchUsers()}
+                        placeholder="กรอกเบอร์หรือชื่อ..."
+                        className="flex-1 border border-outline-variant rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                      <button onClick={searchUsers} disabled={searching}
+                        className="px-4 py-2 bg-primary text-on-primary rounded-full text-sm font-medium hover:bg-primary/90 transition disabled:opacity-60">
+                        {searching ? <Loader2 size={14} className="animate-spin"/> : <Search size={14}/>}
+                      </button>
+                    </div>
+                  </div>
+
+                  {results.length > 0 && (
+                    <div className="border border-outline-variant rounded-2xl overflow-hidden max-h-48 overflow-y-auto">
+                      {results.map(u => (
+                        <button key={u.id} onClick={() => setSelected(u)}
+                          className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-primary/5 transition border-b border-outline-variant/30 last:border-0 ${selected?.id === u.id ? 'bg-primary/10' : ''}`}>
+                          <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface font-bold text-sm flex-shrink-0">
+                            {(u.full_name || 'U')[0]}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-on-surface">{u.full_name || '-'}</div>
+                            <div className="text-xs text-outline">{u.phone} · {u.member_id}</div>
+                          </div>
+                          {selected?.id === u.id && <span className="ml-auto text-primary text-xs font-bold">✓ เลือก</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-on-surface-variant mb-1.5 block">เบอร์โทรศัพท์ (ใช้เข้าระบบ)</label>
+                    <input value={newPhone} onChange={e => setNewPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      placeholder="08xxxxxxxx"
+                      className="w-full border border-outline-variant rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-on-surface-variant mb-1.5 block">ชื่อ - นามสกุล (หรือชื่อเล่น)</label>
+                    <input value={newName} onChange={e => setNewName(e.target.value)}
+                      placeholder="เช่น แอดมินจอย"
+                      className="w-full border border-outline-variant rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-on-surface-variant mb-1.5 block">ตั้งรหัสผ่าน (PIN 4-6 หลัก)</label>
+                    <input type="password" value={newPin} onChange={e => setNewPin(e.target.value)}
+                      placeholder="ตั้งรหัส PIN ให้แอดมิน"
+                      className="w-full border border-outline-variant rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                  </div>
                 </div>
               )}
 
-              {selected && (
-                <>
+              {(selected || addMode === 'create') && (
+                <div className="pt-2 border-t mt-4 border-outline-variant/30">
                   <div>
                     <label className="text-sm font-medium text-on-surface-variant mb-1.5 block">ระดับสิทธิ์</label>
                     <div className="flex gap-3">
@@ -269,11 +391,14 @@ export default function Admins() {
                     </div>
                   )}
 
-                  <button onClick={addAdmin} disabled={working === 'add' || (newRole === 'admin' && newPerms.length === 0)}
-                    className="w-full py-3 bg-primary text-on-primary rounded-full font-semibold hover:bg-primary/90 transition disabled:opacity-60">
-                    {working === 'add' ? <Loader2 size={16} className="animate-spin mx-auto"/> : `เพิ่ม ${selected.full_name || selected.phone} เป็น Admin`}
+                  <button onClick={addMode === 'search' ? addAdmin : createNewAdmin} 
+                    disabled={working === 'add' || (newRole === 'admin' && newPerms.length === 0)}
+                    className="w-full py-3 bg-primary text-on-primary rounded-full font-semibold hover:bg-primary/90 transition disabled:opacity-60 mt-4">
+                    {working === 'add' ? <Loader2 size={16} className="animate-spin mx-auto"/> : (
+                      addMode === 'search' ? `เพิ่ม ${selected.full_name || selected.phone} เป็น Admin` : `สร้างและบันทึก Admin ใหม่`
+                    )}
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>

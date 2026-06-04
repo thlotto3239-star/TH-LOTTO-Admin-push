@@ -108,10 +108,17 @@ export default function MemberDetail() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate('/members')} className="p-2 hover:bg-surface-container rounded-full transition">
+      <div className="flex items-center gap-4">
+        <button onClick={() => navigate('/members')} className="p-2 hover:bg-surface-container rounded-full transition shrink-0">
           <ArrowLeft size={20} className="text-on-surface" />
         </button>
+        {profile.avatar_url ? (
+          <img src={profile.avatar_url} alt="avatar" className="w-14 h-14 rounded-full object-cover border-2 border-emerald-500/30 shadow-md shrink-0" />
+        ) : (
+          <div className="w-14 h-14 rounded-full bg-emerald-800/10 text-emerald-800 text-lg font-bold flex items-center justify-center border border-outline-variant shrink-0">
+            {(profile.full_name || '?')[0].toUpperCase()}
+          </div>
+        )}
         <div>
           <h1 className="text-2xl font-bold text-on-surface">{profile.full_name || 'ไม่ระบุชื่อ'}</h1>
           <p className="text-on-surface-variant text-sm">{profile.member_id} · {profile.phone}</p>

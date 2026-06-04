@@ -17,6 +17,7 @@ const Dashboard        = lazy(() => import('./pages/Dashboard'))
 const Deposits         = lazy(() => import('./pages/Deposits'))
 const Withdrawals      = lazy(() => import('./pages/Withdrawals'))
 const Members          = lazy(() => import('./pages/Members'))
+const Affiliates       = lazy(() => import('./pages/Affiliates'))
 const LotteryMarkets   = lazy(() => import('./pages/LotteryMarkets'))
 const Results          = lazy(() => import('./pages/Results'))
 const BetsList         = lazy(() => import('./pages/BetsList'))
@@ -28,6 +29,7 @@ const Sliders          = lazy(() => import('./pages/Sliders'))
 const Promotions       = lazy(() => import('./pages/Promotions'))
 const Articles         = lazy(() => import('./pages/Articles'))
 const TrendingItems    = lazy(() => import('./pages/TrendingItems'))
+const FeedManagement   = lazy(() => import('./pages/FeedManagement')) // New page
 const Banks            = lazy(() => import('./pages/Banks'))
 const Admins           = lazy(() => import('./pages/Admins'))
 const DataManagement   = lazy(() => import('./pages/DataManagement'))
@@ -59,24 +61,26 @@ export default function App() {
               <Route path="deposits"   element={<PermGuard perm="deposits">   <Deposits />        </PermGuard>} />
               <Route path="withdrawals" element={<PermGuard perm="withdrawals"><Withdrawals />     </PermGuard>} />
               <Route path="members"    element={<PermGuard perm="members">    <Members />         </PermGuard>} />
+              <Route path="affiliates" element={<PermGuard perm="members">    <Affiliates />      </PermGuard>} />
               <Route path="members/:id" element={<PermGuard perm="members">    <MemberDetail />    </PermGuard>} />
               <Route path="markets"    element={<PermGuard perm="markets">    <LotteryMarkets />  </PermGuard>} />
               <Route path="results"    element={<PermGuard perm="markets">    <Results />         </PermGuard>} />
               <Route path="bets"       element={<PermGuard perm="bets">       <BetsList />        </PermGuard>} />
               <Route path="restricted" element={<PermGuard perm="restricted"> <RestrictedNumbers /></PermGuard>} />
               <Route path="wheel"      element={<PermGuard perm="wheel">      <WheelAdmin />      </PermGuard>} />
-              <Route path="instant-overview"  element={<InstantOverview />} />
-              <Route path="instant-bet-types"  element={<InstantBetTypes />} />
-              <Route path="instant-draws"     element={<InstantDraws />} />
-              <Route path="instant-bets"      element={<InstantBets />} />
-              <Route path="instant-results"   element={<InstantResults />} />
-              <Route path="instant-settings"  element={<InstantSettings />} />
+              <Route path="instant-overview"  element={<PermGuard perm="instant"><InstantOverview /></PermGuard>} />
+              <Route path="instant-bet-types"  element={<PermGuard perm="instant"><InstantBetTypes /></PermGuard>} />
+              <Route path="instant-draws"     element={<PermGuard perm="instant"><InstantDraws /></PermGuard>} />
+              <Route path="instant-bets"      element={<PermGuard perm="instant"><InstantBets /></PermGuard>} />
+              <Route path="instant-results"   element={<PermGuard perm="instant"><InstantResults /></PermGuard>} />
+              <Route path="instant-settings"  element={<PermGuard perm="instant"><InstantSettings /></PermGuard>} />
               <Route path="settings"   element={<PermGuard perm="settings">   <Settings />        </PermGuard>} />
               <Route path="appearance" element={<PermGuard perm="appearance"> <Appearance />      </PermGuard>} />
               <Route path="sliders"    element={<PermGuard perm="sliders">    <Sliders />         </PermGuard>} />
               <Route path="promotions" element={<PermGuard perm="promotions"> <Promotions />      </PermGuard>} />
               <Route path="articles"   element={<PermGuard perm="articles">   <Articles />        </PermGuard>} />
-              <Route path="trending"   element={<PermGuard perm="sliders">    <TrendingItems />   </PermGuard>} />
+              <Route path="feeds"      element={<PermGuard perm="feeds">      <FeedManagement />  </PermGuard>} />
+              <Route path="trending"   element={<PermGuard perm="feeds">      <TrendingItems />   </PermGuard>} />
               <Route path="banks"      element={<PermGuard perm="banks">      <Banks />           </PermGuard>} />
               <Route path="admins" element={<Admins />} />
               <Route path="data-management" element={<PermGuard perm="settings"><DataManagement /></PermGuard>} />

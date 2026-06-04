@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Plus, Edit, Trash2, Loader2, X, Save } from 'lucide-react'
 import { toast } from '../components/Toast'
+import { alert } from '../utils/alert'
 
 const EMPTY = { title:'', content:'', image_url:'', category:'ข่าวสาร', is_published:true }
 
@@ -34,7 +35,8 @@ export default function Articles() {
   }
 
   const remove = async (id) => {
-    if (!confirm('ลบบทความนี้?')) return
+    const ok = await alert.confirm('ลบบทความ', 'คุณต้องการลบบทความนี้ใช่ไหม?', 'ลบ', true)
+    if (!ok) return
     try {
       const { error } = await supabase.from('articles').delete().eq('id', id)
       if (error) throw error

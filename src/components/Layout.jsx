@@ -10,7 +10,9 @@ import {
   markAsRead, 
   markAllAsRead,
   subscribeToNotifications,
-  getNotificationStyle 
+  getNotificationStyle,
+  deleteNotification,
+  deleteAllNotifications
 } from '../utils/notifications'
 
 const NAV_GROUPS = [
@@ -31,6 +33,7 @@ const NAV_GROUPS = [
     label: 'สมาชิก',
     items: [
       { to: '/members', label: 'จัดการสมาชิก', icon: 'group',                perm: 'members' },
+      { to: '/affiliates', label: 'ระบบแนะนำเพื่อน', icon: 'handshake',     perm: 'members' },
       { to: '/admins',  label: 'ผู้ดูแลระบบ',  icon: 'admin_panel_settings', perm: null },
     ]
   },
@@ -46,12 +49,12 @@ const NAV_GROUPS = [
   {
     label: 'หวยหนึ่งนาที',
     items: [
-      { to: '/instant-overview',    label: 'ภาพรวม',           icon: 'dashboard',     perm: null },
-      { to: '/instant-bet-types',  label: 'ประเภทเดิมพัน',  icon: 'list_alt',      perm: null },
-      { to: '/instant-draws',      label: 'งวดออกรางวัล',  icon: 'event',         perm: null },
-      { to: '/instant-bets',       label: 'รายการแทง',     icon: 'receipt_long',  perm: null },
-      { to: '/instant-results',    label: 'ผลรางวัล',       icon: 'emoji_events',  perm: null },
-      { to: '/instant-settings',   label: 'ตั้งค่า',         icon: 'settings',       perm: null },
+      { to: '/instant-overview',    label: 'ภาพรวม',           icon: 'dashboard',     perm: 'instant' },
+      { to: '/instant-bet-types',  label: 'ประเภทเดิมพัน',  icon: 'list_alt',      perm: 'instant' },
+      { to: '/instant-draws',      label: 'งวดออกรางวัล',  icon: 'event',         perm: 'instant' },
+      { to: '/instant-bets',       label: 'รายการแทง',     icon: 'receipt_long',  perm: 'instant' },
+      { to: '/instant-results',    label: 'ผลรางวัล',       icon: 'emoji_events',  perm: 'instant' },
+      { to: '/instant-settings',   label: 'ตั้งค่า',         icon: 'settings',       perm: 'instant' },
     ]
   },
   {
@@ -66,7 +69,7 @@ const NAV_GROUPS = [
       { to: '/sliders',    label: 'สไลเดอร์',  icon: 'view_carousel', perm: 'sliders' },
       { to: '/promotions', label: 'โปรโมชั่น', icon: 'campaign',      perm: 'promotions' },
       { to: '/articles',   label: 'บทความ',    icon: 'article',       perm: 'articles' },
-      { to: '/trending',   label: 'รายการมาแรง', icon: 'local_fire_department', perm: 'sliders' },
+      { to: '/feeds',      label: 'จัดการฟีด', icon: 'dynamic_feed',  perm: 'feeds' },
     ]
   },
   {
@@ -153,6 +156,28 @@ export default function Layout() {
       setUnreadCount(0)
     } catch (err) {
       console.error('Failed to mark all as read:', err)
+    }
+  }
+
+  // Delete notification
+  const handleDeleteNotification = async (e, id) => {
+    e.stopPropagation()
+    try {
+      await deleteNotification(id)
+      setNotifications(prev => prev.filter(n => n.id !== id))
+    } catch (err) {
+      console.error('Failed to delete notification:', err)
+    }
+  }
+
+  // Clear all notifications
+  const handleClearAll = async () => {
+    try {
+      await deleteAllNotifications()
+      setNotifications([])
+      setUnreadCount(0)
+    } catch (err) {
+      console.error('Failed to clear notifications:', err)
     }
   }
 
@@ -318,14 +343,18 @@ export default function Layout() {
                   <div className="absolute right-0 top-full mt-2 w-80 bg-white/90 backdrop-blur-xl rounded-2xl shadow-capsule border border-white/30 z-50 max-h-96 overflow-hidden">
                     <div className="flex items-center justify-between p-4 border-b border-outline-variant/30">
                       <h3 className="font-semibold text-on-surface">การแจ้งเตือน</h3>
-                      {unreadCount > 0 && (
-                        <button 
-                          onClick={handleMarkAllAsRead}
-                          className="text-xs text-primary hover:text-primary/70 font-medium"
-                        >
-                          อ่านทั้งหมด
-                        </button>
-                      )}
+                      <div className="flex gap-3">
+                        {unreadCount > 0 && (
+                          <button onClick={handleMarkAllAsRead} className="text-xs text-primary hover:text-primary/70 font-medium">
+                            อ่านทั้งหมด
+                          </button>
+                        )}
+                        {notifications.length > 0 && (
+                          <button onClick={handleClearAll} className="text-xs text-error hover:text-error/70 font-medium">
+                            ลบทั้งหมด
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="overflow-y-auto max-h-72">
                       {notifications.length === 0 ? (
@@ -358,6 +387,12 @@ export default function Layout() {
                                 {!n.is_read && (
                                   <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1"></span>
                                 )}
+                                <button 
+                                  onClick={(e) => handleDeleteNotification(e, n.id)} 
+                                  className="text-outline hover:text-error transition-colors p-1 rounded hover:bg-error/10"
+                                >
+                                  <span className="material-symbols-outlined text-[14px]">delete</span>
+                                </button>
                               </div>
                             </div>
                           )
@@ -368,9 +403,13 @@ export default function Layout() {
                 )}
               </div>
               {/* Avatar */}
-              <div className="h-9 w-9 rounded-full bg-emerald-700/50 flex items-center justify-center border-2 border-emerald-500/30 text-emerald-300 font-bold text-sm">
-                {initial}
-              </div>
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="avatar" className="h-9 w-9 rounded-full object-cover border-2 border-emerald-500/30 shadow-sm" />
+              ) : (
+                <div className="h-9 w-9 rounded-full bg-emerald-700/50 flex items-center justify-center border-2 border-emerald-500/30 text-emerald-300 font-bold text-sm">
+                  {initial}
+                </div>
+              )}
             </div>
           </div>
         </header>

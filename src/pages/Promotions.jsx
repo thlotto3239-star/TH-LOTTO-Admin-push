@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Plus, Edit, Trash2, Loader2, X, Save, ToggleLeft, ToggleRight } from 'lucide-react'
 import { toast } from '../components/Toast'
+import { alert } from '../utils/alert'
 
 const EMPTY = { title:'', promo_code:'', description:'', image_url:'', badge_text:'', background_color:'', type:'general', line1:'', line2:'', bonus_rate:0, bonus_amount:0, min_deposit:0, max_withdrawal:0, turnover_multiplier:1, default_amount:0, target_view:'deposit', is_active:true }
 
@@ -34,7 +35,8 @@ export default function Promotions() {
   }
 
   const remove = async (id) => {
-    if (!confirm('ลบโปรโมชั่นนี้?')) return
+    const ok = await alert.confirm('ลบโปรโมชั่น', 'คุณต้องการลบโปรโมชั่นนี้ใช่ไหม?', 'ลบ', true)
+    if (!ok) return
     await supabase.from('promotions').delete().eq('id', id)
     load()
   }

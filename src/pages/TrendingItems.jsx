@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Plus, Trash2, Loader2, X, Save, ArrowUp, ArrowDown, Upload } from 'lucide-react'
 import { toast } from '../components/Toast'
+import { alert } from '../utils/alert'
 
 const EMPTY = { title: '', code: '', image_url: '', link: '', display_order: 0, is_active: true }
 
@@ -36,8 +37,10 @@ export default function TrendingItems() {
   }
 
   const remove = async (id) => {
-    if (!confirm('ลบรายการมาแรงนี้?')) return
+    const ok = await alert.confirm('ลบรายการมาแรง', 'คุณต้องการลบรายการนี้ใช่ไหม?', 'ลบ', true)
+    if (!ok) return
     await supabase.from('trending_items').delete().eq('id', id)
+    toast.success('ลบเรียบร้อยแล้ว')
     load()
   }
 

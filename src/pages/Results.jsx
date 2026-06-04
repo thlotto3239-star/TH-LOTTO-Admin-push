@@ -21,20 +21,22 @@ export default function Results() {
 
   const load = async () => {
     setLoading(true)
-    const since = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10)
+    // วันนี้ (Bangkok time)
+    const today = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).toISOString().slice(0, 10)
     const [{ data: sched }, { data: res }] = await Promise.all([
+      // รอออกผล: เฉพาะวันนี้
       supabase
         .from('draw_schedules')
         .select('id, market_id, draw_date, close_time, status, lottery_markets(id,name,code,type)')
-        .neq('status', 'done')
-        .gte('draw_date', since)
-        .order('draw_date', { ascending: false })
+        .eq('draw_date', today)
         .order('close_time')
-        .limit(100),
+        .limit(50),
+      // ผลล่าสุด: วันนี้ + 3 วันย้อนหลัง
       supabase
         .from('lottery_results')
-        .select('id, market_id, draw_date, result_main, result_3top, result_2top, result_2bottom, result_3front, result_3bottom, announced_at, lottery_markets(name,code)')
-        .gte('draw_date', since)
+        .select('id, market_id, draw_date, result_main, result_3top, result_2top, result_2bottom, result_3front, result_3bottom, announced_at, status, lottery_markets(name,code)')
+        .gte('draw_date', new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10))
+        .order('draw_date', { ascending: false })
         .order('announced_at', { ascending: false })
         .limit(50),
     ])

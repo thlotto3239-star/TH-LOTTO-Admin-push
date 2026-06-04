@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Plus, Trash2, Loader2, X, Save, ArrowUp, ArrowDown, Upload } from 'lucide-react'
 import { toast } from '../components/Toast'
+import { alert } from '../utils/alert'
 
 const EMPTY = { title:'', description:'', image_url:'', link_url:'', button_text:'', display_order:0, is_active:true }
 
@@ -36,7 +37,8 @@ export default function Sliders() {
   }
 
   const remove = async (id) => {
-    if (!confirm('ลบแบนเนอร์นี้?')) return
+    const ok = await alert.confirm('ลบแบนเนอร์', 'คุณต้องการลบแบนเนอร์นี้ใช่ไหม?', 'ลบ', true)
+    if (!ok) return
     await supabase.from('sliders').delete().eq('id', id)
     load()
   }

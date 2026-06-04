@@ -94,6 +94,20 @@ export async function cleanupOldNotifications(days = 30) {
   return true
 }
 
+// Delete specific notification
+export async function deleteNotification(id) {
+  const { error } = await supabase.rpc('admin_delete_notification', { p_notification_id: id })
+  if (error) throw error
+  return true
+}
+
+// Delete all notifications
+export async function deleteAllNotifications() {
+  const { error } = await supabase.rpc('admin_delete_notification', { p_notification_id: null })
+  if (error) throw error
+  return true
+}
+
 // Subscribe to realtime notifications
 export function subscribeToNotifications(callback) {
   const channel = supabase

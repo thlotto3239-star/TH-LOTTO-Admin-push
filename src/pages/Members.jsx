@@ -25,7 +25,7 @@ export default function Members() {
   const load = async () => {
     setLoading(true)
     let q = supabase.from('profiles')
-      .select('id,member_id,full_name,phone,bank_name,bank_account_number,bank_account_name,is_admin,status,vip_level,created_at,wallets(balance,commission_balance,total_won,total_bets)', { count: 'exact' })
+      .select('id,member_id,full_name,phone,bank_name,bank_account_number,bank_account_name,is_admin,status,vip_level,avatar_url,created_at,wallets(balance,commission_balance,total_won,total_bets)', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(page * LIMIT, (page + 1) * LIMIT - 1)
     if (search) q = q.or(`member_id.ilike.%${search}%,phone.ilike.%${search}%,full_name.ilike.%${search}%`)
@@ -103,9 +103,13 @@ export default function Members() {
                   <tr key={r.id} className="hover:bg-surface-container-low transition">
                     <td className="px-4 py-3 min-w-[200px]">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary-container/40 flex items-center justify-center text-on-primary-container font-bold text-xs flex-shrink-0">
-                          {(r.full_name || '?')[0]}
-                        </div>
+                        {r.avatar_url ? (
+                          <img src={r.avatar_url} alt="avatar" className="w-8 h-8 rounded-full object-cover border border-outline-variant flex-shrink-0" />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-primary-container/40 flex items-center justify-center text-on-primary-container font-bold text-xs flex-shrink-0">
+                            {(r.full_name || '?')[0]}
+                          </div>
+                        )}
                         <div className="min-w-0">
                           <div className="font-medium text-on-surface text-sm truncate">{r.full_name || '-'}</div>
                           <div className="text-[11px] text-outline">{r.member_id} · {r.phone}</div>
