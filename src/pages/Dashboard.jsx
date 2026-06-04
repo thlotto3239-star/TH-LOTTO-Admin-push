@@ -43,7 +43,7 @@ export default function Dashboard() {
   const [lastUpdate, setLastUpdate] = useState(new Date())
 
   const loadAll = useCallback(async () => {
-    const [statsRes, advancedRes, chartRes, marketsRes, depRes, withRes, betRes] = await Promise.all([
+    const [statsRes, advancedRes, chartRes, marketsRes, depRes, withRes, betRes, banksRes] = await Promise.all([
       supabase.rpc('admin_dashboard_stats'),
       supabase.rpc('admin_dashboard_advanced_stats'),
       supabase.from('transactions')
@@ -53,18 +53,23 @@ export default function Dashboard() {
         .order('created_at'),
       supabase.rpc('get_markets_with_countdown'),
       supabase.from('deposit_requests')
-        .select('id, amount, status, created_at, profiles:profiles!user_id(full_name, member_id, bank_name, avatar_url)')
+        .select('id, amount, status, created_at, profiles:profiles!user_id(full_name, member_id, bank_name, bank_account_number, bank_account_name, avatar_url)')
         .order('created_at', { ascending: false })
         .limit(30),
       supabase.from('withdraw_requests')
-        .select('id, amount, status, created_at, bank_name, profiles:profiles!user_id(full_name, member_id, avatar_url)')
+        .select('id, amount, status, created_at, bank_name, bank_account_number, bank_account_name, profiles:profiles!user_id(full_name, member_id, avatar_url)')
         .order('created_at', { ascending: false })
         .limit(30),
       supabase.from('bets')
         .select('id, numbers, bet_type, amount, created_at, profiles:profiles!user_id(full_name, member_id, avatar_url), lottery_markets(name, logo_url, category, code, type)')
         .order('created_at', { ascending: false })
-        .limit(30)
+        .limit(30),
+      supabase.from('banks').select('code, name, image_url')
     ])
+
+    // สร้าง map ของธนาคาร: code → {name, image_url}
+    const banksMap = {}
+    ;(banksRes.data || []).forEach(b => { banksMap[b.code] = b })
 
     if (statsRes.data) setStats(statsRes.data)
     
@@ -102,21 +107,26 @@ export default function Dashboard() {
     
     let combinedFeed = []
     
-    // Process Deposits (Support Pending, Approved, Rejected)
+    // Process Deposits (ใช้ bank ของผู้ใช้จาก profiles)
     ;(depRes.data || []).forEach(d => {
+      const bankCode = d.profiles?.bank_name
       combinedFeed.push({
         id: `dep-${d.id}`,
         type: 'DEPOSIT',
-        status: d.status, 
+        status: d.status,
         amount: d.amount,
         created_at: d.created_at,
         profiles: d.profiles,
-        bank_name: d.profiles?.bank_name,
+        bank_code: bankCode,
+        bank_info: banksMap[bankCode] || null,
+        bank_account_number: d.profiles?.bank_account_number,
+        bank_account_name: d.profiles?.bank_account_name,
       })
     })
 
-    // Process Withdraws (Support Pending, Approved, Rejected)
+    // Process Withdraws (ใช้ bank จาก withdraw_requests โดยตรง)
     ;(withRes.data || []).forEach(w => {
+      const bankCode = w.bank_name
       combinedFeed.push({
         id: `with-${w.id}`,
         type: 'WITHDRAW',
@@ -124,7 +134,10 @@ export default function Dashboard() {
         amount: w.amount,
         created_at: w.created_at,
         profiles: w.profiles,
-        bank_name: w.bank_name,
+        bank_code: bankCode,
+        bank_info: banksMap[bankCode] || null,
+        bank_account_number: w.bank_account_number,
+        bank_account_name: w.bank_account_name,
       })
     })
 
@@ -374,9 +387,10 @@ export default function Dashboard() {
                           {f.type === 'LOTTERY_ALERT' && '🚨 '} {f.note}
                         </p>
                       ) : (
-                        <div className="text-sm mt-1">
+                        <div className="text-sm mt-1 space-y-1.5">
+                          {/* ชื่อผู้ใช้ (ทั้งสมาชิก) */}
                           {f.profiles && (
-                            <div className="flex items-center gap-1.5 text-on-surface-variant mb-1">
+                            <div className="flex items-center gap-1.5 text-on-surface-variant">
                               {f.profiles.avatar_url ? (
                                 <img src={f.profiles.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover border border-slate-100 shrink-0" />
                               ) : (
@@ -384,15 +398,50 @@ export default function Dashboard() {
                                   {(f.profiles.full_name || '?')[0].toUpperCase()}
                                 </div>
                               )}
-                              <span className="font-bold text-emerald-950">@{f.profiles.member_id || f.profiles.full_name}</span>
+                              <span className="font-bold text-emerald-950 truncate">{f.profiles.full_name || `@${f.profiles.member_id}`}</span>
+                              {f.profiles.member_id && <span className="text-[10px] text-slate-400 font-mono">@{f.profiles.member_id}</span>}
                             </div>
                           )}
 
-                          {f.type === 'BET' && f.lottery_markets?.name && (
-                            <div className="text-on-surface-variant mt-1">{f.lottery_markets.name} <span className="text-primary font-bold">{f.note}</span></div>
+                          {/* ── สำหรับฝาก/ถอน: แสดงโลโก้ธนาคาร + เลขบัญชี ── */}
+                          {(f.type === 'DEPOSIT' || f.type === 'WITHDRAW') && (f.bank_info || f.bank_account_number) && (
+                            <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1.5">
+                              {f.bank_info?.image_url ? (
+                                <img src={f.bank_info.image_url} alt="" className="w-6 h-6 rounded-full object-cover border border-slate-200 shrink-0" />
+                              ) : (
+                                <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-[9px] font-black flex items-center justify-center shrink-0">
+                                  {(f.bank_code || '?').slice(0, 3)}
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[11px] font-bold text-slate-700 truncate">{f.bank_info?.name || f.bank_code || 'ไม่ระบุธนาคาร'}</div>
+                                {f.bank_account_number && <div className="text-[10px] font-mono text-slate-500">{f.bank_account_number}</div>}
+                              </div>
+                            </div>
                           )}
-                          <div className={`mt-2 font-bold text-sm ${amountColor}`}>
-                            {f.type !== 'BET' ? (f.type === 'DEPOSIT' ? 'ฝากเงิน ' : 'ถอนเงิน ') : 'ยอดเดิมพัน '}
+
+                          {/* ── สำหรับ BET: แสดงโลโก้หวย + ประเภท ── */}
+                          {f.type === 'BET' && f.lottery_markets && (
+                            <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1.5">
+                              {f.lottery_markets.logo_url ? (
+                                <img src={f.lottery_markets.logo_url} alt="" className="w-6 h-6 rounded-full object-cover border border-slate-200 shrink-0" />
+                              ) : (
+                                <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-[9px] font-black flex items-center justify-center shrink-0">
+                                  {(f.lottery_markets.code || '?').slice(0, 3)}
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[11px] font-bold text-slate-700 truncate">{f.lottery_markets.name}</div>
+                                <div className="text-[10px] text-slate-500 font-mono truncate">{f.note}</div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* ── ยอดเงิน ── */}
+                          <div className={`font-bold text-sm ${amountColor}`}>
+                            {f.type === 'DEPOSIT' && 'ยอดฝาก '}
+                            {f.type === 'WITHDRAW' && 'ยอดถอน '}
+                            {f.type === 'BET' && 'ยอดเดิมพัน '}
                             <span className="text-base font-black">{amountSign}฿{fmt(Math.abs(f.amount))}</span>
                           </div>
                         </div>
