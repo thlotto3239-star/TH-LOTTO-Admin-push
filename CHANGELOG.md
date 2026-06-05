@@ -1,5 +1,17 @@
 # CHANGELOG - TH-LOTTO Admin Panel
 
+## [2026-06-05] - v1.3.1
+
+### Fixed - หวยหนึ่งนาที ซิงค์ให้ตรงกับ Apps Script ต้นฉบับ 100%
+- **DB**: แก้ status constraint และข้อมูลเก่า `WON`→`WIN`, `LOST`→`LOSE` ตาม Apps Script
+- **DB**: `fn_settle_instant_draw` ใช้ status `WIN`/`LOSE` ตาม Apps Script (เดิมใช้ WON/LOST)
+- **DB**: `instant_bet_types` อัตราจ่าย pin_top=3.2, pin_bottom=4.2 (แก้จาก 9.9)
+- **Frontend**: `InstantBetTypes.jsx` แก้ field names ให้ตรงกับ DB จริง (code/name/rate/min_digits/max_digits)
+- **Frontend**: `InstantBets.jsx` แก้ status display และ filter ให้ใช้ uppercase (PENDING/WIN/LOSE)
+- การคำนวณเงินตรงตาม Apps Script: `amount * rate` (ทั่วไป), `(amount/totalPicks) * rate` (ปักหลัก)
+
+---
+
 ## [2026-05-22] - v1.1.0
 
 ### Added - อัพเดทประเภทเดิมพันหวยหนึ่งนาทีตามตัวอย่าง Google Apps Script
