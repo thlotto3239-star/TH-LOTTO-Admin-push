@@ -252,21 +252,21 @@ export default function Settings() {
           onClick={() => setModal('wheel')}
         />
 
-        {/* 4. Social */}
+        {/* 4. Tracking & Social */}
         <HubCard
-          icon="🔗"
-          title="ลิงก์โซเชียลมีเดีย"
-          desc="จัดการช่องทาง Support ลูกค้า เช่น LINE OA, Telegram, YouTube Live"
-          tag="Support Links"
+          icon="📊"
+          title="Tracking & ช่องทางติดตาม"
+          desc="ตั้งค่า Google Tag, Meta Pixel, TikTok Pixel, GA4 และช่องทางติดตาม LINE, Facebook, TikTok"
+          tag="Marketing"
           onClick={() => setModal('social')}
         />
 
-        {/* 5. Announcements */}
+        {/* 5. Announcements + Popup */}
         <HubCard
           icon="📢"
-          title="ประกาศหน้าเว็บ"
-          desc="แก้ไขข้อความวิ่ง (Marquee) และประกาศข่าวสารสำคัญประจำวันบนหน้าเว็บ"
-          tag="Public Relations"
+          title="ประกาศ & Popup โฆษณา"
+          desc="ข้อความวิ่ง (Marquee) + Popup โฆษณาหน้าแรก (รูป+ข้อความ)"
+          tag="Engagement"
           onClick={() => setModal('announce')}
         />
 
@@ -421,77 +421,197 @@ export default function Settings() {
         </div>
       </Modal>
 
-      {/* ════════════ MODAL: Social ════════════ */}
+      {/* ════════════ MODAL: Tracking & Social ════════════ */}
       <Modal
         open={modal === 'social'}
         onClose={() => setModal(null)}
-        title="ลิงก์โซเชียลมีเดีย"
-        icon="🔗"
+        title="Tracking & ช่องทางติดตาม"
+        icon="📊"
         footer={
           <>
             <button onClick={() => setModal(null)} className="px-6 py-3 rounded-full font-semibold text-slate-500 hover:bg-slate-100 transition-all">ยกเลิก</button>
-            <SaveBtn loading={saving} onClick={() => saveGroup(['contact_line_url','contact_line_id','live_stream_url','service_hours_text'])}/>
-          </>
-        }
-      >
-        <div className="p-8 space-y-5">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span> LINE Official URL
-            </label>
-            <TextInput value={settings.contact_line_url} onChange={v => set('contact_line_url', v)} placeholder="https://line.me/ti/p/@thlotto"/>
-          </div>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span> LINE ID
-            </label>
-            <TextInput value={settings.contact_line_id} onChange={v => set('contact_line_id', v)} placeholder="@thlotto"/>
-          </div>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500 inline-block"></span> YouTube Live URL
-            </label>
-            <TextInput value={settings.live_stream_url} onChange={v => set('live_stream_url', v)} placeholder="https://youtube.com/c/thlotto_live"/>
-          </div>
-          <Field label="เวลาให้บริการลูกค้า">
-            <TextInput value={settings.service_hours_text} onChange={v => set('service_hours_text', v)} placeholder="24 ชั่วโมง / ทุกวันไม่มีวันหยุด"/>
-          </Field>
-        </div>
-      </Modal>
-
-      {/* ════════════ MODAL: Announcements ════════════ */}
-      <Modal
-        open={modal === 'announce'}
-        onClose={() => setModal(null)}
-        title="จัดการประกาศข่าวสาร"
-        icon="📢"
-        footer={
-          <>
-            <button onClick={() => setModal(null)} className="px-6 py-3 rounded-full font-semibold text-slate-500 hover:bg-slate-100 transition-all">ยกเลิก</button>
-            <SaveBtn loading={saving} onClick={() => saveGroup(['announcement_enabled','announcement_text'])}/>
+            <SaveBtn loading={saving} onClick={() => saveGroup(['contact_line_url','contact_line_id','facebook_url','tiktok_url','telegram_url','gtm_id','meta_pixel_id','tiktok_pixel_id','ga4_id'])}/>
           </>
         }
       >
         <div className="p-8 space-y-6">
-          <Toggle
-            checked={boolVal('announcement_enabled')}
-            onChange={v => setBool('announcement_enabled', v)}
-            label="ข้อความวิ่ง (Marquee)"
-            sub="เปิด-ปิดการแสดงผลประกาศบนหน้าเว็บ"
-          />
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ข้อความวิ่ง (Marquee Content)</label>
-              {boolVal('announcement_enabled') && (
-                <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-bold uppercase">Active</span>
+          {/* ── ช่องทางติดตาม ── */}
+          <div>
+            <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <span className="w-5 h-0.5 bg-primary rounded-full"></span> ช่องทางติดตาม
+            </h4>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-green-500"></span> LINE URL
+                  </label>
+                  <TextInput value={settings.contact_line_url} onChange={v => set('contact_line_url', v)} placeholder="https://lin.ee/xxxxx"/>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-green-500"></span> LINE ID
+                  </label>
+                  <TextInput value={settings.contact_line_id} onChange={v => set('contact_line_id', v)} placeholder="@thlotto"/>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-500"></span> Facebook Page
+                  </label>
+                  <TextInput value={settings.facebook_url} onChange={v => set('facebook_url', v)} placeholder="https://facebook.com/thlotto"/>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-pink-500"></span> TikTok
+                  </label>
+                  <TextInput value={settings.tiktok_url} onChange={v => set('tiktok_url', v)} placeholder="https://tiktok.com/@thlotto"/>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-sky-500"></span> Telegram
+                </label>
+                <TextInput value={settings.telegram_url} onChange={v => set('telegram_url', v)} placeholder="https://t.me/thlotto"/>
+              </div>
+            </div>
+          </div>
+
+          <div className="h-px bg-slate-100"></div>
+
+          {/* ── Tracking Pixels ── */}
+          <div>
+            <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <span className="w-5 h-0.5 bg-primary rounded-full"></span> Tracking Pixels
+            </h4>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Google Tag Manager</label>
+                  <TextInput value={settings.gtm_id} onChange={v => set('gtm_id', v)} placeholder="GTM-XXXXXXX"/>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Google Analytics (GA4)</label>
+                  <TextInput value={settings.ga4_id} onChange={v => set('ga4_id', v)} placeholder="G-XXXXXXXXXX"/>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Meta Pixel (Facebook)</label>
+                  <TextInput value={settings.meta_pixel_id} onChange={v => set('meta_pixel_id', v)} placeholder="1234567890"/>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">TikTok Pixel</label>
+                  <TextInput value={settings.tiktok_pixel_id} onChange={v => set('tiktok_pixel_id', v)} placeholder="CXXXXXXXXX"/>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ════════════ MODAL: Announcements + Popup ════════════ */}
+      <Modal
+        open={modal === 'announce'}
+        onClose={() => setModal(null)}
+        title="ประกาศ & Popup โฆษณา"
+        icon="📢"
+        footer={
+          <>
+            <button onClick={() => setModal(null)} className="px-6 py-3 rounded-full font-semibold text-slate-500 hover:bg-slate-100 transition-all">ยกเลิก</button>
+            <SaveBtn loading={saving} onClick={() => saveGroup(['announcement_enabled','announcement_text','popup_enabled','popup_title','popup_description','popup_image_url'])}/>
+          </>
+        }
+      >
+        <div className="p-8 space-y-6">
+          {/* ── ข้อความวิ่ง (Marquee) ── */}
+          <div>
+            <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <span className="w-5 h-0.5 bg-primary rounded-full"></span> ข้อความวิ่ง (Marquee)
+            </h4>
+            <Toggle
+              checked={boolVal('announcement_enabled')}
+              onChange={v => setBool('announcement_enabled', v)}
+              label="เปิดข้อความวิ่ง"
+              sub="แสดงข้อความวิ่งด้านบนหน้าเว็บผู้ใช้"
+            />
+            <div className="mt-4 space-y-3">
+              <TextInput
+                large
+                value={settings.announcement_text}
+                onChange={v => set('announcement_text', v)}
+                placeholder="ยินดีต้อนรับสู่ TH Lotto..."
+              />
+              {/* Preview Marquee */}
+              {settings.announcement_text && (
+                <div className="bg-primary/10 rounded-xl overflow-hidden border border-primary/20">
+                  <div className="px-3 py-1 bg-primary/20 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    <span className="text-[10px] font-bold text-primary uppercase">Preview</span>
+                  </div>
+                  <div className="overflow-hidden py-2 px-4">
+                    <div className="flex animate-marquee whitespace-nowrap">
+                      <span className="mx-4 text-sm font-medium text-primary">{settings.announcement_text}</span>
+                      <span className="mx-4 text-sm font-medium text-primary">{settings.announcement_text}</span>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
-            <TextInput
-              large
-              value={settings.announcement_text}
-              onChange={v => set('announcement_text', v)}
-              placeholder="ยินดีต้อนรับสู่ TH Lotto..."
+          </div>
+
+          <div className="h-px bg-slate-100"></div>
+
+          {/* ── Popup โฆษณา ── */}
+          <div>
+            <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <span className="w-5 h-0.5 bg-primary rounded-full"></span> Popup โฆษณาหน้าแรก
+            </h4>
+            <Toggle
+              checked={boolVal('popup_enabled')}
+              onChange={v => setBool('popup_enabled', v)}
+              label="เปิด Popup โฆษณา"
+              sub="แสดง Popup เมื่อเปิดหน้าแรก (ผู้ใช้กด 'ไม่แสดงอีก' ได้)"
             />
+            <div className="mt-4 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">หัวเรื่อง</label>
+                <TextInput value={settings.popup_title} onChange={v => set('popup_title', v)} placeholder="โปรโมชั่นพิเศษ!"/>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">รายละเอียด</label>
+                <TextInput large value={settings.popup_description} onChange={v => set('popup_description', v)} placeholder="สมัครวันนี้รับโบนัสฟรี 50 บาท..."/>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">รูปภาพ (940×940 สี่เหลี่ยมจัตุรัส)</label>
+                <div className="flex items-center gap-3">
+                  <TextInput value={settings.popup_image_url} onChange={v => set('popup_image_url', v)} placeholder="URL รูปภาพ หรืออัปโหลดผ่านหน้าออกแบบเว็บ"/>
+                </div>
+              </div>
+              {/* Preview Popup */}
+              {(settings.popup_title || settings.popup_image_url) && (
+                <div className="bg-slate-50 rounded-xl border border-slate-200 p-4">
+                  <div className="flex items-center gap-1.5 mb-3">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    <span className="text-[10px] font-bold text-primary uppercase">Popup Preview</span>
+                  </div>
+                  <div className="bg-white rounded-xl shadow-lg border border-slate-100 max-w-xs mx-auto overflow-hidden">
+                    {settings.popup_image_url && (
+                      <img src={settings.popup_image_url} alt="popup" className="w-full aspect-square object-cover"/>
+                    )}
+                    <div className="p-4 space-y-2">
+                      {settings.popup_title && <h3 className="font-bold text-slate-800 text-sm truncate">{settings.popup_title}</h3>}
+                      {settings.popup_description && <p className="text-slate-500 text-xs line-clamp-3">{settings.popup_description}</p>}
+                      <div className="flex gap-2 pt-2">
+                        <button className="flex-1 py-2 bg-primary text-white text-xs font-bold rounded-lg">ดูเลย</button>
+                        <button className="flex-1 py-2 bg-slate-100 text-slate-500 text-xs font-bold rounded-lg">ไม่แสดงอีก</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </Modal>
