@@ -4,7 +4,7 @@ import { Plus, Edit, Trash2, Loader2, X, Save, ToggleLeft, ToggleRight } from 'l
 import { toast } from '../components/Toast'
 import { alert } from '../utils/alert'
 
-const EMPTY = { title:'', promo_code:'', description:'', image_url:'', badge_text:'', background_color:'', type:'general', line1:'', line2:'', bonus_rate:0, bonus_amount:0, min_deposit:0, max_withdrawal:0, turnover_multiplier:1, default_amount:0, target_view:'deposit', is_active:true }
+const EMPTY = { title:'', promo_code:'', description:'', image_url:'', badge_text:'', background_color:'', type:'general', line1:'', line2:'', bonus_rate:0, bonus_amount:0, min_deposit:0, max_withdrawal:0, turnover_multiplier:1, default_amount:0, target_view:'deposit', is_active:true, allowed_game:'all' }
 
 export default function Promotions() {
   const [rows, setRows]     = useState([])
@@ -89,6 +89,7 @@ export default function Promotions() {
               <div>ฝากขั้นต่ำ: <span className="font-semibold text-on-surface">฿{r.min_deposit}</span></div>
               <div>Turnover: <span className="font-semibold text-on-surface">{r.turnover_multiplier}x</span></div>
               <div>ถอนสูงสุด: <span className="font-semibold text-on-surface">฿{r.max_withdrawal}</span></div>
+              <div>เล่นได้: <span className={`font-semibold ${r.allowed_game === 'main' ? 'text-blue-600' : r.allowed_game === 'instant' ? 'text-orange-600' : 'text-on-surface'}`}>{r.allowed_game === 'main' ? 'หวยหลัก' : r.allowed_game === 'instant' ? 'หวย 1 นาที' : 'ทั้งหมด'}</span></div>
             </div>
             <div className="flex gap-2">
               <button onClick={() => setModal({ ...r })}
@@ -136,6 +137,17 @@ export default function Promotions() {
                     className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
                 </div>
               ))}
+              {/* Dropdown: allowed_game */}
+              <div>
+                <label className="text-xs font-medium text-on-surface-variant mb-1 block">เล่นได้เฉพาะ</label>
+                <select value={modal.allowed_game || 'all'}
+                  onChange={e => setModal(m => ({ ...m, allowed_game: e.target.value }))}
+                  className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                  <option value="all">ทั้งหมด (หวยหลัก + หวย 1 นาที)</option>
+                  <option value="main">เฉพาะหวยหลัก 21 ตลาด</option>
+                  <option value="instant">เฉพาะเกมหวย 1 นาที</option>
+                </select>
+              </div>
               <div>
                 <label className="text-xs font-medium text-on-surface-variant mb-1 block">ประเภทโปร</label>
                 <select value={modal.type || 'general'} onChange={e => setModal(m => ({ ...m, type: e.target.value }))}
