@@ -118,9 +118,10 @@ export default function InstantBets() {
             className="pl-10 pr-4 py-2 bg-surface border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="all">ทุกสถานะ</option>
-            <option value="pending">รอผล</option>
-            <option value="settled">จ่ายแล้ว</option>
-            <option value="cancelled">ยกเลิก</option>
+            <option value="PENDING">รอผล</option>
+            <option value="WIN">ชนะ</option>
+            <option value="LOSE">แพ้</option>
+            <option value="CANCELLED">ยกเลิก</option>
           </select>
         </div>
         <div className="relative">
@@ -172,12 +173,13 @@ export default function InstantBets() {
                   </td>
                   <td className="py-3 px-4">
                     <span className={`px-2 py-0.5 rounded-full text-xs ${
-                      bet.is_win ? 'bg-primary-container text-on-primary-container' :
-                      bet.status === 'pending' ? 'bg-warning-container text-on-warning-container' :
+                      bet.status === 'WIN' ? 'bg-primary-container text-on-primary-container' :
+                      bet.status === 'PENDING' ? 'bg-warning-container text-on-warning-container' :
                       'bg-error-container text-on-error-container'
                     }`}>
-                      {bet.is_win ? 'ชนะ' :
-                       bet.status === 'pending' ? 'รอผล' : bet.status}
+                      {bet.status === 'WIN' ? 'ชนะ' :
+                       bet.status === 'PENDING' ? 'รอผล' :
+                       bet.status === 'LOSE' ? 'แพ้' : bet.status}
                     </span>
                   </td>
                   <td className="py-3 px-4 text-sm text-on-surface-variant">
