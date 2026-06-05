@@ -3,8 +3,8 @@
 ## Current State
 
 ### Version
-- **Current Version**: v1.3.1 (2026-06-05)
-- **Previous Version**: v1.3.0
+- **Current Version**: v1.3.2 (2026-06-05)
+- **Previous Version**: v1.3.1
 
 ### Project Information
 - **GitHub:** https://github.com/thlotto3239-star/TH-LOTTO-Admin-push (branch: master)
@@ -56,7 +56,7 @@
 - **Live URL:** https://th-lotto-admin.vercel.app
 - **GitHub:** thlotto3239-star/TH-LOTTO-Admin-push (branch: master)
 - **Deploy Command:** git push origin master then npx vercel --prod --yes
-- **Latest Deployment:** v1.3.1 (2026-06-05) - หวยหนึ่งนาทีตรงกับ Apps Script 100%
+- **Latest Deployment:** v1.3.2 (2026-06-05) - fix instant_draws.status → SETTLED
 
 ### Database
 - **Supabase** (shared with User App)

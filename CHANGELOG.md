@@ -1,5 +1,15 @@
 # CHANGELOG - TH-LOTTO Admin Panel
 
+## [2026-06-05] - v1.3.2
+
+### Fixed - instant_draws.status ไม่ถูกอัปเดตเป็น SETTLED
+- **DB**: `fn_settle_instant_draw` เพิ่ม `UPDATE instant_draws SET status='SETTLED'` หลัง settle bets เสร็จ
+- เดิม draws ค้างเป็น PENDING ตลอด → process_1min_lottery พยายาม re-settle ทุกนาทีโดยไม่จำเป็น
+- Admin panel InstantDraws แสดง status ถูกต้องแล้ว
+- migration: `004_fix_settle_instant_draw_status.sql`
+
+---
+
 ## [2026-06-05] - v1.3.1
 
 ### Fixed - หวยหนึ่งนาที ซิงค์ให้ตรงกับ Apps Script ต้นฉบับ 100%
