@@ -479,41 +479,65 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Market Status — with logos */}
-      <section className="glass-panel rounded-2xl shadow-glass p-6 flex flex-col max-h-[420px]">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-[#022c22] text-lg">ตลาดหวยเปิดรับแทง</h3>
-          <span className="text-xs text-emerald-800 font-bold bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full">{markets.filter(m => m.is_open).length} เปิดอยู่</span>
-        </div>
-        <div className="flex-1 overflow-y-auto space-y-2.5 pr-1" style={{ scrollbarWidth: 'none' }}>
-          {markets.length === 0 && <div className="text-outline text-sm text-center py-8">ไม่มีตลาดที่เปิดรับแทงในขณะนี้</div>}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {markets.map(m => {
-              if (m.category === 'instant' || m.code?.includes('1M')) return null
-
-              return (
-                <div key={m.id} className="flex items-center gap-3 p-3 rounded-2xl bg-white/50 border border-slate-100 hover:bg-white transition-all shadow-sm">
-                  {/* Market Logo */}
-                  {m.logo_url ? (
-                    <img src={m.logo_url} alt={m.name} className="w-10 h-10 rounded-full object-cover border border-slate-200 bg-white flex-shrink-0"/>
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-800 font-black text-sm flex-shrink-0">
-                      {m.code?.slice(0,2) || m.name?.slice(0,1)}
-                    </div>
-                  )}
+      {/* Market Status — แยก 2 section: ใกล้ปิดรับ + ออกผลล่าสุด */}
+      <section className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {/* ── ใกล้ปิดรับ (เหลือ ≤ 20 นาที) ── */}
+        <div className="glass-panel rounded-2xl shadow-glass p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-[#022c22] text-lg flex items-center gap-2">
+              <Timer size={18} className="text-orange-500"/> ใกล้ปิดรับ
+            </h3>
+            <span className="text-[10px] font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full animate-pulse">LIVE</span>
+          </div>
+          <div className="space-y-2.5 max-h-[300px] overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+            {(() => {
+              const closing = markets.filter(m => {
+                if (!m.is_open || !m.countdown || m.category === 'instant') return false;
+                const parts = m.countdown.split(':');
+                if (parts.length < 2) return false;
+                const totalMin = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                return totalMin <= 20;
+              });
+              if (closing.length === 0) return <p className="text-sm text-slate-400 text-center py-6">ไม่มีตลาดที่ใกล้ปิดตอนนี้</p>;
+              return closing.map(m => (
+                <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl bg-orange-50/50 border border-orange-100">
+                  {m.logo_url ? <img src={m.logo_url} alt="" className="w-9 h-9 rounded-lg object-cover border border-orange-200 bg-white shrink-0"/> : <div className="w-9 h-9 rounded-lg bg-orange-100 shrink-0"/>}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-emerald-950 truncate">{m.name}</p>
-                    <p className="text-[11px] text-slate-400 font-medium">
-                      {m.draw_time?.slice(0, 5) || '—'} น.
-                      {m.countdown && <span className="ml-1.5 font-mono text-primary font-bold bg-emerald-50 px-1.5 py-0.5 rounded">{m.countdown}</span>}
-                    </p>
+                    <p className="text-sm font-bold text-slate-800 truncate">{m.name}</p>
+                    <p className="text-[10px] text-slate-500">{m.draw_time?.slice(0,5)} น.</p>
                   </div>
-                  <span className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold ${m.is_open ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
-                    {m.is_open ? '● เปิด' : '○ ปิด'}
-                  </span>
+                  <span className="font-mono text-sm font-black text-orange-600 bg-orange-100 px-2.5 py-1 rounded-lg">{m.countdown}</span>
                 </div>
-              )
-            })}
+              ));
+            })()}
+          </div>
+        </div>
+
+        {/* ── ออกผลล่าสุด (วันนี้) ── */}
+        <div className="glass-panel rounded-2xl shadow-glass p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-[#022c22] text-lg flex items-center gap-2">
+              <Trophy size={18} className="text-emerald-600"/> ออกผลล่าสุดวันนี้
+            </h3>
+          </div>
+          <div className="space-y-2.5 max-h-[300px] overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+            {(() => {
+              const withResults = markets.filter(m => m.results && m.category !== 'instant');
+              if (withResults.length === 0) return <p className="text-sm text-slate-400 text-center py-6">ยังไม่มีผลรางวัลวันนี้</p>;
+              return withResults.map(m => (
+                <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50/50 border border-emerald-100">
+                  {m.logo_url ? <img src={m.logo_url} alt="" className="w-9 h-9 rounded-lg object-cover border border-emerald-200 bg-white shrink-0"/> : <div className="w-9 h-9 rounded-lg bg-emerald-100 shrink-0"/>}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-slate-800 truncate">{m.name}</p>
+                    <p className="text-[10px] text-slate-500">{m.draw_time?.slice(0,5)} น.</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-mono text-base font-black text-emerald-700">{m.results?.result_main || '—'}</p>
+                    {m.results?.result_2top && <p className="text-[10px] text-slate-500">2บน: {m.results.result_2top}</p>}
+                  </div>
+                </div>
+              ));
+            })()}
           </div>
         </div>
       </section>

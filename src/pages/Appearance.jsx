@@ -175,69 +175,34 @@ export default function Appearance() {
           </div>
         </div>
 
-        {/* Right Panel: Live Preview */}
+        {/* Right Panel: iPhone 15 Live Preview */}
         <div className="glass-panel rounded-2xl shadow-glass p-6">
           <h3 className="font-semibold text-on-surface-variant mb-4 flex items-center gap-2">
-            <Smartphone size={18}/> Live Preview
+            <Smartphone size={18}/> Live Preview — หน้าเว็บจริง
           </h3>
           <div className="flex justify-center">
-            <div className="w-72 h-[580px] bg-white rounded-[2.5rem] border-8 border-slate-800 p-3 shadow-2xl">
-              <div className="w-full h-full bg-slate-50 rounded-2xl overflow-hidden flex flex-col">
-                {/* Status Bar */}
-                <div className="h-6 bg-slate-800 flex items-center justify-between px-3">
-                  <span className="text-[10px] text-white">9:41</span>
-                  <div className="flex gap-1">
-                    <div className="w-3 h-3 bg-white rounded-full opacity-80"></div>
-                    <div className="w-3 h-3 bg-white rounded-full opacity-80"></div>
-                  </div>
-                </div>
-                {/* App Header */}
-                <div className="p-4" style={{ backgroundColor: settings.site_primary_color || '#10b981' }}>
-                  <div className="flex items-center gap-3">
-                    {settings.site_logo_url ? (
-                      <img src={settings.site_logo_url} alt="logo" className="w-10 h-10 rounded-lg object-contain bg-white" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold">L</div>
-                    )}
-                    <div>
-                      <h1 className="text-white font-bold text-lg">{settings.site_name || 'TH-LOTTO'}</h1>
-                      <p className="text-white/80 text-xs">แทงหวยออนไลน์</p>
-                    </div>
-                  </div>
-                </div>
-                {/* App Content */}
-                <div className="flex-1 p-4 space-y-3">
-                  <div className="bg-white rounded-xl p-3 shadow-sm">
-                    <div className="h-3 bg-slate-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-2 bg-slate-100 rounded w-1/2"></div>
-                  </div>
-                  <div className="bg-white rounded-xl p-3 shadow-sm">
-                    <div className="h-3 bg-slate-200 rounded w-2/3 mb-2"></div>
-                    <div className="h-2 bg-slate-100 rounded w-1/3"></div>
-                  </div>
-                  <div className="bg-white rounded-xl p-3 shadow-sm">
-                    <div className="h-3 bg-slate-200 rounded w-5/6 mb-2"></div>
-                    <div className="h-2 bg-slate-100 rounded w-2/5"></div>
-                  </div>
-                </div>
-                {/* Bottom Nav */}
-                <div className="h-16 bg-white border-t border-slate-200 flex items-center justify-around px-4">
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: settings.site_primary_color || '#10b981' }}></div>
-                    <span className="text-[10px] text-slate-600">หน้าแรก</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-6 h-6 rounded-full bg-slate-200"></div>
-                    <span className="text-[10px] text-slate-400">แทงหวย</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-6 h-6 rounded-full bg-slate-200"></div>
-                    <span className="text-[10px] text-slate-400">กระเป๋า</span>
-                  </div>
+            {/* iPhone 15 Frame */}
+            <div className="relative" style={{ width: 290 }}>
+              {/* Notch */}
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 w-28 h-6 bg-black rounded-full z-10"></div>
+              {/* Phone Body */}
+              <div className="bg-black rounded-[3rem] p-3 shadow-2xl">
+                <div className="w-full rounded-[2.2rem] overflow-hidden bg-white" style={{ height: 580 }}>
+                  <iframe
+                    src="https://th-lotto-app.vercel.app/home"
+                    title="User App Preview"
+                    className="w-full h-full border-0"
+                    style={{ transform: 'scale(0.72)', transformOrigin: 'top left', width: '138.9%', height: '138.9%' }}
+                  />
                 </div>
               </div>
+              {/* Home Indicator */}
+              <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/60 rounded-full"></div>
             </div>
           </div>
+          <p className="text-center text-xs text-on-surface-variant mt-4">
+            แสดงหน้าเว็บจริงจาก th-lotto-app.vercel.app
+          </p>
         </div>
       </div>
     </div>
