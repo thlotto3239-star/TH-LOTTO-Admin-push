@@ -1,5 +1,15 @@
 # CHANGELOG - TH-LOTTO Admin Panel
 
+## [2026-06-07] - v1.3.4
+
+### Updated - เอกสารระบบ เขียนใหม่ครบสมบูรณ์
+- **CLAUDE.md**: เขียนใหม่ทั้งหมด 620 บรรทัด — ทุกหน้า ทุกฟังก์ชัน ทุก RPC checkWin logic pin bet formula DB schema บั๊กที่แก้แล้ว — เป็น single source of truth สำหรับทุก AI
+- **PROJECT_STATUS.md**: แก้ URL ผิด (th-lotto-admin → th-lotto-admin-five), แก้ Deploy Command, เพิ่ม 26 หน้าครบ, เพิ่ม 21 RPCs
+- **CHANGELOG.md**: ลบ duplicate sections, แก้ "รอ push" → "pushed ✅"
+- commit Admin: `50ca393` (CLAUDE.md), `f662aaa` (CHANGELOG fix)
+
+---
+
 ## [2026-06-06] - v1.3.3
 
 ### Fixed - User App: pin bet amount คิดต่อตัวถูกต้องแล้ว
