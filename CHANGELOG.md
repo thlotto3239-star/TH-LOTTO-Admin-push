@@ -7,7 +7,7 @@
   - เดิม: ส่ง 10 → settle 10/7 = 1.43/ตัว → ถูก = 6 บาท ❌
   - ใหม่: ส่ง 70 (10×7) → settle 70/7 = 10/ตัว → ถูก = 42 บาท ✅
 - **User App** Modal แสดง "ราคาต่อตัว (บาท)" + สรุป `X ตัว × Y = ฿รวม`
-- commit: `7262dbb` (รอ push จากเครื่อง owner)
+- commit: `7262dbb` (pushed ✅)
 
 ### Updated
 - CLAUDE.md: อัปเดตสมบูรณ์ — URL, git state, feature list, บั๊กที่แก้แล้ว
@@ -48,28 +48,6 @@
 - Settings: BankSelector component แทน TextInput
 - Dashboard: feed แสดงข้อมูลธนาคาร/ตลาดหวยเป็นภาษาไทย
 - Dashboard: mobile cards 2 คอลัมน์
-
----
-
-
-
-### Fixed - instant_draws.status ไม่ถูกอัปเดตเป็น SETTLED
-- **DB**: `fn_settle_instant_draw` เพิ่ม `UPDATE instant_draws SET status='SETTLED'` หลัง settle bets เสร็จ
-- เดิม draws ค้างเป็น PENDING ตลอด → process_1min_lottery พยายาม re-settle ทุกนาทีโดยไม่จำเป็น
-- Admin panel InstantDraws แสดง status ถูกต้องแล้ว
-- migration: `004_fix_settle_instant_draw_status.sql`
-
----
-
-## [2026-06-05] - v1.3.1
-
-### Fixed - หวยหนึ่งนาที ซิงค์ให้ตรงกับ Apps Script ต้นฉบับ 100%
-- **DB**: แก้ status constraint และข้อมูลเก่า `WON`→`WIN`, `LOST`→`LOSE` ตาม Apps Script
-- **DB**: `fn_settle_instant_draw` ใช้ status `WIN`/`LOSE` ตาม Apps Script (เดิมใช้ WON/LOST)
-- **DB**: `instant_bet_types` อัตราจ่าย pin_top=3.2, pin_bottom=4.2 (แก้จาก 9.9)
-- **Frontend**: `InstantBetTypes.jsx` แก้ field names ให้ตรงกับ DB จริง (code/name/rate/min_digits/max_digits)
-- **Frontend**: `InstantBets.jsx` แก้ status display และ filter ให้ใช้ uppercase (PENDING/WIN/LOSE)
-- การคำนวณเงินตรงตาม Apps Script: `amount * rate` (ทั่วไป), `(amount/totalPicks) * rate` (ปักหลัก)
 
 ---
 
