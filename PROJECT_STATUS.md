@@ -3,8 +3,8 @@
 ## Current State
 
 ### Version
-- **Current Version**: v1.3.4 (2026-06-07)
-- **Previous Version**: v1.3.3 (2026-06-06)
+- **Current Version**: v1.4.0 (2026-06-07)
+- **Previous Version**: v1.3.4 (2026-06-07)
 
 ### Project Information
 - **GitHub Admin:** https://github.com/thlotto3239-star/TH-LOTTO-Admin-push (branch: master)
@@ -70,7 +70,7 @@
 - **Admin URL:** https://th-lotto-admin-five.vercel.app
 - **GitHub:** thlotto3239-star/TH-LOTTO-Admin-push (branch: master)
 - **Deploy:** git push origin master → Vercel auto-deploy (ไม่ต้องรัน CLI)
-- **Latest Commit:** 50ca393 (2026-06-07) — CLAUDE.md complete rewrite
+- **Latest Commit:** 73362b6 (2026-06-07) — site control + InstantBetTypes fix
 
 ### Database
 - **Supabase** ygopnjbvccenryejqmlw (shared with User App)

@@ -1,5 +1,16 @@
 # CHANGELOG - TH-LOTTO Admin Panel
 
+## [2026-06-07] - v1.4.0
+
+### Added - ควบคุมเว็บไซต์ (Owner Only)
+- **Settings.jsx**: เพิ่ม hub-card "ควบคุมเว็บไซต์" สีแดง — เฉพาะเจ้าของระบบ (phone `0622306037`) เท่านั้น
+- **Settings.jsx**: modal toggle `site_enabled` TRUE/FALSE ผ่าน `admin_upsert_setting`
+- เมื่อปิด → ผู้ใช้ทุกคนเห็นหน้า "ระบบปิดชั่วคราว" ทันที
+- **InstantBetTypes.jsx**: แก้ catch-without-try syntax error ที่ทำให้ build พัง
+- commit: `73362b6` (pushed ✅)
+
+---
+
 ## [2026-06-07] - v1.3.4
 
 ### Updated - เอกสารระบบ เขียนใหม่ครบสมบูรณ์
