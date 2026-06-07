@@ -1,6 +1,57 @@
 # CHANGELOG - TH-LOTTO Admin Panel
 
+## [2026-06-06] - v1.3.3
+
+### Fixed - User App: pin bet amount คิดต่อตัวถูกต้องแล้ว
+- **User App** `InstantLottery.jsx`: ส่ง `p_amount = ราคาต่อตัว × totalPicks` แทนที่จะส่ง total เดิม
+  - เดิม: ส่ง 10 → settle 10/7 = 1.43/ตัว → ถูก = 6 บาท ❌
+  - ใหม่: ส่ง 70 (10×7) → settle 70/7 = 10/ตัว → ถูก = 42 บาท ✅
+- **User App** Modal แสดง "ราคาต่อตัว (บาท)" + สรุป `X ตัว × Y = ฿รวม`
+- commit: `7262dbb` (รอ push จากเครื่อง owner)
+
+### Updated
+- CLAUDE.md: อัปเดตสมบูรณ์ — URL, git state, feature list, บั๊กที่แก้แล้ว
+- version bump เป็น v1.3.3
+
+---
+
 ## [2026-06-05] - v1.3.2
+
+### Fixed - instant_draws.status ไม่ถูกอัปเดตเป็น SETTLED
+- **DB**: `fn_settle_instant_draw` เพิ่ม `UPDATE instant_draws SET status='SETTLED'` หลัง settle bets เสร็จ
+- migration: `004_fix_settle_instant_draw_status.sql`
+
+---
+
+## [2026-06-05] - v1.3.1
+
+### Fixed - หวยหนึ่งนาที ซิงค์ให้ตรงกับ Apps Script ต้นฉบับ 100%
+- **DB**: status constraint `WON→WIN`, `LOST→LOSE` ตาม Apps Script
+- **DB**: `fn_settle_instant_draw` ใช้ `WIN`/`LOSE`
+- **DB**: `instant_bet_types` pin_top=3.2, pin_bottom=4.2
+- **Frontend**: `InstantBetTypes.jsx` field names ถูกต้อง
+- **Frontend**: `InstantBets.jsx` status display + filter
+
+---
+
+## [2026-06-05] - v4.0.x (งานของ owner)
+
+### Added
+- Appearance: iPhone 15 iframe preview จริง
+- Dashboard: section ใกล้ปิดรับ + ออกผลล่าสุดพร้อมเลข
+- Promotions: dropdown `allowed_game` (main/instant/all)
+- Settings: Tracking Pixels (GTM, GA4, Meta Pixel, TikTok Pixel)
+- Settings: ช่องทางติดตาม (Facebook, TikTok, Telegram)
+- Settings: Popup โฆษณา (enable/title/desc/image_url)
+
+### Changed
+- Settings: BankSelector component แทน TextInput
+- Dashboard: feed แสดงข้อมูลธนาคาร/ตลาดหวยเป็นภาษาไทย
+- Dashboard: mobile cards 2 คอลัมน์
+
+---
+
+
 
 ### Fixed - instant_draws.status ไม่ถูกอัปเดตเป็น SETTLED
 - **DB**: `fn_settle_instant_draw` เพิ่ม `UPDATE instant_draws SET status='SETTLED'` หลัง settle bets เสร็จ
