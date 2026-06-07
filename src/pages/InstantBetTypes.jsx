@@ -14,18 +14,19 @@ export default function InstantBetTypes() {
 
   const loadBetTypes = useCallback(async () => {
     setLoading(true)
-    const { data, error } = await supabase.rpc('admin_get_instant_bet_types')
-    if (error) {
-      toast.error('โหลดข้อมูลล้มเหลว: ' + error.message)
-    } else {
-      setBetTypes(data || [])
+    try {
+      const { data, error } = await supabase.rpc('admin_get_instant_bet_types')
+      if (error) {
+        toast.error('โหลดข้อมูลล้มเหลว: ' + error.message)
+      } else {
+        setBetTypes(data || [])
+      }
     } catch (err) {
       console.error('Error loading bet types:', err)
       toast.error('โหลดข้อมูลไม่สำเร็จ')
     } finally {
       setLoading(false)
     }
-    setLoading(false)
   }, [])
 
   useEffect(() => { loadBetTypes() }, [loadBetTypes])

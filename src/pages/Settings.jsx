@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient'
 import { Loader2 } from 'lucide-react'
 import { alert } from '../utils/alert'
 import BankSelector from '../components/BankSelector'
+import { useAuth } from '../AuthContext'
 
 // ─── Modal Backdrop ───────────────────────────────────────────────────────────
 function Modal({ open, onClose, title, icon, children, footer }) {
@@ -170,10 +171,16 @@ function HubCard({ icon, title, desc, tag, onClick }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function Settings() {
+  const { profile } = useAuth()
   const [settings, setSettings] = useState({})
   const [loading, setLoading]   = useState(true)
   const [saving, setSaving]     = useState(false)
-  const [modal, setModal]       = useState(null) // 'financial' | 'bank' | 'wheel' | 'social' | 'announce' | 'system'
+  const [modal, setModal]       = useState(null) // 'financial' | 'bank' | 'wheel' | 'social' | 'announce' | 'system' | 'siteControl'
+
+  const isOwner = profile?.phone === '0622306037'
+  const siteEnabled = settings.site_enabled !== undefined
+    ? String(settings.site_enabled).toUpperCase() === 'TRUE'
+    : true
 
   useEffect(() => {
     supabase.from('settings').select('key,value').then(({ data }) => {
@@ -278,6 +285,41 @@ export default function Settings() {
           tag="Maintenance"
           onClick={() => setModal('system')}
         />
+
+        {/* 7. Site Control — Owner Only */}
+        {isOwner && (
+          <button
+            onClick={() => setModal('siteControl')}
+            className="group text-left w-full p-8 rounded-[32px] transition-all duration-500 flex flex-col items-start gap-5 hover:-translate-y-2 focus:outline-none"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,245,245,0.95) 0%, rgba(254,226,226,0.88) 100%)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(254,202,202,0.6)',
+              boxShadow: '0 4px 6px -1px rgba(185,28,28,0.06), 0 2px 4px -1px rgba(185,28,28,0.04), inset 0 1px 1px rgba(255,255,255,0.9)'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(185,28,28,0.10), 0 10px 10px -5px rgba(185,28,28,0.06), inset 0 1px 2px rgba(255,255,255,1)' }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(185,28,28,0.06), 0 2px 4px -1px rgba(185,28,28,0.04), inset 0 1px 1px rgba(255,255,255,0.9)' }}
+          >
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shrink-0"
+              style={{ background: 'linear-gradient(145deg, #ffffff, #fef2f2)', boxShadow: '4px 4px 10px rgba(185,28,28,0.08), -2px -2px 10px rgba(255,255,255,0.9)' }}
+            >
+              {siteEnabled ? '🟢' : '🔴'}
+            </div>
+            <div className="space-y-2 flex-1">
+              <h3 className="text-2xl font-bold text-red-950">ควบคุมเว็บไซต์</h3>
+              <p className="text-sm text-red-700/60 leading-relaxed">
+                {siteEnabled ? 'เว็บไซต์เปิดให้บริการอยู่' : '⚠️ เว็บไซต์ปิดชั่วคราว — ผู้ใช้ทั้งหมดเข้าไม่ได้'}
+              </p>
+            </div>
+            <div className="pt-5 w-full border-t border-red-900/10 flex justify-between items-center">
+              <span className="text-[10px] font-black text-red-700 uppercase tracking-[0.18em]">⚠️ Owner Only</span>
+              <div className="w-8 h-8 rounded-full bg-red-900/5 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-all duration-300">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </div>
+          </button>
+        )}
 
       </div>
 
@@ -663,6 +705,49 @@ export default function Settings() {
           </Field>
         </div>
       </Modal>
+
+      {/* ════════════ MODAL: Site Control (Owner Only) ════════════ */}
+      {isOwner && (
+        <Modal
+          open={modal === 'siteControl'}
+          onClose={() => setModal(null)}
+          title="ควบคุมการเข้าถึงเว็บไซต์"
+          icon="🔴"
+          footer={
+            <>
+              <button onClick={() => setModal(null)} className="px-6 py-3 rounded-full font-semibold text-slate-500 hover:bg-slate-100 transition-all">ยกเลิก</button>
+              <SaveBtn loading={saving} onClick={() => saveGroup(['site_enabled'])}/>
+            </>
+          }
+        >
+          <div className="p-8 space-y-6">
+            <div className="p-7 bg-red-50 rounded-[24px] border-2 border-red-200 space-y-5 text-center">
+              <div className={`inline-flex w-16 h-16 rounded-full items-center justify-center text-3xl transition-all duration-300 ${siteEnabled ? 'bg-emerald-100' : 'bg-red-100'}`}>
+                {siteEnabled ? '🟢' : '🔴'}
+              </div>
+              <div>
+                <h4 className="text-xl font-bold text-slate-900 mb-1">สถานะเว็บไซต์</h4>
+                <p className={`text-sm font-semibold ${siteEnabled ? 'text-emerald-700' : 'text-red-700'}`}>
+                  {siteEnabled ? '✅ เปิดให้บริการ — ผู้ใช้เข้าใช้งานได้ปกติ' : '🚫 ปิดชั่วคราว — ผู้ใช้ทุกคนเข้าไม่ได้'}
+                </p>
+              </div>
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setBool('site_enabled', !siteEnabled)}
+                  className={`relative w-20 h-10 rounded-full transition-colors duration-300 shadow-inner ${siteEnabled ? 'bg-emerald-600' : 'bg-red-600'}`}
+                >
+                  <span className={`absolute top-1 left-1 w-8 h-8 bg-white rounded-full shadow-lg transition-transform duration-300 ${siteEnabled ? 'translate-x-10' : ''}`}/>
+                </button>
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                เมื่อปิด — ผู้ใช้ทุกคนจะเห็นหน้า "ระบบปิดชั่วคราว" แทนทันที<br/>
+                เฉพาะเจ้าของระบบ (เบอร์นี้) เท่านั้นที่มองเห็นปุ่มนี้
+              </p>
+            </div>
+          </div>
+        </Modal>
+      )}
 
     </div>
   )
