@@ -177,10 +177,19 @@ export default function Settings() {
   const [saving, setSaving]     = useState(false)
   const [modal, setModal]       = useState(null) // 'financial' | 'bank' | 'wheel' | 'social' | 'announce' | 'system' | 'siteControl'
 
+  // ── Marquee Announcements (CRUD จาก announcements table) ──
+  const [announcements, setAnnouncements] = useState([])
+  const [newAnnouncement, setNewAnnouncement] = useState('')
+
   const isOwner = profile?.phone === '0622306037'
   const siteEnabled = settings.site_enabled !== undefined
     ? String(settings.site_enabled).toUpperCase() === 'TRUE'
     : true
+
+  const loadAnnouncements = async () => {
+    const { data } = await supabase.from('announcements').select('*').order('display_order', { ascending: true })
+    setAnnouncements(data || [])
+  }
 
   useEffect(() => {
     supabase.from('settings').select('key,value').then(({ data }) => {
@@ -189,7 +198,42 @@ export default function Settings() {
       setSettings(map)
       setLoading(false)
     })
+    loadAnnouncements()
   }, [])
+
+  // Marquee CRUD
+  const addAnnouncement = async () => {
+    if (!newAnnouncement.trim()) return
+    const maxOrder = Math.max(0, ...announcements.map(a => a.display_order || 0))
+    const { error } = await supabase.from('announcements').insert({
+      content: newAnnouncement.trim(),
+      is_active: true,
+      display_order: maxOrder + 1
+    })
+    if (error) { alert.error('เพิ่มไม่สำเร็จ', error.message); return }
+    setNewAnnouncement('')
+    loadAnnouncements()
+  }
+
+  const toggleAnnouncement = async (id, currentActive) => {
+    const { error } = await supabase.from('announcements').update({ is_active: !currentActive }).eq('id', id)
+    if (error) { alert.error('แก้ไขไม่สำเร็จ', error.message); return }
+    loadAnnouncements()
+  }
+
+  const updateAnnouncementContent = async (id, content) => {
+    const { error } = await supabase.from('announcements').update({ content }).eq('id', id)
+    if (error) { alert.error('แก้ไขไม่สำเร็จ', error.message); return }
+    loadAnnouncements()
+  }
+
+  const deleteAnnouncement = async (id) => {
+    const ok = await alert.confirm('ลบข้อความนี้?', 'ไม่สามารถกู้คืนได้')
+    if (!ok) return
+    const { error } = await supabase.from('announcements').delete().eq('id', id)
+    if (error) { alert.error('ลบไม่สำเร็จ', error.message); return }
+    loadAnnouncements()
+  }
 
   const set = (key, val) => setSettings(s => ({ ...s, [key]: val }))
 
@@ -567,40 +611,81 @@ export default function Settings() {
         }
       >
         <div className="p-8 space-y-6">
-          {/* ── ข้อความวิ่ง (Marquee) ── */}
+          {/* ── ข้อความวิ่ง (Marquee — CRUD announcements table) ── */}
           <div>
             <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
               <span className="w-5 h-0.5 bg-primary rounded-full"></span> ข้อความวิ่ง (Marquee)
             </h4>
-            <Toggle
-              checked={boolVal('announcement_enabled')}
-              onChange={v => setBool('announcement_enabled', v)}
-              label="เปิดข้อความวิ่ง"
-              sub="แสดงข้อความวิ่งด้านบนหน้าเว็บผู้ใช้"
-            />
-            <div className="mt-4 space-y-3">
-              <TextInput
-                large
-                value={settings.announcement_text}
-                onChange={v => set('announcement_text', v)}
-                placeholder="ยินดีต้อนรับสู่ TH Lotto..."
+            <p className="text-[11px] text-slate-500 mb-3">จัดการข้อความที่วิ่งอยู่ด้านบนหน้าเว็บผู้ใช้ — แต่ละข้อความวิ่งเรียงกันคั่นด้วย " • "</p>
+
+            {/* รายการข้อความปัจจุบัน */}
+            <div className="space-y-2 mb-3">
+              {announcements.length === 0 && (
+                <div className="text-center py-6 text-slate-400 text-sm bg-slate-50 rounded-xl">ยังไม่มีข้อความ</div>
+              )}
+              {announcements.map((a, idx) => (
+                <div key={a.id} className={`flex items-center gap-2 p-2.5 rounded-xl border ${a.is_active ? 'bg-emerald-50/30 border-emerald-100' : 'bg-slate-50 border-slate-100 opacity-60'}`}>
+                  <span className="text-[10px] font-bold text-slate-400 w-6 text-center">{idx + 1}</span>
+                  <input
+                    type="text"
+                    value={a.content}
+                    onChange={e => setAnnouncements(prev => prev.map(x => x.id === a.id ? { ...x, content: e.target.value } : x))}
+                    onBlur={e => e.target.value !== a.content && updateAnnouncementContent(a.id, e.target.value)}
+                    className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 font-medium"
+                  />
+                  <button
+                    onClick={() => toggleAnnouncement(a.id, a.is_active)}
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${a.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}
+                    title={a.is_active ? 'กดเพื่อปิด' : 'กดเพื่อเปิด'}
+                  >
+                    {a.is_active ? 'ON' : 'OFF'}
+                  </button>
+                  <button
+                    onClick={() => deleteAnnouncement(a.id)}
+                    className="text-rose-400 hover:text-rose-600 text-lg leading-none px-1"
+                    title="ลบ"
+                  >×</button>
+                </div>
+              ))}
+            </div>
+
+            {/* เพิ่มข้อความใหม่ */}
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={newAnnouncement}
+                onChange={e => setNewAnnouncement(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addAnnouncement()}
+                placeholder="พิมพ์ข้อความใหม่..."
+                className="flex-1 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-emerald-900/8 focus:border-emerald-900 outline-none"
               />
-              {/* Preview Marquee */}
-              {settings.announcement_text && (
-                <div className="bg-primary/10 rounded-xl overflow-hidden border border-primary/20">
-                  <div className="px-3 py-1 bg-primary/20 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                    <span className="text-[10px] font-bold text-primary uppercase">Preview</span>
-                  </div>
-                  <div className="overflow-hidden py-2 px-4">
-                    <div className="flex animate-marquee whitespace-nowrap">
-                      <span className="mx-4 text-sm font-medium text-primary">{settings.announcement_text}</span>
-                      <span className="mx-4 text-sm font-medium text-primary">{settings.announcement_text}</span>
-                    </div>
+              <button
+                onClick={addAnnouncement}
+                className="px-5 py-2.5 bg-emerald-900 text-white text-sm font-bold rounded-2xl hover:scale-[1.03] active:scale-95 transition-all"
+              >
+                + เพิ่ม
+              </button>
+            </div>
+
+            {/* Preview Marquee — รวมทุกข้อความ active */}
+            {announcements.filter(a => a.is_active).length > 0 && (
+              <div className="bg-primary/10 rounded-xl overflow-hidden border border-primary/20">
+                <div className="px-3 py-1 bg-primary/20 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                  <span className="text-[10px] font-bold text-primary uppercase">Preview (ตรงกับที่ User เห็น)</span>
+                </div>
+                <div className="overflow-hidden py-2 px-4">
+                  <div className="flex animate-marquee whitespace-nowrap">
+                    <span className="mx-4 text-sm font-medium text-primary">
+                      {announcements.filter(a => a.is_active).map(a => a.content).join('  •  ')}
+                    </span>
+                    <span className="mx-4 text-sm font-medium text-primary">
+                      {announcements.filter(a => a.is_active).map(a => a.content).join('  •  ')}
+                    </span>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           <div className="h-px bg-slate-100"></div>
