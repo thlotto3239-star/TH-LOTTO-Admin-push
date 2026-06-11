@@ -31,10 +31,8 @@ export default function RestrictedNumbers() {
     setWorking(true)
     const numList = numbers.split(/[\s,]+/).filter(Boolean)
     for (const n of numList) {
-      await supabase.rpc('admin_add_restricted_number', {
-        p_market_id: market,
-        p_number: n.trim(),
-        p_bet_type: betType
+      await supabase.rpc('admin_upsert_restricted_number', {
+        p: { market_id: market, number: n.trim(), bet_type: betType }
       })
     }
     setNumbers('')
