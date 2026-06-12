@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../supabaseClient'
-import { Settings, Save, RefreshCw, Clock, Zap, Shield, Bell, Upload, Loader2, Image } from 'lucide-react'
+import { Settings, Save, RefreshCw, Clock, Zap, Shield, Bell, Upload, Loader2, Image, SlidersHorizontal } from 'lucide-react'
 import { alert } from '../utils/alert'
 import { toast } from '../components/Toast'
 
@@ -42,6 +42,7 @@ export default function InstantSettings() {
     instant_logo_url: '',
     instant_show_popular: false,
     instant_show_trending: true,
+    instant_win_rate: 30,
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -55,7 +56,8 @@ export default function InstantSettings() {
       .in('key', [
         'instant_draw_interval', 'instant_auto_settle', 'instant_max_bets_per_minute',
         'instant_maintenance_mode', 'instant_notification_enabled', 'instant_log_retention_days',
-        'instant_name', 'instant_logo_url', 'instant_show_popular', 'instant_show_trending'
+        'instant_name', 'instant_logo_url', 'instant_show_popular', 'instant_show_trending',
+        'instant_win_rate'
       ])
     if (error) { toast.error('โหลดข้อมูลล้มเหลว'); setLoading(false); return }
     const m = {}
@@ -71,6 +73,7 @@ export default function InstantSettings() {
       instant_logo_url: m.instant_logo_url || '',
       instant_show_popular: m.instant_show_popular === 'true',
       instant_show_trending: m.instant_show_trending !== 'false',
+      instant_win_rate: parseInt(m.instant_win_rate) || 30,
     })
     setLoading(false)
   }, [])
@@ -92,6 +95,7 @@ export default function InstantSettings() {
       { key: 'instant_logo_url', value: settings.instant_logo_url },
       { key: 'instant_show_popular', value: settings.instant_show_popular.toString() },
       { key: 'instant_show_trending', value: settings.instant_show_trending.toString() },
+      { key: 'instant_win_rate', value: settings.instant_win_rate.toString() },
     ]
     let hasError = false
     for (const u of updates) {
@@ -205,6 +209,73 @@ export default function InstantSettings() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ── Win Rate Control ── */}
+        <div className="md:col-span-2 rounded-3xl p-6 border-2 border-amber-200 relative" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(20px)', boxShadow: '0 4px 16px -4px rgba(6,78,59,0.07)' }}>
+          <span className="absolute -top-2.5 right-5 bg-amber-100 text-amber-800 text-[10px] font-bold px-3 py-0.5 rounded-lg">ใหม่</span>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center">
+              <SlidersHorizontal size={20} className="text-amber-700" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-[#022c22]">ควบคุมอัตราชนะ</h2>
+              <p className="text-xs text-slate-400">ปรับเปอร์เซ็นต์การชนะของผู้เล่น — ยิ่งต่ำเว็บยิ่งได้เปรียบ</p>
+            </div>
+          </div>
+
+          <input type="range" min={5} max={80} step={1} value={settings.instant_win_rate}
+            onChange={e => set('instant_win_rate', parseInt(e.target.value))}
+            className="w-full accent-emerald-700 mb-1" />
+          <div className="flex justify-between text-[10px] text-slate-400 mb-4"><span>5%</span><span>80%</span></div>
+
+          <div className="text-center mb-4">
+            <span className="text-4xl font-bold text-[#022c22]">{settings.instant_win_rate}</span>
+            <p className="text-xs text-slate-500 mt-1">% อัตราชนะผู้เล่น</p>
+          </div>
+
+          <div className="text-center mb-4">
+            <span className={`inline-block px-4 py-1.5 rounded-xl text-xs font-bold ${
+              settings.instant_win_rate <= 15 ? 'bg-red-50 text-red-800' :
+              settings.instant_win_rate <= 25 ? 'bg-amber-50 text-amber-800' :
+              settings.instant_win_rate <= 40 ? 'bg-emerald-50 text-emerald-800' :
+              settings.instant_win_rate <= 55 ? 'bg-blue-50 text-blue-800' :
+              'bg-pink-50 text-pink-800'
+            }`}>
+              {settings.instant_win_rate <= 15 ? 'อัตราชนะต่ำมาก' :
+               settings.instant_win_rate <= 25 ? 'อัตราชนะต่ำ' :
+               settings.instant_win_rate <= 40 ? 'มาตรฐาน' :
+               settings.instant_win_rate <= 55 ? 'สมดุล' :
+               'อัตราชนะสูง'} — เว็บได้ {100 - settings.instant_win_rate}%
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-slate-50 rounded-2xl p-3 text-center">
+              <p className="text-[10px] text-slate-400 mb-1">ผู้เล่นชนะ</p>
+              <p className="text-xl font-bold text-emerald-700">{settings.instant_win_rate}%</p>
+            </div>
+            <div className="bg-slate-50 rounded-2xl p-3 text-center">
+              <p className="text-[10px] text-slate-400 mb-1">เว็บได้</p>
+              <p className="text-xl font-bold text-orange-600">{100 - settings.instant_win_rate}%</p>
+            </div>
+          </div>
+
+          <div className="h-3 rounded-full overflow-hidden flex mb-4">
+            <div className="bg-emerald-600 transition-all" style={{ width: `${settings.instant_win_rate}%` }} />
+            <div className="bg-orange-500 transition-all" style={{ width: `${100 - settings.instant_win_rate}%` }} />
+          </div>
+
+          <div className="grid grid-cols-4 gap-2 mb-3">
+            {[15, 30, 50, 70].map(v => (
+              <button key={v} onClick={() => set('instant_win_rate', v)}
+                className={`py-2 rounded-xl text-xs font-bold transition ${settings.instant_win_rate === v ? 'bg-emerald-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                {v}%
+              </button>
+            ))}
+          </div>
+
+          <p className="text-[10px] text-slate-400 text-center">ใช้กับหวย 1 นาทีเท่านั้น ไม่กระทบหวยหลัก 21 ตลาด</p>
         </div>
 
         {/* ── Draw Interval ── */}
