@@ -180,6 +180,7 @@ export default function Settings() {
   // ── Marquee Announcements (CRUD จาก announcements table) ──
   const [announcements, setAnnouncements] = useState([])
   const [newAnnouncement, setNewAnnouncement] = useState('')
+  const [uploading, setUploading] = useState(false)
 
   const isOwner = profile?.phone === '0622306037'
   const siteEnabled = settings.site_enabled !== undefined
@@ -713,7 +714,25 @@ export default function Settings() {
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase">รูปภาพ (940×940 สี่เหลี่ยมจัตุรัส)</label>
                 <div className="flex items-center gap-3">
-                  <TextInput value={settings.popup_image_url} onChange={v => set('popup_image_url', v)} placeholder="URL รูปภาพ หรืออัปโหลดผ่านหน้าออกแบบเว็บ"/>
+                  <TextInput value={settings.popup_image_url} onChange={v => set('popup_image_url', v)} placeholder="URL รูปภาพ หรืออัปโหลด"/>
+                  <label className="shrink-0 cursor-pointer bg-primary hover:bg-primary/90 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors">
+                    {uploading ? '⏳ กำลังอัป...' : '📁 อัปโหลด'}
+                    <input type="file" accept="image/*" className="hidden" onChange={async e => {
+                      const file = e.target.files?.[0]; if (!file) return;
+                      if (file.size > 5 * 1024 * 1024) { alert.error('ขนาดไฟล์ต้องไม่เกิน 5MB'); return; }
+                      setUploading(true);
+                      try {
+                        const ext = file.name.split('.').pop();
+                        const fileName = `popup/${Date.now()}.${ext}`;
+                        const { error: upErr } = await supabase.storage.from('sliders').upload(fileName, file, { upsert: true });
+                        if (upErr) throw upErr;
+                        const { data: { publicUrl } } = supabase.storage.from('sliders').getPublicUrl(fileName);
+                        set('popup_image_url', publicUrl);
+                        alert.success('อัปโหลดสำเร็จ');
+                      } catch (err) { alert.error('อัปโหลดล้มเหลว: ' + err.message); }
+                      finally { setUploading(false); e.target.value = ''; }
+                    }}/>
+                  </label>
                 </div>
               </div>
               {/* Preview Popup */}

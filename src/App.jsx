@@ -41,6 +41,7 @@ const InstantDraws     = lazy(() => import('./pages/InstantDraws'))
 const InstantBets      = lazy(() => import('./pages/InstantBets'))
 const InstantResults   = lazy(() => import('./pages/InstantResults'))
 const InstantSettings  = lazy(() => import('./pages/InstantSettings'))
+const Notifications    = lazy(() => import('./pages/Notifications'))
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-64">
@@ -83,6 +84,7 @@ export default function App() {
               <Route path="trending"   element={<PermGuard perm="feeds">      <TrendingItems />   </PermGuard>} />
               <Route path="banks"      element={<PermGuard perm="banks">      <Banks />           </PermGuard>} />
               <Route path="admins" element={<Admins />} />
+              <Route path="notifications" element={<PermGuard perm="settings"><Notifications /></PermGuard>} />
               <Route path="data-management" element={<PermGuard perm="settings"><DataManagement /></PermGuard>} />
             </Route>
             <Route path="/test" element={<AdminGuard><TestConnection /></AdminGuard>} />

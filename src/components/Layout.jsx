@@ -78,6 +78,7 @@ const NAV_GROUPS = [
       { to: '/settings',   label: 'ตั้งค่าระบบ', icon: 'settings',        perm: 'settings' },
       { to: '/appearance', label: 'รูปลักษณ์',   icon: 'palette',         perm: 'appearance' },
       { to: '/banks',      label: 'ธนาคาร',         icon: 'account_balance', perm: 'banks' },
+      { to: '/notifications', label: 'แจ้งเตือน Broadcast', icon: 'campaign', perm: 'settings' },
       { to: '/data-management', label: 'Backup & ข้อมูล', icon: 'backup',           perm: 'settings' },
     ]
   },
