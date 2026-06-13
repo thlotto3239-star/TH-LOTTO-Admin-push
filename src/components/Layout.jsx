@@ -253,7 +253,7 @@ export default function Layout() {
             return (
             <div key={gi} className="mb-1">
               <div className="px-4 pt-3 pb-1">
-                <span className="text-[10px] font-bold tracking-[0.12em] uppercase text-emerald-600/60">{group.label}</span>
+                <span className="text-xs font-bold tracking-[0.12em] uppercase text-emerald-600/60">{group.label}</span>
               </div>
               <div className="space-y-0.5">
                 {visibleItems.map(item => (
@@ -334,7 +334,7 @@ export default function Layout() {
                 >
                   <span className="material-symbols-outlined">notifications</span>
                   {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 w-4 h-4 bg-error text-on-error text-[10px] font-bold rounded-full flex items-center justify-center">
+                    <span className="absolute top-0 right-0 w-4 h-4 bg-error text-on-error text-xs font-bold rounded-full flex items-center justify-center">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
@@ -420,7 +420,7 @@ export default function Layout() {
           <Outlet />
         </main>
         {/* Version footer */}
-        <footer className="px-6 py-2 text-right text-[10px] text-outline/50">
+        <footer className="px-6 py-2 text-right text-xs text-outline/50">
           v{__APP_VERSION__}
         </footer>
       </div>

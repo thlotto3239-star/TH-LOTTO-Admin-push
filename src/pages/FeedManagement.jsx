@@ -62,7 +62,7 @@ export default function FeedManagement() {
               : <div className="w-10 h-10 rounded-full bg-white/60 flex items-center justify-center text-xl">🎲</div>}
             <div className="flex-1 min-w-0">
               <div className={`font-bold ${accentText} truncate`}>{instantSettings.name}</div>
-              <div className="text-[10px] font-mono text-slate-500">หวย 1 นาที</div>
+              <div className="text-xs font-mono text-slate-500">หวย 1 นาที</div>
             </div>
           </div>
         )}
@@ -74,7 +74,7 @@ export default function FeedManagement() {
               : <div className="w-10 h-10 rounded-full bg-white/60 flex items-center justify-center text-xs font-black text-slate-500">{m.code?.slice(0,2)}</div>}
             <div className="flex-1 min-w-0">
               <div className={`font-bold ${accentText} truncate`}>{m.name}</div>
-              <div className="text-[10px] font-mono text-slate-500">{m.code}</div>
+              <div className="text-xs font-mono text-slate-500">{m.code}</div>
             </div>
           </div>
         ))}
@@ -86,7 +86,7 @@ export default function FeedManagement() {
   )
 
   return (
-    <div className="space-y-6 pb-12" style={{ fontFamily: 'Prompt, sans-serif' }}>
+    <div className="space-y-6 pb-12" >
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>

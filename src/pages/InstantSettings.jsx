@@ -131,7 +131,7 @@ export default function InstantSettings() {
   )
 
   return (
-    <div className="space-y-8 pb-12" style={{ fontFamily: 'Prompt, sans-serif' }}>
+    <div className="space-y-8 pb-12" >
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -181,7 +181,7 @@ export default function InstantSettings() {
             {/* Name */}
             <div className="flex flex-col gap-2 sm:col-span-2">
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ชื่อหวย 1 นาที</label>
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">ชื่อหวย 1 นาที</label>
                 <input
                   type="text"
                   value={settings.instant_name}
@@ -213,7 +213,7 @@ export default function InstantSettings() {
 
         {/* ── Win Rate Control ── */}
         <div className="md:col-span-2 rounded-3xl p-6 border-2 border-amber-200 relative" style={{ background: 'rgba(255,255,255,0.82)', backdropFilter: 'blur(20px)', boxShadow: '0 4px 16px -4px rgba(6,78,59,0.07)' }}>
-          <span className="absolute -top-2.5 right-5 bg-amber-100 text-amber-800 text-[10px] font-bold px-3 py-0.5 rounded-lg">ใหม่</span>
+          <span className="absolute -top-2.5 right-5 bg-amber-100 text-amber-800 text-xs font-bold px-3 py-0.5 rounded-lg">ใหม่</span>
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center">
               <SlidersHorizontal size={20} className="text-amber-700" />
@@ -227,7 +227,7 @@ export default function InstantSettings() {
           <input type="range" min={5} max={80} step={1} value={settings.instant_win_rate}
             onChange={e => set('instant_win_rate', parseInt(e.target.value))}
             className="w-full accent-emerald-700 mb-1" />
-          <div className="flex justify-between text-[10px] text-slate-400 mb-4"><span>5%</span><span>80%</span></div>
+          <div className="flex justify-between text-xs text-slate-400 mb-4"><span>5%</span><span>80%</span></div>
 
           <div className="text-center mb-4">
             <span className="text-4xl font-bold text-[#022c22]">{settings.instant_win_rate}</span>
@@ -252,11 +252,11 @@ export default function InstantSettings() {
 
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-slate-50 rounded-2xl p-3 text-center">
-              <p className="text-[10px] text-slate-400 mb-1">ผู้เล่นชนะ</p>
+              <p className="text-xs text-slate-400 mb-1">ผู้เล่นชนะ</p>
               <p className="text-xl font-bold text-emerald-700">{settings.instant_win_rate}%</p>
             </div>
             <div className="bg-slate-50 rounded-2xl p-3 text-center">
-              <p className="text-[10px] text-slate-400 mb-1">เว็บได้</p>
+              <p className="text-xs text-slate-400 mb-1">เว็บได้</p>
               <p className="text-xl font-bold text-orange-600">{100 - settings.instant_win_rate}%</p>
             </div>
           </div>
@@ -275,12 +275,12 @@ export default function InstantSettings() {
             ))}
           </div>
 
-          <p className="text-[10px] text-slate-400 text-center">ใช้กับหวย 1 นาทีเท่านั้น ไม่กระทบหวยหลัก 21 ตลาด</p>
+          <p className="text-xs text-slate-400 text-center">ใช้กับหวย 1 นาทีเท่านั้น ไม่กระทบหวยหลัก 21 ตลาด</p>
         </div>
 
         {/* ── Draw Interval ── */}
         <Card icon={Clock} title="ช่วงเวลาออกรางวัล">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ช่วงเวลา (วินาที)</label>
+          <label className="text-xs font-black text-slate-400 uppercase tracking-widest">ช่วงเวลา (วินาที)</label>
           <input type="number" min="30" max="300" step="10" value={settings.draw_interval}
             onChange={e => set('draw_interval', parseInt(e.target.value))}
             className="mt-2 w-full px-4 py-3.5 bg-slate-100/70 border-2 border-transparent focus:border-emerald-800 rounded-2xl outline-none text-emerald-950 transition-all" />
@@ -300,7 +300,7 @@ export default function InstantSettings() {
 
         {/* ── Max Bets ── */}
         <Card icon={Shield} title="ข้อจำกัดการแทง">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">รายการแทงสูงสุดต่อนาที</label>
+          <label className="text-xs font-black text-slate-400 uppercase tracking-widest">รายการแทงสูงสุดต่อนาที</label>
           <input type="number" min="10" max="1000" step="10" value={settings.max_bets_per_minute}
             onChange={e => set('max_bets_per_minute', parseInt(e.target.value))}
             className="mt-2 w-full px-4 py-3.5 bg-slate-100/70 border-2 border-transparent focus:border-emerald-800 rounded-2xl outline-none text-emerald-950 transition-all" />
@@ -336,7 +336,7 @@ export default function InstantSettings() {
 
         {/* ── Log Retention ── */}
         <Card icon={Settings} title="การเก็บข้อมูล">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">เก็บข้อมูลนาน (วัน)</label>
+          <label className="text-xs font-black text-slate-400 uppercase tracking-widest">เก็บข้อมูลนาน (วัน)</label>
           <input type="number" min="7" max="365" value={settings.log_retention_days}
             onChange={e => set('log_retention_days', parseInt(e.target.value))}
             className="mt-2 w-full px-4 py-3.5 bg-slate-100/70 border-2 border-transparent focus:border-emerald-800 rounded-2xl outline-none text-emerald-950 transition-all" />

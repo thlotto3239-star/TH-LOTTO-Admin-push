@@ -43,7 +43,7 @@ export default function Notifications() {
 
       <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 space-y-4">
         <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-slate-400 uppercase">หัวข้อ</label>
+          <label className="text-xs font-bold text-slate-400 uppercase">หัวข้อ</label>
           <input
             type="text"
             value={title}
@@ -53,7 +53,7 @@ export default function Notifications() {
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-slate-400 uppercase">รายละเอียด</label>
+          <label className="text-xs font-bold text-slate-400 uppercase">รายละเอียด</label>
           <textarea
             value={body}
             onChange={e => setBody(e.target.value)}

@@ -174,7 +174,7 @@ export default function Deposits() {
                         </div>
                         <div className="min-w-0">
                           <div className="font-medium text-on-surface text-sm truncate">{r.profiles?.full_name || '-'}</div>
-                          <div className="text-[11px] text-outline">{r.profiles?.member_id} · {r.profiles?.phone}</div>
+                          <div className="text-xs text-outline">{r.profiles?.member_id} · {r.profiles?.phone}</div>
                         </div>
                       </div>
                     </td>

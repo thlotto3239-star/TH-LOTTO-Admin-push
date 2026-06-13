@@ -56,9 +56,9 @@ function Modal({ open, onClose, title, icon, children, footer }) {
 function Field({ label, hint, children }) {
   return (
     <div className="space-y-2">
-      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</label>
+      <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">{label}</label>
       {children}
-      {hint && <p className="text-[10px] text-slate-400 px-1 mt-1">{hint}</p>}
+      {hint && <p className="text-xs text-slate-400 px-1 mt-1">{hint}</p>}
     </div>
   )
 }
@@ -160,7 +160,7 @@ function HubCard({ icon, title, desc, tag, onClick }) {
 
       {/* Footer */}
       <div className="pt-5 w-full border-t border-emerald-900/5 flex justify-between items-center">
-        <span className="text-[10px] font-black text-emerald-800 uppercase tracking-[0.18em]">{tag}</span>
+        <span className="text-xs font-black text-emerald-800 uppercase tracking-[0.18em]">{tag}</span>
         <div className="w-8 h-8 rounded-full bg-emerald-900/5 flex items-center justify-center group-hover:bg-emerald-900 group-hover:text-white transition-all duration-300">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6"/></svg>
         </div>
@@ -264,7 +264,7 @@ export default function Settings() {
   )
 
   return (
-    <div className="space-y-8 pb-10" style={{ fontFamily: 'Prompt, sans-serif' }}>
+    <div className="space-y-8 pb-10" >
 
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -358,7 +358,7 @@ export default function Settings() {
               </p>
             </div>
             <div className="pt-5 w-full border-t border-red-900/10 flex justify-between items-center">
-              <span className="text-[10px] font-black text-red-700 uppercase tracking-[0.18em]">⚠️ Owner Only</span>
+              <span className="text-xs font-black text-red-700 uppercase tracking-[0.18em]">⚠️ Owner Only</span>
               <div className="w-8 h-8 rounded-full bg-red-900/5 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-all duration-300">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6"/></svg>
               </div>
@@ -530,13 +530,13 @@ export default function Settings() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-green-500"></span> LINE URL
                   </label>
                   <TextInput value={settings.contact_line_url} onChange={v => set('contact_line_url', v)} placeholder="https://lin.ee/xxxxx"/>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-green-500"></span> LINE ID
                   </label>
                   <TextInput value={settings.contact_line_id} onChange={v => set('contact_line_id', v)} placeholder="@thlotto"/>
@@ -544,20 +544,20 @@ export default function Settings() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-blue-500"></span> Facebook Page
                   </label>
                   <TextInput value={settings.facebook_url} onChange={v => set('facebook_url', v)} placeholder="https://facebook.com/thlotto"/>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-pink-500"></span> TikTok
                   </label>
                   <TextInput value={settings.tiktok_url} onChange={v => set('tiktok_url', v)} placeholder="https://tiktok.com/@thlotto"/>
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5">
+                <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-sky-500"></span> Telegram
                 </label>
                 <TextInput value={settings.telegram_url} onChange={v => set('telegram_url', v)} placeholder="https://t.me/thlotto"/>
@@ -575,21 +575,21 @@ export default function Settings() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Google Tag Manager</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase">Google Tag Manager</label>
                   <TextInput value={settings.gtm_id} onChange={v => set('gtm_id', v)} placeholder="GTM-XXXXXXX"/>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Google Analytics (GA4)</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase">Google Analytics (GA4)</label>
                   <TextInput value={settings.ga4_id} onChange={v => set('ga4_id', v)} placeholder="G-XXXXXXXXXX"/>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Meta Pixel (Facebook)</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase">Meta Pixel (Facebook)</label>
                   <TextInput value={settings.meta_pixel_id} onChange={v => set('meta_pixel_id', v)} placeholder="1234567890"/>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">TikTok Pixel</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase">TikTok Pixel</label>
                   <TextInput value={settings.tiktok_pixel_id} onChange={v => set('tiktok_pixel_id', v)} placeholder="CXXXXXXXXX"/>
                 </div>
               </div>
@@ -617,7 +617,7 @@ export default function Settings() {
             <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
               <span className="w-5 h-0.5 bg-primary rounded-full"></span> ข้อความวิ่ง (Marquee)
             </h4>
-            <p className="text-[11px] text-slate-500 mb-3">จัดการข้อความที่วิ่งอยู่ด้านบนหน้าเว็บผู้ใช้ — แต่ละข้อความวิ่งเรียงกันคั่นด้วย " • "</p>
+            <p className="text-xs text-slate-500 mb-3">จัดการข้อความที่วิ่งอยู่ด้านบนหน้าเว็บผู้ใช้ — แต่ละข้อความวิ่งเรียงกันคั่นด้วย " • "</p>
 
             {/* รายการข้อความปัจจุบัน */}
             <div className="space-y-2 mb-3">
@@ -626,7 +626,7 @@ export default function Settings() {
               )}
               {announcements.map((a, idx) => (
                 <div key={a.id} className={`flex items-center gap-2 p-2.5 rounded-xl border ${a.is_active ? 'bg-emerald-50/30 border-emerald-100' : 'bg-slate-50 border-slate-100 opacity-60'}`}>
-                  <span className="text-[10px] font-bold text-slate-400 w-6 text-center">{idx + 1}</span>
+                  <span className="text-xs font-bold text-slate-400 w-6 text-center">{idx + 1}</span>
                   <input
                     type="text"
                     value={a.content}
@@ -636,7 +636,7 @@ export default function Settings() {
                   />
                   <button
                     onClick={() => toggleAnnouncement(a.id, a.is_active)}
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${a.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}
+                    className={`px-2.5 py-1 rounded-full text-xs font-bold ${a.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}
                     title={a.is_active ? 'กดเพื่อปิด' : 'กดเพื่อเปิด'}
                   >
                     {a.is_active ? 'ON' : 'OFF'}
@@ -673,7 +673,7 @@ export default function Settings() {
               <div className="bg-primary/10 rounded-xl overflow-hidden border border-primary/20">
                 <div className="px-3 py-1 bg-primary/20 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                  <span className="text-[10px] font-bold text-primary uppercase">Preview (ตรงกับที่ User เห็น)</span>
+                  <span className="text-xs font-bold text-primary uppercase">Preview (ตรงกับที่ User เห็น)</span>
                 </div>
                 <div className="overflow-hidden py-2 px-4">
                   <div className="flex animate-marquee whitespace-nowrap">
@@ -704,15 +704,15 @@ export default function Settings() {
             />
             <div className="mt-4 space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">หัวเรื่อง</label>
+                <label className="text-xs font-bold text-slate-400 uppercase">หัวเรื่อง</label>
                 <TextInput value={settings.popup_title} onChange={v => set('popup_title', v)} placeholder="โปรโมชั่นพิเศษ!"/>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">รายละเอียด</label>
+                <label className="text-xs font-bold text-slate-400 uppercase">รายละเอียด</label>
                 <TextInput large value={settings.popup_description} onChange={v => set('popup_description', v)} placeholder="สมัครวันนี้รับโบนัสฟรี 50 บาท..."/>
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase">รูปภาพ (940×940 สี่เหลี่ยมจัตุรัส)</label>
+                <label className="text-xs font-bold text-slate-400 uppercase">รูปภาพ (940×940 สี่เหลี่ยมจัตุรัส)</label>
                 <div className="flex items-center gap-3">
                   <TextInput value={settings.popup_image_url} onChange={v => set('popup_image_url', v)} placeholder="URL รูปภาพ หรืออัปโหลด"/>
                   <label className="shrink-0 cursor-pointer bg-primary hover:bg-primary/90 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors">
@@ -740,7 +740,7 @@ export default function Settings() {
                 <div className="bg-slate-50 rounded-xl border border-slate-200 p-4">
                   <div className="flex items-center gap-1.5 mb-3">
                     <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                    <span className="text-[10px] font-bold text-primary uppercase">Popup Preview</span>
+                    <span className="text-xs font-bold text-primary uppercase">Popup Preview</span>
                   </div>
                   <div className="bg-white rounded-xl shadow-lg border border-slate-100 max-w-xs mx-auto overflow-hidden">
                     {settings.popup_image_url && (

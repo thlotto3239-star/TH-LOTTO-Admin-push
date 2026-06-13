@@ -178,7 +178,7 @@ export default function Withdrawals() {
                         </div>
                         <div className="min-w-0">
                           <div className="font-medium text-on-surface text-sm truncate">{r.profiles?.full_name || '-'}</div>
-                          <div className="text-[11px] text-on-surface-variant">{r.profiles?.member_id} · {r.profiles?.phone}</div>
+                          <div className="text-xs text-on-surface-variant">{r.profiles?.member_id} · {r.profiles?.phone}</div>
                         </div>
                       </div>
                     </td>
@@ -188,7 +188,7 @@ export default function Withdrawals() {
                         <BankBadge code={r.bank_name} />
                         <span className="text-xs text-on-surface-variant truncate max-w-[120px]" title={r.bank_account_name}>{r.bank_account_name}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-[11px] font-mono text-outline">
+                      <div className="flex items-center gap-1 text-xs font-mono text-outline">
                         {r.bank_account_number}
                         <button onClick={() => copyText(r.bank_account_number)} className="text-primary hover:text-primary/70">
                           {copied === r.bank_account_number ? '✓' : <Copy size={11}/>}

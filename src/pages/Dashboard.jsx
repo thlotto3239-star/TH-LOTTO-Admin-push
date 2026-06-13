@@ -19,12 +19,12 @@ function KPICard({ icon: Icon, label, value, sub, alert, iconBg = 'bg-primary/10
           <Icon size={18} className="md:size-[22px]" strokeWidth={2}/>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] md:text-xs font-medium text-on-surface-variant uppercase tracking-wider truncate">{label}</p>
+          <p className="text-xs md:text-xs font-medium text-on-surface-variant uppercase tracking-wider truncate">{label}</p>
           <h2 className="text-lg md:text-2xl font-bold text-on-surface mt-0.5 truncate">{value}</h2>
-          {sub && <p className="text-[10px] md:text-xs text-outline mt-0.5 truncate">{sub}</p>}
+          {sub && <p className="text-xs md:text-xs text-outline mt-0.5 truncate">{sub}</p>}
         </div>
         {alert && (
-          <span className="hidden md:inline-flex flex-shrink-0 px-2.5 py-1 bg-error/10 text-error rounded-full text-[10px] font-bold uppercase tracking-wide animate-pulse">
+          <span className="hidden md:inline-flex flex-shrink-0 px-2.5 py-1 bg-error/10 text-error rounded-full text-xs font-bold uppercase tracking-wide animate-pulse">
             รอดำเนินการ
           </span>
         )}
@@ -275,7 +275,7 @@ export default function Dashboard() {
   const s = stats || {}
 
   return (
-    <div className="space-y-6 pb-10" style={{ fontFamily: 'Prompt, sans-serif' }}>
+    <div className="space-y-6 pb-10" >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -379,7 +379,7 @@ export default function Dashboard() {
                             {typeLabel[f.type] || f.type}
                           </span>
                           {f.status === 'PENDING' && (
-                            <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-black uppercase animate-pulse">รอตรวจสอบ</span>
+                            <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-black uppercase animate-pulse">รอตรวจสอบ</span>
                           )}
                         </div>
                         <span className="text-xs text-slate-400 font-mono">{new Date(f.created_at).toLocaleTimeString('th-TH', { hour:'2-digit', minute:'2-digit' })}</span>
@@ -397,12 +397,12 @@ export default function Dashboard() {
                               {f.profiles.avatar_url ? (
                                 <img src={f.profiles.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover border border-slate-100 shrink-0" />
                               ) : (
-                                <div className="w-5 h-5 rounded-full bg-emerald-800/10 text-emerald-800 text-[10px] font-bold flex items-center justify-center shrink-0">
+                                <div className="w-5 h-5 rounded-full bg-emerald-800/10 text-emerald-800 text-xs font-bold flex items-center justify-center shrink-0">
                                   {(f.profiles.full_name || '?')[0].toUpperCase()}
                                 </div>
                               )}
                               <span className="font-bold text-emerald-950 truncate">{f.profiles.full_name || `@${f.profiles.member_id}`}</span>
-                              {f.profiles.member_id && <span className="text-[10px] text-slate-400 font-mono">@{f.profiles.member_id}</span>}
+                              {f.profiles.member_id && <span className="text-xs text-slate-400 font-mono">@{f.profiles.member_id}</span>}
                             </div>
                           )}
 
@@ -412,13 +412,13 @@ export default function Dashboard() {
                               {f.bank_info?.image_url ? (
                                 <img src={f.bank_info.image_url} alt="" className="w-6 h-6 rounded-full object-cover border border-slate-200 shrink-0" />
                               ) : (
-                                <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-[9px] font-black flex items-center justify-center shrink-0">
+                                <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs font-black flex items-center justify-center shrink-0">
                                   {(f.bank_code || '?').slice(0, 3)}
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <div className="text-[11px] font-bold text-slate-700 truncate">{f.bank_info?.name || f.bank_code || 'ไม่ระบุธนาคาร'}</div>
-                                {f.bank_account_number && <div className="text-[10px] font-mono text-slate-500">{f.bank_account_number}</div>}
+                                <div className="text-xs font-bold text-slate-700 truncate">{f.bank_info?.name || f.bank_code || 'ไม่ระบุธนาคาร'}</div>
+                                {f.bank_account_number && <div className="text-xs font-mono text-slate-500">{f.bank_account_number}</div>}
                               </div>
                             </div>
                           )}
@@ -429,13 +429,13 @@ export default function Dashboard() {
                               {f.lottery_markets.logo_url ? (
                                 <img src={f.lottery_markets.logo_url} alt="" className="w-6 h-6 rounded-full object-cover border border-slate-200 shrink-0" />
                               ) : (
-                                <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-[9px] font-black flex items-center justify-center shrink-0">
+                                <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-black flex items-center justify-center shrink-0">
                                   {(f.lottery_markets.code || '?').slice(0, 3)}
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <div className="text-[11px] font-bold text-slate-700 truncate">{f.lottery_markets.name}</div>
-                                <div className="text-[10px] text-slate-500 font-mono truncate">{f.note}</div>
+                                <div className="text-xs font-bold text-slate-700 truncate">{f.lottery_markets.name}</div>
+                                <div className="text-xs text-slate-500 font-mono truncate">{f.note}</div>
                               </div>
                             </div>
                           )}
@@ -487,7 +487,7 @@ export default function Dashboard() {
             <h3 className="font-bold text-[#022c22] text-lg flex items-center gap-2">
               <Timer size={18} className="text-orange-500"/> ใกล้ปิดรับ
             </h3>
-            <span className="text-[10px] font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full animate-pulse">LIVE</span>
+            <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full animate-pulse">LIVE</span>
           </div>
           <div className="space-y-2.5 max-h-[300px] overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
             {(() => {
@@ -504,7 +504,7 @@ export default function Dashboard() {
                   {m.logo_url ? <img src={m.logo_url} alt="" className="w-9 h-9 rounded-lg object-cover border border-orange-200 bg-white shrink-0"/> : <div className="w-9 h-9 rounded-lg bg-orange-100 shrink-0"/>}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-slate-800 truncate">{m.name}</p>
-                    <p className="text-[10px] text-slate-500">{m.draw_time?.slice(0,5)} น.</p>
+                    <p className="text-xs text-slate-500">{m.draw_time?.slice(0,5)} น.</p>
                   </div>
                   <span className="font-mono text-sm font-black text-orange-600 bg-orange-100 px-2.5 py-1 rounded-lg">{m.countdown}</span>
                 </div>
@@ -529,11 +529,11 @@ export default function Dashboard() {
                   {m.logo_url ? <img src={m.logo_url} alt="" className="w-9 h-9 rounded-lg object-cover border border-emerald-200 bg-white shrink-0"/> : <div className="w-9 h-9 rounded-lg bg-emerald-100 shrink-0"/>}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-slate-800 truncate">{m.name}</p>
-                    <p className="text-[10px] text-slate-500">{m.draw_time?.slice(0,5)} น.</p>
+                    <p className="text-xs text-slate-500">{m.draw_time?.slice(0,5)} น.</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="font-mono text-base font-black text-emerald-700">{m.results?.result_main || '—'}</p>
-                    {m.results?.result_2top && <p className="text-[10px] text-slate-500">2บน: {m.results.result_2top}</p>}
+                    {m.results?.result_2top && <p className="text-xs text-slate-500">2บน: {m.results.result_2top}</p>}
                   </div>
                 </div>
               ));
@@ -606,7 +606,7 @@ export default function Dashboard() {
                             {f.profiles.avatar_url ? (
                               <img src={f.profiles.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover border border-slate-200" />
                             ) : (
-                              <div className="w-6 h-6 rounded-full bg-emerald-800/10 text-emerald-800 text-[10px] font-bold flex items-center justify-center">
+                              <div className="w-6 h-6 rounded-full bg-emerald-800/10 text-emerald-800 text-xs font-bold flex items-center justify-center">
                                 {(f.profiles.full_name || '?')[0].toUpperCase()}
                               </div>
                             )}

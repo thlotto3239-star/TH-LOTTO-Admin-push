@@ -80,7 +80,7 @@ export default function Affiliates() {
               <tr key={u.id} className="hover:bg-surface-container-low transition">
                 <td className="px-5 py-3">
                   <p className="font-medium text-on-surface">{u.full_name || 'ไม่ระบุชื่อ'}</p>
-                  <p className="text-[11px] text-outline">{u.member_id} · {u.phone}</p>
+                  <p className="text-xs text-outline">{u.member_id} · {u.phone}</p>
                 </td>
                 <td className="px-5 py-3 text-secondary font-medium">{u.referral_code || '-'}</td>
                 <td className="px-5 py-3 text-right font-bold text-emerald-600">

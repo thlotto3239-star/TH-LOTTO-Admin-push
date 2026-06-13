@@ -34,12 +34,12 @@ const ALL_PERMISSIONS = [
 
 const RoleBadge = ({ role }) => {
   if (role === 'super_admin') return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">
       <ShieldCheck size={10}/> Super Admin
     </span>
   )
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
       <Shield size={10}/> Admin
     </span>
   )
@@ -246,7 +246,7 @@ export default function Admins() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-on-surface text-sm">{r.full_name || '-'}</span>
                     <RoleBadge role={r.admin_role} />
-                    {isMe && <span className="text-[10px] text-outline">(คุณ)</span>}
+                    {isMe && <span className="text-xs text-outline">(คุณ)</span>}
                   </div>
                   <div className="text-xs text-outline">{r.phone} · {r.member_id}</div>
                 </div>

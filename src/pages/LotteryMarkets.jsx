@@ -93,9 +93,9 @@ function MarketCard({ m, mRates, onEdit }) {
           <div>
             <h3 className="text-2xl font-bold text-emerald-900 leading-tight">{m.name}</h3>
             <div className="flex gap-2 mt-2 flex-wrap">
-              <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">{m.code}</span>
-              {m.show_in_popular && <span className="bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Popular</span>}
-              {m.show_in_trending && <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Hot</span>}
+              <span className="text-xs font-mono font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">{m.code}</span>
+              {m.show_in_popular && <span className="bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest">Popular</span>}
+              {m.show_in_trending && <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest">Hot</span>}
             </div>
           </div>
         </div>
@@ -110,7 +110,7 @@ function MarketCard({ m, mRates, onEdit }) {
       {/* Draw Days + Auto-Close */}
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-3">
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">วันออกผล</label>
+          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">วันออกผล</label>
           <div className="flex flex-wrap gap-2">
             {DAYS.map(d => (
               <DayPill key={d.num} day={d} selected={days.includes(d.num)} onToggle={() => {}} />
@@ -118,7 +118,7 @@ function MarketCard({ m, mRates, onEdit }) {
           </div>
         </div>
         <div className="space-y-3">
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">ปิดรับก่อน</label>
+          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">ปิดรับก่อน</label>
           <div className="relative">
             <div className="w-full bg-slate-100/70 rounded-full px-5 py-3 font-bold text-emerald-950 text-sm flex items-center justify-between">
               <span>{m.close_minutes_before ?? 30}</span>
@@ -131,11 +131,11 @@ function MarketCard({ m, mRates, onEdit }) {
       {/* Time */}
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">เวลาออกรางวัล</label>
+          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">เวลาออกรางวัล</label>
           <div className="bg-slate-100/70 rounded-full px-5 py-3 font-bold text-emerald-950 text-sm">{m.draw_time?.slice(0,5) || '—'} น.</div>
         </div>
         <div className="space-y-2">
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">สถานะ</label>
+          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">สถานะ</label>
           <div className={`rounded-full px-5 py-3 text-sm font-bold ${m.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
             {m.is_active ? '🟢 เปิดใช้งาน' : '⚫ ปิดใช้งาน'}
           </div>
@@ -145,7 +145,7 @@ function MarketCard({ m, mRates, onEdit }) {
       {/* YouTube Live */}
       {m.stream_url && (
         <div className="space-y-2">
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">YouTube Live</label>
+          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">YouTube Live</label>
           <div className="flex items-center gap-3">
             <div className="flex-1 relative bg-slate-100/70 rounded-full px-5 py-3 flex items-center gap-3 overflow-hidden">
               <svg className="text-red-500 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.38.45A3.07 3.07 0 0 0 .5 6.19C.07 8.07 0 12 0 12s.07 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.5 20.4 12 20.4 12 20.4s7.5 0 9.38-.45a3.02 3.02 0 0 0 2.12-2.14C23.93 15.93 24 12 24 12s-.07-3.93-.5-5.81zM9.75 15.52V8.48L15.89 12l-6.14 3.52z"/></svg>
@@ -161,7 +161,7 @@ function MarketCard({ m, mRates, onEdit }) {
       {/* Payout Rates preview */}
       {Object.keys(mRates).length > 0 && (
         <div className="pt-4 border-t border-slate-100">
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">อัตราจ่ายรางวัล</label>
+          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">อัตราจ่ายรางวัล</label>
           <div className="flex flex-wrap gap-2">
             {Object.entries(mRates).map(([bt, rate]) => (
               <span key={bt} className="bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-full text-xs font-bold">
@@ -234,7 +234,7 @@ function MarketModal({ modal, setModal, rates, setRates, onSave, working, setWor
           {/* Basic Info */}
           <div className="grid grid-cols-2 gap-5">
             <div className="col-span-2 flex flex-col gap-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ชื่อตลาดหวย</label>
+              <label className="text-xs font-black text-slate-400 uppercase tracking-widest">ชื่อตลาดหวย</label>
               <input
                 type="text"
                 value={modal.name || ''}
@@ -246,7 +246,7 @@ function MarketModal({ modal, setModal, rates, setRates, onSave, working, setWor
 
             {isNew && (
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">รหัสตลาด (Code)</label>
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">รหัสตลาด (Code)</label>
                 <input
                   type="text"
                   value={modal.code || ''}
@@ -259,7 +259,7 @@ function MarketModal({ modal, setModal, rates, setRates, onSave, working, setWor
 
             {/* Logo File Upload & URL Input */}
             <div className="col-span-2 flex flex-col gap-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">โลโก้ตลาดหวย</label>
+              <label className="text-xs font-black text-slate-400 uppercase tracking-widest">โลโก้ตลาดหวย</label>
               <div className="flex gap-4 items-center">
                 <label className="flex-1 flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 hover:border-emerald-800 hover:bg-emerald-50/30 rounded-2xl py-4 cursor-pointer transition-all">
                   <input
@@ -305,7 +305,7 @@ function MarketModal({ modal, setModal, rates, setRates, onSave, working, setWor
 
           {/* Draw Days */}
           <div className="space-y-3">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">วันที่ออกรางวัล (Draw Days)</label>
+            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">วันที่ออกรางวัล (Draw Days)</label>
             <div className="flex flex-wrap gap-2">
               {DAYS.map(d => (
                 <DayPill key={d.num} day={d} selected={days.includes(d.num)} onToggle={toggleDay} />
@@ -316,7 +316,7 @@ function MarketModal({ modal, setModal, rates, setRates, onSave, working, setWor
           {/* Time & Buffer */}
           <div className="grid grid-cols-2 gap-5">
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">เวลาออกรางวัล</label>
+              <label className="text-xs font-black text-slate-400 uppercase tracking-widest">เวลาออกรางวัล</label>
               <div className="relative">
                 <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 <input
@@ -328,7 +328,7 @@ function MarketModal({ modal, setModal, rates, setRates, onSave, working, setWor
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ปิดรับก่อนออกผล (นาที)</label>
+              <label className="text-xs font-black text-slate-400 uppercase tracking-widest">ปิดรับก่อนออกผล (นาที)</label>
               <div className="relative">
                 <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
                 <input
@@ -343,7 +343,7 @@ function MarketModal({ modal, setModal, rates, setRates, onSave, working, setWor
 
           {/* YouTube */}
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">YouTube URL ถ่ายทอดสด</label>
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest">YouTube URL ถ่ายทอดสด</label>
             <div className="relative">
               <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-red-500" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.38.45A3.07 3.07 0 0 0 .5 6.19C.07 8.07 0 12 0 12s.07 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.5 20.4 12 20.4 12 20.4s7.5 0 9.38-.45a3.02 3.02 0 0 0 2.12-2.14C23.93 15.93 24 12 24 12s-.07-3.93-.5-5.81zM9.75 15.52V8.48L15.89 12l-6.14 3.52z"/></svg>
               <input
@@ -358,7 +358,7 @@ function MarketModal({ modal, setModal, rates, setRates, onSave, working, setWor
 
           {/* CSV URL + Result Source */}
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">แหล่งดึงผลรางวัล</label>
+            <label className="text-xs font-black text-slate-400 uppercase tracking-widest">แหล่งดึงผลรางวัล</label>
             <select
               value={modal.result_source || 'csv'}
               onChange={e => setModal(m => ({ ...m, result_source: e.target.value }))}
@@ -371,7 +371,7 @@ function MarketModal({ modal, setModal, rates, setRates, onSave, working, setWor
           </div>
           {(modal.result_source === 'csv' || !modal.result_source) && (
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Google Sheets CSV URL</label>
+              <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Google Sheets CSV URL</label>
               <input
                 type="url"
                 value={modal.csv_url || ''}
@@ -384,7 +384,7 @@ function MarketModal({ modal, setModal, rates, setRates, onSave, working, setWor
 
           {/* Visibility Toggles */}
           <div className="space-y-3">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">การแสดงผล</label>
+            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">การแสดงผล</label>
             <div className="flex items-center justify-between p-4 bg-emerald-50/60 rounded-2xl border border-emerald-100">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-emerald-900 flex items-center justify-center text-white">
@@ -425,13 +425,13 @@ function MarketModal({ modal, setModal, rates, setRates, onSave, working, setWor
 
           {/* Payout Rates */}
           <div className="space-y-4">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">
               อัตราจ่ายรางวัล (เท่า) {modal.code && <span className="font-mono normal-case">— {modal.code}</span>}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {BET_TYPES.map(bt => (
                 <div key={bt.key} className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{bt.label}</label>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">{bt.label}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -566,7 +566,7 @@ export default function LotteryMarkets() {
   )
 
   return (
-    <div className="space-y-8 pb-12" style={{ fontFamily: 'Prompt, sans-serif' }}>
+    <div className="space-y-8 pb-12" >
 
       {/* Page Header */}
       <div className="flex justify-between items-end">
