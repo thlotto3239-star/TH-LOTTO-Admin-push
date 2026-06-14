@@ -175,7 +175,42 @@ export default function Settings() {
   const [settings, setSettings] = useState({})
   const [loading, setLoading]   = useState(true)
   const [saving, setSaving]     = useState(false)
-  const [modal, setModal]       = useState(null) // 'financial' | 'bank' | 'wheel' | 'social' | 'announce' | 'system' | 'siteControl'
+  const [modal, setModal]       = useState(null) // 'financial' | 'bank' | 'wheel' | 'social' | 'announce' | 'system' | 'siteControl' | 'cleanup'
+
+  // ── Cleanup Storage ──
+  const [cleanupPreview, setCleanupPreview] = useState(null)
+  const [cleanupLoading, setCleanupLoading] = useState(false)
+  const [cleanupResult, setCleanupResult] = useState(null)
+
+  const loadCleanupPreview = async () => {
+    setCleanupLoading(true)
+    setCleanupResult(null)
+    const queries = await Promise.all([
+      supabase.from('instant_draws').select('id', { count: 'exact', head: true }).eq('status', 'SETTLED').lt('created_at', new Date(Date.now() - 7 * 86400000).toISOString()),
+      supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('is_read', true).lt('created_at', new Date(Date.now() - 7 * 86400000).toISOString()),
+      supabase.from('admin_notifications').select('id', { count: 'exact', head: true }).eq('is_read', true).lt('created_at', new Date(Date.now() - 7 * 86400000).toISOString()),
+      supabase.from('login_attempts').select('id', { count: 'exact', head: true }).lt('attempted_at', new Date(Date.now() - 30 * 86400000).toISOString()),
+    ])
+    setCleanupPreview({
+      instant_draws: queries[0].count || 0,
+      notifications: queries[1].count || 0,
+      admin_notifications: queries[2].count || 0,
+      login_attempts: queries[3].count || 0,
+    })
+    setCleanupLoading(false)
+  }
+
+  const runCleanup = async () => {
+    const ok = await alert.confirm('ยืนยันเคลียร์พื้นที่', 'ข้อมูลที่ลบจะไม่สามารถกู้คืนได้ ต้องการดำเนินการต่อ?', 'ลบทั้งหมด', true)
+    if (!ok) return
+    setCleanupLoading(true)
+    const { data, error } = await supabase.rpc('admin_cleanup_storage')
+    setCleanupLoading(false)
+    if (error) { alert.error('เกิดข้อผิดพลาด: ' + error.message); return }
+    setCleanupResult(data)
+    setCleanupPreview(null)
+    alert.success(`เคลียร์สำเร็จ — ลบทั้งหมด ${data.total_deleted} รายการ`)
+  }
 
   // ── Marquee Announcements (CRUD จาก announcements table) ──
   const [announcements, setAnnouncements] = useState([])
@@ -331,7 +366,16 @@ export default function Settings() {
           onClick={() => setModal('system')}
         />
 
-        {/* 7. Site Control — Owner Only */}
+        {/* 7. Cleanup Storage */}
+        <HubCard
+          icon="🧹"
+          title="เคลียร์พื้นที่"
+          desc="ลบข้อมูลเก่าที่ไม่จำเป็น — งวดหวย 1 นาที, แจ้งเตือนอ่านแล้ว, สลิปเก่า, login attempts"
+          tag="Storage Cleanup"
+          onClick={() => { setModal('cleanup'); loadCleanupPreview() }}
+        />
+
+        {/* 8. Site Control — Owner Only */}
         {isOwner && (
           <button
             onClick={() => setModal('siteControl')}
@@ -852,6 +896,81 @@ export default function Settings() {
           </div>
         </Modal>
       )}
+
+      {/* ════════════ MODAL: Cleanup Storage ════════════ */}
+      <Modal
+        open={modal === 'cleanup'}
+        onClose={() => { setModal(null); setCleanupPreview(null); setCleanupResult(null) }}
+        title="เคลียร์พื้นที่"
+        icon="🧹"
+        footer={
+          cleanupPreview && !cleanupResult && (
+            <>
+              <button onClick={() => setModal(null)} className="px-6 py-3 rounded-full font-semibold text-slate-500 hover:bg-slate-100 transition-all">ยกเลิก</button>
+              <button
+                onClick={runCleanup}
+                disabled={cleanupLoading || Object.values(cleanupPreview).every(v => v === 0)}
+                className="bg-red-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-red-700 transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                {cleanupLoading ? <Loader2 size={16} className="animate-spin"/> : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                )}
+                ลบทั้งหมด
+              </button>
+            </>
+          )
+        }
+      >
+        <div className="p-8 space-y-4">
+          {cleanupLoading && !cleanupPreview && (
+            <div className="flex justify-center py-12"><Loader2 size={28} className="animate-spin text-emerald-700"/></div>
+          )}
+
+          {cleanupPreview && !cleanupResult && (
+            <>
+              <p className="text-sm text-slate-500 mb-4">ข้อมูลต่อไปนี้จะถูกลบ — กรุณาตรวจสอบก่อนยืนยัน</p>
+              {[
+                { label: 'งวดหวย 1 นาที (settled > 7 วัน)', count: cleanupPreview.instant_draws, icon: '🎰' },
+                { label: 'แจ้งเตือน user อ่านแล้ว > 7 วัน', count: cleanupPreview.notifications, icon: '🔔' },
+                { label: 'แจ้งเตือน admin อ่านแล้ว > 7 วัน', count: cleanupPreview.admin_notifications, icon: '📋' },
+                { label: 'Login attempts > 30 วัน', count: cleanupPreview.login_attempts, icon: '🔑' },
+                { label: 'สลิปฝากเงิน > 30 วัน (storage)', count: '—', icon: '🧾' },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">{item.icon}</span>
+                    <span className="text-sm font-medium text-slate-700">{item.label}</span>
+                  </div>
+                  <span className={`text-sm font-bold ${item.count > 0 ? 'text-red-600' : 'text-slate-400'}`}>
+                    {item.count === '—' ? 'รวมอยู่ใน function' : item.count === 0 ? 'ไม่มี' : `${item.count} รายการ`}
+                  </span>
+                </div>
+              ))}
+              {Object.values(cleanupPreview).every(v => v === 0) && (
+                <div className="text-center py-6 text-emerald-700 font-bold text-sm">
+                  ✅ ไม่มีข้อมูลที่ต้องลบ — ระบบสะอาดแล้ว
+                </div>
+              )}
+            </>
+          )}
+
+          {cleanupResult && (
+            <div className="space-y-4">
+              <div className="text-center py-4">
+                <span className="text-5xl">✅</span>
+                <h4 className="text-xl font-bold text-emerald-900 mt-3">เคลียร์สำเร็จ</h4>
+                <p className="text-sm text-slate-500 mt-1">ลบทั้งหมด <strong className="text-emerald-700">{cleanupResult.total_deleted}</strong> รายการ</p>
+              </div>
+              {cleanupResult.cleaned && Object.entries(cleanupResult.cleaned).map(([key, val]) => (
+                <div key={key} className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl">
+                  <span className="text-xs font-medium text-slate-600">{key.replace(/_/g, ' ')}</span>
+                  <span className="text-xs font-bold text-emerald-700">{val} ลบแล้ว</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </Modal>
 
     </div>
   )
