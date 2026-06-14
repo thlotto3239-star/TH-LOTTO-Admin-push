@@ -4,7 +4,7 @@ import { Plus, Edit, Trash2, Loader2, X, Save, ToggleLeft, ToggleRight } from 'l
 import { toast } from '../components/Toast'
 import { alert } from '../utils/alert'
 
-const EMPTY = { title:'', promo_code:'', description:'', image_url:'', badge_text:'', background_color:'', type:'general', line1:'', line2:'', bonus_rate:0, bonus_amount:0, min_deposit:0, max_withdrawal:0, turnover_multiplier:1, default_amount:0, target_view:'deposit', is_active:true, allowed_game:'all' }
+const EMPTY = { title:'', promo_code:'', description:'', image_url:'', badge_text:'', background_color:'', type:'general', line1:'', line2:'', bonus_rate:0, bonus_amount:0, min_deposit:0, max_withdrawal:0, turnover_multiplier:1, default_amount:0, target_view:'deposit', is_active:true, allowed_game:'all', max_uses_per_user:1, max_uses_total:0, max_uses_per_day:0, starts_at:'', expires_at:'' }
 
 export default function Promotions() {
   const [rows, setRows]     = useState([])
@@ -23,6 +23,8 @@ export default function Promotions() {
   const save = async () => {
     setWorking(true)
     const { id, created_at, ...fields } = modal
+    if (!fields.starts_at) fields.starts_at = null
+    if (!fields.expires_at) fields.expires_at = null
     let error
     if (id) {
       ({ error } = await supabase.from('promotions').update(fields).eq('id', id))
@@ -159,6 +161,45 @@ export default function Promotions() {
                   <option value="special">พิเศษ (special)</option>
                   <option value="referral">แนะนำเพื่อน (referral)</option>
                 </select>
+              </div>
+              {/* จำกัดการรับโปร */}
+              <div className="border-t border-outline-variant pt-3 mt-1">
+                <p className="text-xs font-bold text-on-surface-variant mb-2">จำกัดการรับโปร</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-xs text-on-surface-variant block mb-1">ต่อคน (ครั้ง)</label>
+                    <input type="number" min="0" value={modal.max_uses_per_user ?? 1}
+                      onChange={e => setModal(m => ({ ...m, max_uses_per_user: Number(e.target.value) }))}
+                      className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                  </div>
+                  <div>
+                    <label className="text-xs text-on-surface-variant block mb-1">ต่อวัน (ครั้ง)</label>
+                    <input type="number" min="0" value={modal.max_uses_per_day ?? 0}
+                      onChange={e => setModal(m => ({ ...m, max_uses_per_day: Number(e.target.value) }))}
+                      className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                  </div>
+                  <div>
+                    <label className="text-xs text-on-surface-variant block mb-1">สิทธิ์รวม (คน)</label>
+                    <input type="number" min="0" value={modal.max_uses_total ?? 0}
+                      onChange={e => setModal(m => ({ ...m, max_uses_total: Number(e.target.value) }))}
+                      className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                  </div>
+                </div>
+                <p className="text-xs text-outline mt-1">0 = ไม่จำกัด</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs text-on-surface-variant block mb-1">วันเริ่มใช้</label>
+                  <input type="datetime-local" value={modal.starts_at ? modal.starts_at.slice(0,16) : ''}
+                    onChange={e => setModal(m => ({ ...m, starts_at: e.target.value || null }))}
+                    className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                </div>
+                <div>
+                  <label className="text-xs text-on-surface-variant block mb-1">วันหมดอายุ</label>
+                  <input type="datetime-local" value={modal.expires_at ? modal.expires_at.slice(0,16) : ''}
+                    onChange={e => setModal(m => ({ ...m, expires_at: e.target.value || null }))}
+                    className="w-full bg-surface-container-low border-none rounded-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"/>
+                </div>
               </div>
               {modal.image_url && <img src={modal.image_url} alt="" className="w-full rounded-xl object-cover max-h-32 border border-outline-variant"/>}
               <div className="flex items-center gap-3">

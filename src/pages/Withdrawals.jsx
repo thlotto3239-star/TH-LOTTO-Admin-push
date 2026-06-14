@@ -36,12 +36,13 @@ export default function Withdrawals() {
   const [note, setNote]       = useState('')
   const [working, setWorking] = useState(false)
   const [copied, setCopied]   = useState('')
+  const [modalPromo, setModalPromo] = useState(null)
   const { showSuccess, showError, showWarning, showConfirm } = useModal()
 
   const load = async () => {
     setLoading(true)
     let q = supabase.from('withdraw_requests')
-      .select('id,amount,status,admin_note,bank_name,bank_account_number,bank_account_name,created_at,approved_at,approved_by,profiles!user_id(full_name,member_id,phone),approver:profiles!approved_by(full_name)')
+      .select('id,user_id,amount,status,admin_note,bank_name,bank_account_number,bank_account_name,created_at,approved_at,approved_by,profiles!user_id(full_name,member_id,phone),approver:profiles!approved_by(full_name)')
       .order('created_at', { ascending: false })
     if (status !== 'ALL') q = q.eq('status', status)
     if (search) {
@@ -208,7 +209,21 @@ export default function Withdrawals() {
                     </td>
                     <td className="px-4 py-3">
                       {r.status === 'PENDING' && (
-                        <button onClick={() => { setModal(r); setNote('') }}
+                        <button onClick={async () => {
+                          setModal(r); setNote(''); setModalPromo(null)
+                          const { data: w } = await supabase.from('wallets')
+                            .select('active_promo_id, turnover_required, turnover_completed, promo_max_withdrawal, promo_allowed_game')
+                            .eq('user_id', r.user_id).single()
+                          if (w?.active_promo_id || (w?.turnover_required > 0 && w?.turnover_completed >= w?.turnover_required)) {
+                            const promoId = w.active_promo_id
+                            let title = 'โปรโมชั่น'
+                            if (promoId) {
+                              const { data: pm } = await supabase.from('promotions').select('title').eq('id', promoId).single()
+                              if (pm) title = pm.title
+                            }
+                            setModalPromo({ ...w, promo_title: title })
+                          }
+                        }}
                           className="px-3 py-1.5 bg-primary hover:bg-primary/90 text-on-primary rounded-full text-xs font-medium transition">
                           ดำเนินการ
                         </button>
@@ -242,6 +257,22 @@ export default function Withdrawals() {
                 </div>
                 <div className="text-on-surface-variant">{modal.bank_account_name}</div>
               </div>
+              {modalPromo && (
+                <div className={`border-t border-outline-variant pt-2 mt-2 ${modalPromo.turnover_completed >= modalPromo.turnover_required ? 'text-secondary' : 'text-warning'}`}>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-xs font-bold">
+                      {modalPromo.turnover_completed >= modalPromo.turnover_required ? '✅' : '⚠️'} โปร: {modalPromo.promo_title}
+                    </span>
+                  </div>
+                  <div className="text-xs text-on-surface-variant">
+                    เทิร์น: {Number(modalPromo.turnover_completed).toLocaleString()}/{Number(modalPromo.turnover_required).toLocaleString()}
+                    {modalPromo.turnover_completed >= modalPromo.turnover_required ? ' (ครบแล้ว)' : ` (เหลือ ฿${(modalPromo.turnover_required - modalPromo.turnover_completed).toLocaleString()})`}
+                  </div>
+                  {modalPromo.promo_max_withdrawal > 0 && (
+                    <div className="text-xs text-on-surface-variant">ถอนสูงสุด: ฿{Number(modalPromo.promo_max_withdrawal).toLocaleString()}</div>
+                  )}
+                </div>
+              )}
             </div>
             <textarea value={note} onChange={e => setNote(e.target.value)}
               placeholder="หมายเหตุ (ถ้ามี)"

@@ -35,6 +35,7 @@ export default function Deposits() {
   const [modal, setModal]       = useState(null)
   const [note, setNote]         = useState('')
   const [working, setWorking]   = useState(false)
+  const [promoMap, setPromoMap] = useState({})
   const { showSuccess, showError, showWarning, showConfirm } = useModal()
 
   const load = async () => {
@@ -59,6 +60,20 @@ export default function Deposits() {
   useEffect(() => { loadRef.current = load })
 
   useEffect(() => { load() }, [status, search])
+
+  useEffect(() => {
+    const fetchPromos = async () => {
+      const { data } = await supabase.from('promotions').select('id, title, bonus_rate, bonus_amount, min_deposit, max_withdrawal, turnover_multiplier, allowed_game, promo_code')
+      const map = {}
+      ;(data || []).forEach(p => {
+        map[p.id] = p
+        map[String(p.id)] = p
+        if (p.promo_code) map[p.promo_code] = p
+      })
+      setPromoMap(map)
+    }
+    fetchPromos()
+  }, [])
 
   useEffect(() => {
     const ch = supabase.channel('deposits-admin')
@@ -179,7 +194,7 @@ export default function Deposits() {
                       </div>
                     </td>
                     <td className="px-4 py-3 font-bold text-secondary text-right whitespace-nowrap">฿{fmt(r.amount)}</td>
-                    <td className="px-4 py-3 text-xs text-on-surface-variant font-medium whitespace-nowrap">{r.promo_code || '-'}</td>
+                    <td className="px-4 py-3 text-xs text-on-surface-variant font-medium whitespace-nowrap">{promoMap[r.promo_code]?.title || r.promo_code || '-'}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${STATUS_LABEL[r.status]?.cls}`}>
                         {STATUS_LABEL[r.status]?.label || r.status}
@@ -238,7 +253,24 @@ export default function Deposits() {
             <div className="bg-surface-container rounded-xl p-4 mb-4 space-y-1 text-sm">
               <div><span className="text-on-surface-variant">สมาชิก:</span> <span className="font-semibold text-on-surface">{modal.profiles?.full_name}</span></div>
               <div><span className="text-on-surface-variant">ยอด:</span> <span className="font-bold text-secondary">฿{fmt(modal.amount)}</span></div>
-              {modal.promo_code && <div><span className="text-on-surface-variant">โปร:</span> <span className="text-secondary">{modal.promo_code}</span></div>}
+              {modal.promo_code && (() => {
+                const p = promoMap[modal.promo_code]
+                const bonusCalc = p ? Math.max((modal.amount * (p.bonus_rate || 0) / 100), p.bonus_amount || 0) : 0
+                return p ? (
+                  <div className="bg-secondary/5 rounded-xl p-3 mt-2 space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-secondary text-sm">redeem</span>
+                      <span className="font-bold text-secondary text-xs">{p.title}</span>
+                    </div>
+                    <div className="text-xs text-on-surface-variant">โบนัส: {p.bonus_rate > 0 ? `${p.bonus_rate}%` : ''}{p.bonus_rate > 0 && p.bonus_amount > 0 ? ' / ' : ''}{p.bonus_amount > 0 ? `฿${p.bonus_amount}` : ''} → <span className="font-bold text-secondary">฿{bonusCalc.toLocaleString()}</span></div>
+                    {p.turnover_multiplier > 0 && <div className="text-xs text-on-surface-variant">เทิร์น: {p.turnover_multiplier}x (ต้องแทง ฿{(modal.amount * p.turnover_multiplier).toLocaleString()})</div>}
+                    {p.max_withdrawal > 0 && <div className="text-xs text-on-surface-variant">ถอนสูงสุด: ฿{Number(p.max_withdrawal).toLocaleString()}</div>}
+                    <div className="text-xs text-on-surface-variant">เล่นได้: {p.allowed_game === 'instant' ? 'หวย 1 นาที' : p.allowed_game === 'main' ? 'หวยหลัก' : 'ทั้งหมด'}</div>
+                  </div>
+                ) : (
+                  <div><span className="text-on-surface-variant">โปร:</span> <span className="text-secondary">{modal.promo_code}</span></div>
+                )
+              })()}
             </div>
             {modal.slip_url && (
               <div className="mb-4">
