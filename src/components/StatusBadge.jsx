@@ -52,7 +52,7 @@ const StatusBadge = ({ status, label, size = 'sm' }) => {
   };
   
   return (
-    <div className={`inline-flex items-center gap-1.5 rounded-full ${config.color} ${config.textColor} ${sizeClasses[size]}`}>
+    <div className={`inline-flex items-center gap-1.5 rounded-full whitespace-nowrap ${config.color} ${config.textColor} ${sizeClasses[size]}`}>
       <Icon size={iconSizes[size]} />
       {displayLabel}
     </div>

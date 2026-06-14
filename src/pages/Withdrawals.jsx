@@ -196,7 +196,7 @@ export default function Withdrawals() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_LABEL[r.status]?.cls}`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${STATUS_LABEL[r.status]?.cls}`}>
                         {STATUS_LABEL[r.status]?.label || r.status}
                       </span>
                     </td>
