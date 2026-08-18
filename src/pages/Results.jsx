@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
-import { Loader2, X, Award, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
-import { toast } from '../components/Toast'
+import { Loader2, CheckCircle2, RefreshCw, Clock, Lock } from 'lucide-react'
 
-const EMPTY = { result_main:'', p_3top:'', p_3front:'', p_3bottom:'', p_2top:'', p_2bottom:'' }
 const fmtDate = (d) => new Date(d + 'T00:00:00').toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'numeric' })
 const fmtDt   = (d) => new Date(d).toLocaleString('th-TH', { dateStyle:'short', timeStyle:'short' })
-const fmtMoney = (n) => Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 2 })
 
 export default function Results() {
   const [schedules, setSchedules] = useState([])
@@ -14,10 +11,6 @@ export default function Results() {
   const [recent,    setRecent]    = useState([])
   const [loading,   setLoading]   = useState(true)
   const [tab,       setTab]       = useState('pending')
-  const [modal,     setModal]     = useState(null)
-  const [form,      setForm]      = useState({ ...EMPTY })
-  const [working,   setWorking]   = useState(false)
-  const [done,      setDone]      = useState(null)
 
   const load = async () => {
     setLoading(true)
@@ -50,77 +43,24 @@ export default function Results() {
 
   useEffect(() => { load() }, [])
 
-  const openModal = (s) => {
-    setModal(s)
-    setForm({ ...EMPTY })
-    setDone(null)
-  }
-
-  const setField = (k, v) => {
-    setForm(f => {
-      const next = { ...f, [k]: v }
-      if (k === 'result_main' && v.length === 6) {
-        next.p_3top = v.slice(-3)
-        next.p_2top = v.slice(-2)
-      }
-      return next
-    })
-  }
-
-  const submit = async () => {
-    const mkt = modal?.lottery_markets
-    const isGov = mkt?.type === 'GOVERNMENT'
-    if (isGov && form.result_main.length !== 6) { toast.warning('กรุณากรอกรางวัลที่ 1 ให้ครบ 6 หลัก'); return }
-    if (!isGov && !form.p_3top) { toast.warning('กรุณากรอก 3 ตัวบน'); return }
-    if (!form.p_2bottom) { toast.warning('กรุณากรอก 2 ตัวล่าง'); return }
-
-    setWorking(true)
-    const { data, error } = await supabase.rpc('admin_set_result_and_settle', {
-      p_market_id:   modal.market_id,
-      p_draw_date:   modal.draw_date,
-      p_result_main: isGov ? form.result_main : (form.p_3top || null),
-      p_3top:        form.p_3top    || null,
-      p_3bottom:     form.p_3bottom || null,
-      p_3front:      form.p_3front  || null,
-      p_2top:        form.p_2top    || null,
-      p_2bottom:     form.p_2bottom || null,
-    })
-    if (error) {
-      setWorking(false)
-      toast.error(error.message, 'ประกาศผลไม่สำเร็จ')
-      return
-    }
-    // Query actual bet counts — trigger may settle before the RPC loop
-    const { data: betsData } = await supabase
-      .from('bets')
-      .select('status, payout_amount')
-      .eq('market_id', modal.market_id)
-      .eq('draw_date', modal.draw_date)
-      .neq('status', 'PENDING')
-
-    const won     = betsData?.filter(b => b.status === 'WON').length || 0
-    const settled = betsData?.length || 0
-    const payout  = betsData?.filter(b => b.status === 'WON')
-                              .reduce((s, b) => s + Number(b.payout_amount || 0), 0) || 0
-    setWorking(false)
-    setDone({ settled_bets: settled, won_bets: won, total_payout: payout })
-    load()
-  }
-
-  const mkt    = modal?.lottery_markets
-  const isGov  = mkt?.type === 'GOVERNMENT'
-  const already = modal ? !!resultMap[`${modal.market_id}_${modal.draw_date}`] : false
-
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-on-surface">ออกผลรางวัล</h1>
-          <p className="text-on-surface-variant text-sm">ประกาศผลและชำระรางวัลอัตโนมัติ</p>
+          <h1 className="text-2xl font-bold text-on-surface">ผลรางวัล</h1>
+          <p className="text-on-surface-variant text-sm">ระบบออกผลและชำระรางวัลอัตโนมัติ (ดูอย่างเดียว)</p>
         </div>
         <button onClick={load} className="flex items-center gap-2 px-4 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface-variant rounded-full text-sm transition">
           <RefreshCw size={14}/> รีเฟรช
         </button>
+      </div>
+
+      {/* Auto-mode notice */}
+      <div className="glass-panel rounded-2xl px-4 py-3 flex items-start gap-2.5 text-sm">
+        <Lock size={16} className="flex-shrink-0 mt-0.5 text-primary"/>
+        <span className="text-on-surface-variant">
+          ผลรางวัลถูกออกและชำระเงินโดยระบบอัตโนมัติ — หน้านี้ใช้สำหรับตรวจสอบสถานะและผลย้อนหลังเท่านั้น ผู้ดูแลระบบไม่สามารถกรอกหรือแก้ไขผลได้
+        </span>
       </div>
 
       {/* Tabs */}
@@ -148,7 +88,6 @@ export default function Results() {
                     <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">งวดวันที่</th>
                     <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">ปิดรับแทง</th>
                     <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">สถานะ</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider whitespace-nowrap text-center">ดำเนินการ</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/30">
@@ -164,21 +103,13 @@ export default function Results() {
                         <td className="px-4 py-3 text-xs text-on-surface-variant whitespace-nowrap">{fmtDt(s.close_time)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           {hasResult ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-container text-on-primary-container">✓ ออกผลแล้ว</span>
-                          ) : (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-warning-container text-on-warning-container">● {s.status}</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-center whitespace-nowrap">
-                          {hasResult ? (
-                            <span className="text-xs text-on-surface-variant inline-flex items-center gap-1">
-                              <CheckCircle2 size={13} className="text-primary"/> เรียบร้อย
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-primary-container text-on-primary-container">
+                              <CheckCircle2 size={12}/> ออกผลแล้ว
                             </span>
                           ) : (
-                            <button onClick={() => openModal(s)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary/90 text-on-primary rounded-full text-xs font-medium transition shadow-sm">
-                              <Award size={13}/> ออกผล
-                            </button>
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-warning-container text-on-warning-container">
+                              <Clock size={12}/> รอระบบออกผล
+                            </span>
                           )}
                         </td>
                       </tr>
@@ -226,122 +157,6 @@ export default function Results() {
               </table>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Result Entry Modal */}
-      {modal && !done && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="glass-panel rounded-2xl shadow-capsule w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-bold text-on-surface">ออกผลรางวัล</h3>
-                <p className="text-sm text-on-surface-variant">{mkt?.name} · {fmtDate(modal.draw_date)}</p>
-              </div>
-              <button onClick={() => setModal(null)}><X size={20} className="text-outline"/></button>
-            </div>
-
-            <div className="bg-error-container/20 border border-error/20 rounded-xl px-4 py-3 mb-5 text-xs flex gap-2 items-start">
-              <AlertCircle size={14} className="flex-shrink-0 mt-0.5 text-error"/>
-              <span className="text-on-surface-variant">หลังกด "ประกาศผล" ระบบชำระเงินรางวัลทันที — ตรวจสอบให้ถูกต้องก่อนยืนยัน</span>
-            </div>
-
-            <div className="space-y-4">
-              {isGov && (
-                <div>
-                  <label className="text-xs font-semibold text-on-surface-variant mb-1.5 block">รางวัลที่ 1 (6 หลัก)</label>
-                  <input value={form.result_main}
-                    onChange={e => setField('result_main', e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="เช่น 834579" maxLength={6}
-                    className="w-full bg-surface-container-low border-none rounded-full px-4 py-3 text-lg font-mono text-center tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-primary"/>
-                  {form.result_main.length === 6 && (
-                    <p className="text-xs text-outline mt-1.5 text-center">
-                      คำนวณอัตโนมัติ → 3 ตัวบน: <b className="text-primary">{form.p_3top}</b> · 2 ตัวบน: <b className="text-primary">{form.p_2top}</b>
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {!isGov && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-on-surface-variant mb-1.5 block">3 ตัวบน</label>
-                    <input value={form.p_3top} onChange={e => setField('p_3top', e.target.value.replace(/\D/g,'').slice(0,3))}
-                      placeholder="เช่น 579" maxLength={3}
-                      className="w-full bg-surface-container-low border-none rounded-full px-4 py-3 text-lg font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-primary"/>
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-on-surface-variant mb-1.5 block">2 ตัวบน</label>
-                    <input value={form.p_2top} onChange={e => setField('p_2top', e.target.value.replace(/\D/g,'').slice(0,2))}
-                      placeholder="เช่น 79" maxLength={2}
-                      className="w-full bg-surface-container-low border-none rounded-full px-4 py-3 text-lg font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-primary"/>
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label className="text-xs font-semibold text-on-surface-variant mb-1.5 block">2 ตัวล่าง</label>
-                <input value={form.p_2bottom} onChange={e => setField('p_2bottom', e.target.value.replace(/\D/g,'').slice(0,2))}
-                  placeholder="เช่น 69" maxLength={2}
-                  className="w-full bg-surface-container-low border-none rounded-full px-4 py-3 text-lg font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-primary"/>
-              </div>
-
-              {isGov && (
-                <>
-                  <div>
-                    <label className="text-xs font-semibold text-on-surface-variant mb-1.5 block">3 ตัวหน้า (คั่นด้วยเว้นวรรค)</label>
-                    <input value={form.p_3front} onChange={e => setField('p_3front', e.target.value)}
-                      placeholder="เช่น 123 456"
-                      className="w-full bg-surface-container-low border-none rounded-full px-4 py-2.5 text-sm font-mono text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-on-surface-variant mb-1.5 block">3 ตัวล่าง (คั่นด้วยเว้นวรรค)</label>
-                    <input value={form.p_3bottom} onChange={e => setField('p_3bottom', e.target.value)}
-                      placeholder="เช่น 868 424"
-                      className="w-full bg-surface-container-low border-none rounded-full px-4 py-2.5 text-sm font-mono text-center focus:outline-none focus:ring-2 focus:ring-primary"/>
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button onClick={submit} disabled={working}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary hover:bg-primary/90 text-on-primary rounded-full font-bold text-sm transition disabled:opacity-60">
-                {working ? <Loader2 size={16} className="animate-spin"/> : <Award size={16}/>}
-                ประกาศผล + ชำระรางวัล
-              </button>
-              <button onClick={() => setModal(null)} className="px-5 py-3 bg-surface-container hover:bg-surface-container-high rounded-full text-sm text-on-surface-variant transition">ยกเลิก</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Success Modal */}
-      {modal && done && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="glass-panel rounded-2xl shadow-capsule w-full max-w-sm p-8 text-center">
-            <CheckCircle2 size={56} className="text-primary mx-auto mb-4"/>
-            <h3 className="text-xl font-bold text-on-surface mb-1">ประกาศผลสำเร็จ!</h3>
-            <p className="text-sm text-on-surface-variant mb-5">{mkt?.name} · งวด {fmtDate(modal?.draw_date)}</p>
-            <div className="bg-surface-container rounded-2xl p-5 space-y-3 mb-6 text-left">
-              <div className="flex justify-between text-sm">
-                <span className="text-on-surface-variant">รายการที่ชำระแล้ว</span>
-                <span className="font-semibold text-on-surface">{done.settled_bets} รายการ</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-on-surface-variant">ถูกรางวัล</span>
-                <span className="font-semibold text-primary">{done.won_bets} รายการ</span>
-              </div>
-              <div className="border-t border-outline-variant pt-3 flex justify-between">
-                <span className="text-on-surface-variant text-sm">ยอดรางวัลรวม</span>
-                <span className="text-xl font-black text-primary">฿{fmtMoney(done.total_payout)}</span>
-              </div>
-            </div>
-            <button onClick={() => { setModal(null); setDone(null) }}
-              className="w-full py-3 bg-primary hover:bg-primary/90 text-on-primary rounded-full font-bold text-sm transition">
-              ปิด
-            </button>
-          </div>
         </div>
       )}
     </div>
