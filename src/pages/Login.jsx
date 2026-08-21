@@ -22,7 +22,10 @@ export default function Login() {
         if (data) {
           const map = {}
           data.forEach(s => { map[s.key] = s.value })
-          if (map.site_logo_url) setLogoUrl(map.site_logo_url)
+          if (map.site_logo_url) {
+            console.log('Setting logo URL:', map.site_logo_url)
+            setLogoUrl(map.site_logo_url)
+          }
           if (map.site_name) setSiteName(map.site_name)
         }
       })
