@@ -31,11 +31,11 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    if (!phone || pin.length !== 4) { setError('กรุณากรอกเบอร์โทรและ PIN 4 หลัก'); return }
+    if (!phone || pin.length !== 4) { setError('PLEASE ENTER PHONE AND 4-DIGIT PIN'); return }
     setLoading(true)
     const { error: err } = await signIn(phone.trim(), pin)
     setLoading(false)
-    if (err) { setError(err.message || 'เข้าสู่ระบบไม่สำเร็จ'); return }
+    if (err) { setError(err.message || 'LOGIN FAILED'); return }
     nav('/', { replace: true })
   }
 
@@ -61,21 +61,21 @@ export default function Login() {
               </div>
             )}
             <h1 className="text-3xl font-black tracking-tight text-primary">{siteName}</h1>
-            <p className="text-sm text-on-surface-variant">ระบบยืนยันตัวตนระดับบริหาร</p>
+            <p className="text-sm text-on-surface-variant">ADMIN AUTHENTICATION SYSTEM</p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {/* Phone */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-on-surface-variant tracking-wide ml-1">เบอร์โทรศัพท์</label>
+              <label className="text-xs font-semibold text-on-surface-variant tracking-wide ml-1">PHONE NUMBER</label>
               <div className="relative flex items-center">
                 <span className="material-symbols-outlined absolute left-4 text-outline text-[20px]">call</span>
                 <input
                   type="tel"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  placeholder="กรอกเบอร์โทรศัพท์"
+                  placeholder="ENTER PHONE NUMBER"
                   maxLength={10}
                   className="w-full bg-surface-container-low border-none rounded-full py-3.5 pl-12 pr-4 text-sm text-on-surface placeholder:text-outline-variant focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all outline-none"
                 />
@@ -84,7 +84,7 @@ export default function Login() {
 
             {/* PIN */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-on-surface-variant tracking-wide ml-1">รหัส PIN 4 หลัก</label>
+              <label className="text-xs font-semibold text-on-surface-variant tracking-wide ml-1">4-DIGIT PIN</label>
               <div className="relative flex items-center">
                 <span className="material-symbols-outlined absolute left-4 text-outline text-[20px]">dialpad</span>
                 <input
@@ -114,8 +114,8 @@ export default function Login() {
             <button type="submit" disabled={loading}
               className="mt-2 w-full bg-primary text-on-primary rounded-full py-3.5 text-sm font-semibold shadow-capsule-md hover:scale-[1.02] active:scale-95 transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2">
               {loading
-                ? <><span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>กำลังเข้าสู่ระบบ...</>
-                : <><span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>login</span>เข้าสู่ระบบ</>
+                ? <><span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>LOGGING IN...
+                : <><span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>login</span>LOGIN
               }
             </button>
           </form>
@@ -123,7 +123,7 @@ export default function Login() {
           {/* Footer */}
           <p className="text-center text-xs text-outline flex items-center justify-center gap-1.5">
             <span className="material-symbols-outlined text-[14px]">lock</span>
-            การเชื่อมต่อที่ปลอดภัยและเข้ารหัส
+            SECURE AND ENCRYPTED CONNECTION
           </p>
         </div>
       </div>
