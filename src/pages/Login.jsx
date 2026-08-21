@@ -114,8 +114,8 @@ export default function Login() {
             <button type="submit" disabled={loading}
               className="mt-2 w-full bg-primary text-on-primary rounded-full py-3.5 text-sm font-semibold shadow-capsule-md hover:scale-[1.02] active:scale-95 transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2">
               {loading
-                ? <><span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>LOGGING IN...
-                : <><span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>login</span>LOGIN
+                ? <><span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>LOGGING IN...</>
+                : <><span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>login</span>LOGIN</>
               }
             </button>
           </form>
