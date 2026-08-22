@@ -55,8 +55,7 @@ export default function Login() {
           {/* Header */}
           <div className="flex flex-col items-center text-center gap-3">
             {logoUrl ? (
-              <img src={logoUrl} alt={siteName} className="h-16 w-auto object-contain drop-shadow-md"
-                onError={e => { e.currentTarget.style.display='none' }} />
+              <img src={logoUrl} alt={siteName} className="h-16 w-auto object-contain drop-shadow-md" />
             ) : (
               <div className="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center shadow-capsule-md border-2 border-white">
                 <span className="material-symbols-outlined text-on-primary-container text-[32px]"
