@@ -5,7 +5,7 @@ import {
   LayoutDashboard, ArrowDownToLine, ArrowUpFromLine, Users, Dices, BadgeCheck,
   Zap, Disc3, Megaphone, Wrench, UserCog, Bell, Menu, LogOut, ChevronDown, Search,
   Images, Newspaper, Rss, Palette, Landmark, RadioTower, DatabaseBackup,
-  ShieldAlert, Ticket, Check, Share2,
+  ShieldAlert, Ticket, Check, Share2, Sparkles,
 } from "lucide-react";
 import { useAdminNav, KNOWN_ADMINS, PAGE_META, type PageId } from "./store";
 import { Btn, Avatar } from "./primitives";
@@ -26,6 +26,7 @@ import { PromotionsPage } from "./pages/promotions";
 import { SettingsPage } from "./pages/settings";
 import { AdminsPage } from "./pages/admins";
 import { SlidersPage } from "./pages/sliders";
+import { PopupPage } from "./pages/popup";
 import { ArticlesPage } from "./pages/articles";
 import { FeedsPage } from "./pages/feeds";
 import { AppearancePage } from "./pages/appearance";
@@ -83,6 +84,7 @@ const NAV: { group: string; items: { id: PageId; label: string; icon: React.Comp
     group: "คอนเทนต์",
     items: [
       { id: "sliders", label: "สไลเดอร์", icon: Images },
+      { id: "popup", label: "ป๊อปอัปหน้าแรก", icon: Sparkles },
       { id: "promotions", label: "โปรโมชั่น", icon: Megaphone },
       { id: "articles", label: "บทความ", icon: Newspaper },
       { id: "feeds", label: "จัดการฟีด", icon: Rss },
@@ -100,14 +102,46 @@ const NAV: { group: string; items: { id: PageId; label: string; icon: React.Comp
   },
 ];
 
+export const DEFAULT_STAFF_PAGES: PageId[] = [
+  "dashboard",
+  "sliders",
+  "popup",
+  "promotions",
+  "articles",
+  "feeds",
+  "wheel",
+  "broadcast",
+];
+
+export function isPagePermitted(pageId: PageId, currentAdmin: any): boolean {
+  if (!currentAdmin) return true;
+  if (currentAdmin.is_super || currentAdmin.admin_role === "super_admin" || currentAdmin.phone === "0622306037") {
+    return true;
+  }
+  const perms: string[] = currentAdmin.permissions || [];
+  if (pageId === "dashboard") return true;
+  if (pageId === "member-detail") return perms.includes("members");
+  if (perms.includes(pageId)) return true;
+  if (DEFAULT_STAFF_PAGES.includes(pageId) && perms.length === 0) {
+    return true;
+  }
+  return false;
+}
+
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
-  const { page, navigate } = useAdminNav();
+  const { page, navigate, currentAdmin } = useAdminNav();
   const { dep, wth, kyc, res } = useAdminCounts();
   const counts = { dep, wth, kyc, res };
   const go = (id: PageId) => { navigate(id); onNavigate?.(); };
+
+  const visibleGroups = NAV.map((g) => ({
+    group: g.group,
+    items: g.items.filter((item) => isPagePermitted(item.id, currentAdmin)),
+  })).filter((g) => g.items.length > 0);
+
   return (
     <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-      {NAV.map((g) => (
+      {visibleGroups.map((g) => (
         <div key={g.group} className="mb-2">
           <p className="px-3 pb-1.5 pt-3 text-[11px] font-bold uppercase tracking-widest text-neutral-400">
             {g.group}
@@ -378,6 +412,26 @@ export function AdminApp({ onLogout }: { onLogout?: () => void } = {}) {
   }, [fetchCounts, currentAdmin?.id]);
 
   const renderPage = () => {
+    if (!isPagePermitted(page, currentAdmin)) {
+      return (
+        <div className="flex min-h-[420px] flex-col items-center justify-center rounded-3xl border border-neutral-200 bg-neutral-50 p-8 text-center shadow-xs">
+          <div className="flex size-16 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 mb-4 ring-8 ring-amber-50">
+            <ShieldAlert className="size-8" />
+          </div>
+          <h3 className="text-lg font-bold text-neutral-900">ไม่มีสิทธิ์เข้าถึงหน้านี้</h3>
+          <p className="mt-1.5 max-w-md text-sm text-neutral-500 leading-relaxed">
+            บัญชีของคุณไม่ได้รับอนุญาตให้จัดการเมนู <strong>{meta.title}</strong> โปรดติดต่อ Super Admin เพื่อขอสิทธิ์การใช้งาน
+          </p>
+          <button
+            onClick={() => navigate("dashboard")}
+            className="mt-6 rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-brand-700 transition-colors"
+          >
+            กลับสู่แผงควบคุม
+          </button>
+        </div>
+      );
+    }
+
     switch (page) {
       case "dashboard": return <DashboardPage />;
       case "deposits": return <DepositsPage />;
@@ -392,6 +446,7 @@ export function AdminApp({ onLogout }: { onLogout?: () => void } = {}) {
       case "wheel": return <WheelPage />;
       case "promotions": return <PromotionsPage />;
       case "sliders": return <SlidersPage />;
+      case "popup": return <PopupPage />;
       case "articles": return <ArticlesPage />;
       case "feeds": return <FeedsPage />;
       case "settings": return <SettingsPage />;

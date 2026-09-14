@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/lib/supabase";
-import { parseUserAgent, resolveIpGeo } from "@/lib/geo-device";
+import { parseUserAgent, resolveIpGeo, extractClientIp } from "@/lib/geo-device";
 
 const supabaseAnon = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ygopnjbvccenryejqmlw.supabase.co",
@@ -155,12 +155,51 @@ export async function GET(req: NextRequest) {
       }
 
       case "markets": {
-        const { data, error } = await supabaseAdmin
-          .from("lottery_markets")
-          .select("*")
-          .order("display_order", { ascending: true, nullsFirst: false });
-        if (error) throw error;
-        return NextResponse.json({ success: true, data });
+        const [
+          { data: markets, error: mErr },
+          { data: rates, error: rErr },
+        ] = await Promise.all([
+          supabaseAdmin
+            .from("lottery_markets")
+            .select("*")
+            .order("id", { ascending: true }),
+          supabaseAdmin
+            .from("payout_rates")
+            .select("market, bet_type, rate"),
+        ]);
+        if (mErr) throw mErr;
+        if (rErr) throw rErr;
+
+        const rateMap: Record<string, Record<string, number>> = {};
+        (rates || []).forEach((r: any) => {
+          const key = r.market || r.market_id || r.lottery_code;
+          if (key) {
+            if (!rateMap[key]) rateMap[key] = {};
+            rateMap[key][r.bet_type] = Number(r.rate);
+          }
+        });
+
+        const merged = (markets || []).map((m: any) => {
+          const mCode = m.code || m.id;
+          const mId = m.id || m.code;
+          const combinedRates = {
+            ...(mCode && rateMap[mCode] ? rateMap[mCode] : {}),
+            ...(mId && rateMap[mId] ? rateMap[mId] : {}),
+            ...(rateMap[String(mId)] ? rateMap[String(mId)] : {}),
+          };
+
+          return {
+            ...m,
+            code: mCode,
+            id: mId,
+            logo_url: m.icon_url || m.logo_url,
+            image_url: m.icon_url || m.image_url,
+            close_minutes_before: m.close_before_minutes ?? m.close_minutes_before ?? 15,
+            rates: combinedRates,
+          };
+        });
+
+        return NextResponse.json({ success: true, data: merged });
       }
 
       case "instant-bet-types": {
@@ -250,6 +289,39 @@ export async function GET(req: NextRequest) {
           return NextResponse.json({ success: true, data: rpcBets || [] });
         }
         return NextResponse.json({ success: true, data: data || [] });
+      }
+
+      case "popup": {
+        const { data, error } = await supabaseAdmin
+          .from("settings")
+          .select("key, value")
+          .in("key", ["popup_enabled", "popup_title", "popup_description", "popup_image_url", "popup_version"]);
+        if (error) throw error;
+        const map: Record<string, string> = {};
+        (data || []).forEach((s: any) => {
+          if (s.key) map[s.key] = s.value;
+        });
+        const enabledVal = String(map.popup_enabled || "").toUpperCase();
+        return NextResponse.json({
+          success: true,
+          data: {
+            popup_enabled: enabledVal === "TRUE" || enabledVal === "1" || enabledVal === "YES",
+            popup_title: map.popup_title || "",
+            popup_description: map.popup_description || "",
+            popup_image_url: map.popup_image_url || "",
+            popup_version: map.popup_version || "",
+          },
+        });
+      }
+
+      case "settings": {
+        const { data, error } = await supabaseAdmin.from("settings").select("*");
+        if (error) throw error;
+        const dict: Record<string, string> = {};
+        for (const row of data || []) {
+          if (row.key) dict[row.key] = row.value ?? "";
+        }
+        return NextResponse.json({ success: true, data: dict, raw: data || [] });
       }
 
       case "restricted-numbers": {
@@ -504,6 +576,23 @@ export async function GET(req: NextRequest) {
         const spinsCost = (wheelSpins || []).reduce((sum, s) => sum + Number(s.cost || 0), 0);
         const spinsPrizes = (wheelSpins || []).reduce((sum, s) => sum + Number(s.prize_amount || 0), 0);
 
+        const settingsDict: Record<string, string> = {};
+        (settings || []).forEach((s: any) => {
+          if (s.key) settingsDict[s.key] = s.value;
+        });
+
+        const synthCompanyBanks = (settingsDict.company_bank_account_number || settingsDict.bank_account_number)
+          ? [{
+              id: "company-bank-1",
+              bank_code: settingsDict.company_bank_code || "KBANK",
+              account_number: settingsDict.company_bank_account_number || settingsDict.bank_account_number || "",
+              account_name: settingsDict.company_bank_account_name || settingsDict.bank_account_name || "บริษัท ทีเอช ล็อตโต้ จำกัด",
+              branch: "สำนักงานใหญ่",
+              qr_code_url: settingsDict.bank_qr_url || "",
+              is_active: true,
+            }]
+          : [];
+
         return NextResponse.json({
           success: true,
           data: {
@@ -512,6 +601,7 @@ export async function GET(req: NextRequest) {
             articles: articles || [],
             announcements: announcements || [],
             banks: banks || [],
+            company_bank_accounts: synthCompanyBanks,
             wheelPrizes: wheelPrizes || [],
             wheelSpinsStats: {
               spins: spinsCount,
@@ -519,6 +609,35 @@ export async function GET(req: NextRequest) {
               prizes_paid: spinsPrizes,
             },
             settings: settings || [],
+          },
+        });
+      }
+
+      case "instant": {
+        const [
+          { data: instantBets },
+          { data: settings },
+        ] = await Promise.all([
+          supabaseAdmin.from("instant_bets").select("*, profiles!instant_bets_user_id_fkey(full_name, member_id)").order("created_at", { ascending: false }).limit(50),
+          supabaseAdmin.from("settings").select("*").in("key", ["instant_name", "instant_logo_url", "instant_show_popular", "instant_show_trending", "instant_win_rate"]),
+        ]);
+
+        const settingsMap: Record<string, string> = {};
+        (settings || []).forEach((s) => {
+          if (s.key) settingsMap[s.key] = s.value;
+        });
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            bets: instantBets || [],
+            settings: {
+              name: settingsMap.instant_name || "หวยไทย 1 นาที",
+              logo_url: settingsMap.instant_logo_url || "",
+              show_popular: settingsMap.instant_show_popular === "true",
+              show_trending: settingsMap.instant_show_trending !== "false",
+              win_rate: settingsMap.instant_win_rate ? Number(settingsMap.instant_win_rate) : 95,
+            },
           },
         });
       }
@@ -548,16 +667,6 @@ export async function GET(req: NextRequest) {
         const { data, error } = await query;
         if (error) throw error;
         return NextResponse.json({ success: true, data: data || [] });
-      }
-
-      case "settings": {
-        const { data, error } = await supabaseAdmin.from("settings").select("*");
-        if (error) throw error;
-        const dict: Record<string, string> = {};
-        for (const row of data || []) {
-          if (row.key) dict[row.key] = row.value ?? "";
-        }
-        return NextResponse.json({ success: true, data: dict, raw: data });
       }
 
       case "affiliate": {
@@ -682,48 +791,6 @@ export async function GET(req: NextRequest) {
         });
       }
 
-      case "table-stats": {
-        const tableNames = [
-          { key: "draw_schedules", name: "ตารางออกรางวัล (draw_schedules)" },
-          { key: "instant_draws", name: "ผลหวยหนึ่งนาที (instant_draws)" },
-          { key: "bets", name: "โพยหวย (bets)" },
-          { key: "transactions", name: "ธุรกรรมการเงิน (transactions)" },
-          { key: "admin_notifications", name: "การแจ้งเตือนแอดมิน (admin_notifications)" },
-          { key: "payout_rates", name: "อัตราจ่ายรางวัล (payout_rates)" },
-          { key: "lottery_results", name: "ผลรางวัลหวย (lottery_results)" },
-          { key: "profiles", name: "สมาชิกและผู้ใช้ (profiles)" },
-          { key: "wallets", name: "กระเป๋าเงินสมาชิก (wallets)" },
-          { key: "settings", name: "ตั้งค่าระบบ (settings)" },
-          { key: "notifications", name: "การแจ้งเตือนผู้ใช้ (notifications)" },
-          { key: "lucky_wheel_spins", name: "ประวัติหมุนวงล้อ (lucky_wheel_spins)" },
-          { key: "lottery_markets", name: "ตลาดหวย (lottery_markets)" },
-          { key: "login_attempts", name: "บันทึกการเข้าสู่ระบบ (login_attempts)" },
-          { key: "instant_bet_types", name: "ประเภทแทงหวยไว (instant_bet_types)" },
-          { key: "banks", name: "ธนาคาร (banks)" },
-          { key: "lucky_wheel_prizes", name: "รางวัลวงล้อ (lucky_wheel_prizes)" },
-          { key: "announcements", name: "ประกาศระบบ (announcements)" },
-          { key: "sliders", name: "สไลเดอร์แบนเนอร์ (sliders)" },
-          { key: "promotions", name: "โปรโมชั่น (promotions)" },
-          { key: "deposit_requests", name: "รายการฝากเงิน (deposit_requests)" },
-          { key: "withdraw_requests", name: "รายการถอนเงิน (withdraw_requests)" },
-          { key: "articles", name: "บทความ (articles)" },
-          { key: "restricted_numbers", name: "เลขอั้น (restricted_numbers)" },
-        ];
-
-        const counts = await Promise.all(
-          tableNames.map(async (t) => {
-            const { count } = await supabaseAdmin.from(t.key).select("*", { count: "exact", head: true });
-            return {
-              name: t.name,
-              table: t.key,
-              rows: count || 0,
-              size: `${(((count || 0) * 0.4) + 1).toFixed(1)} KB`,
-            };
-          })
-        );
-
-        return NextResponse.json({ success: true, data: counts });
-      }
 
       case "member-detail": {
         const id = searchParams.get("id");
@@ -815,16 +882,6 @@ export async function GET(req: NextRequest) {
         });
       }
 
-      case "settings": {
-        const { data, error } = await supabaseAdmin.from("settings").select("key, value");
-        if (error) throw error;
-        const dict: Record<string, string> = {};
-        (data || []).forEach((row: any) => {
-          if (row.key) dict[row.key] = row.value ?? "";
-        });
-        return NextResponse.json({ success: true, data: dict });
-      }
-
       case "export": {
         const table = searchParams.get("table") || "profiles";
         const allowed = ["profiles", "bets", "transactions", "lottery_results", "settings", "promotions", "deposit_requests", "withdraw_requests", "banks", "announcements"];
@@ -841,6 +898,58 @@ export async function GET(req: NextRequest) {
           .from("notifications")
           .select("*")
           .order("created_at", { ascending: false })
+          .limit(50);
+        if (error) throw error;
+        return NextResponse.json({ success: true, data: data || [] });
+      }
+
+      case "table-stats": {
+        const tableList = [
+          { name: "สมาชิกทั้งหมด", table: "profiles" },
+          { name: "โพยแทงหวย", table: "bets" },
+          { name: "ผลรางวัลหวย", table: "lottery_results" },
+          { name: "รอบออกรางวัล", table: "draw_schedules" },
+          { name: "ตลาดหวย", table: "lottery_markets" },
+          { name: "อัตราจ่ายรางวัล", table: "payout_rates" },
+          { name: "เลขอั้น/จ่ายครึ่ง", table: "restricted_numbers" },
+          { name: "ธุรกรรมการเงิน", table: "transactions" },
+          { name: "คำขอฝากเงิน", table: "deposit_requests" },
+          { name: "คำขอถอนเงิน", table: "withdraw_requests" },
+          { name: "บัญชีธนาคาร", table: "banks" },
+          { name: "กระเป๋าเงิน", table: "wallets" },
+          { name: "ประวัติเข้าสู่ระบบ", table: "login_attempts" },
+          { name: "หวยหนึ่งนาที (งวด)", table: "instant_draws" },
+          { name: "โพยหวยหนึ่งนาที", table: "instant_bets" },
+          { name: "วงล้อเสี่ยงโชค (หมุน)", table: "lucky_wheel_spins" },
+          { name: "ของรางวัลวงล้อ", table: "lucky_wheel_prizes" },
+          { name: "สไลเดอร์แบนเนอร์", table: "sliders" },
+          { name: "โปรโมชั่น", table: "promotions" },
+          { name: "บทความและข่าวสาร", table: "articles" },
+          { name: "ประกาศตัววิ่ง", table: "announcements" },
+          { name: "การแจ้งเตือน", table: "notifications" },
+          { name: "ตั้งค่าระบบ", table: "settings" },
+          { name: "ประวัติสำรองข้อมูล", table: "backup_logs" },
+        ];
+
+        const counts = await Promise.all(
+          tableList.map(async (t) => {
+            const { count } = await supabaseAdmin.from(t.table).select("*", { count: "exact", head: true });
+            return {
+              name: t.name,
+              table: t.table,
+              rows: count || 0,
+            };
+          })
+        );
+
+        return NextResponse.json({ success: true, data: counts });
+      }
+
+      case "backup-logs": {
+        const { data, error } = await supabaseAdmin
+          .from("backup_logs")
+          .select("*")
+          .order("backed_up_at", { ascending: false })
           .limit(50);
         if (error) throw error;
         return NextResponse.json({ success: true, data: data || [] });
@@ -948,12 +1057,12 @@ export async function POST(req: NextRequest) {
         }
 
         // Forensics & logging preparation
-        const forwarded = req.headers.get("x-forwarded-for");
-        const realIp = req.headers.get("x-real-ip");
-        const rawIp = forwarded ? forwarded.split(",")[0].trim() : (realIp || "127.0.0.1");
+        const clientReportedIp = payload.client_ip;
+        const clientReportedGeo = payload.client_geo;
+        const rawIp = extractClientIp(req, clientReportedIp);
         const ua = req.headers.get("user-agent") || "";
         const dev = parseUserAgent(ua);
-        const geo = await resolveIpGeo(rawIp);
+        const geo = await resolveIpGeo(rawIp, clientReportedGeo, req);
 
         // Verification Strategy
         let authenticated = false;
@@ -1090,22 +1199,33 @@ export async function POST(req: NextRequest) {
 
         const updateData: any = {};
         if (name !== undefined) updateData.name = name;
-        if (close_minutes_before !== undefined) updateData.close_minutes_before = close_minutes_before;
+        if (code !== undefined) updateData.code = code;
+        if (close_minutes_before !== undefined) updateData.close_minutes_before = Number(close_minutes_before);
+        if (logo_url !== undefined) {
+          updateData.logo_url = logo_url;
+          updateData.image_url = logo_url;
+        }
         if (stream_url !== undefined) updateData.stream_url = stream_url;
-        if (logo_url !== undefined) updateData.logo_url = logo_url;
-        if (draw_days !== undefined) updateData.draw_days = draw_days;
+        if (draw_days !== undefined && Array.isArray(draw_days)) updateData.draw_days = draw_days;
         if (draw_day_of_month !== undefined) updateData.draw_day_of_month = draw_day_of_month;
         if (draw_time !== undefined) updateData.draw_time = draw_time;
-        if (show_in_popular !== undefined) updateData.show_in_popular = show_in_popular;
-        if (show_in_trending !== undefined) updateData.show_in_trending = show_in_trending;
-        if (is_open !== undefined) updateData.is_open = is_open;
-        if (is_active !== undefined) updateData.is_active = is_active;
-        if (min_bet !== undefined) updateData.min_bet = Number(min_bet);
-        else if (limits?.min_bet !== undefined) updateData.min_bet = Number(limits.min_bet);
-        if (max_bet !== undefined) updateData.max_bet = Number(max_bet);
-        else if (limits?.max_bet !== undefined) updateData.max_bet = Number(limits.max_bet);
-        if (max_per_number !== undefined) updateData.max_per_number = Number(max_per_number);
-        else if (limits?.max_per_number !== undefined) updateData.max_per_number = Number(limits.max_per_number);
+        if (show_in_popular !== undefined) updateData.show_in_popular = Boolean(show_in_popular);
+        if (show_in_trending !== undefined) updateData.show_in_trending = Boolean(show_in_trending);
+
+        const activeBool = is_active !== undefined ? Boolean(is_active) : is_open !== undefined ? Boolean(is_open) : undefined;
+        if (activeBool !== undefined) {
+          updateData.is_active = activeBool;
+          updateData.is_open = activeBool;
+        }
+
+        const minB = min_bet !== undefined ? Number(min_bet) : limits?.min_bet !== undefined ? Number(limits.min_bet) : undefined;
+        if (minB !== undefined) updateData.min_bet = minB;
+
+        const maxB = max_bet !== undefined ? Number(max_bet) : limits?.max_bet !== undefined ? Number(limits.max_bet) : undefined;
+        if (maxB !== undefined) updateData.max_bet = maxB;
+
+        const maxPerNum = max_per_number !== undefined ? Number(max_per_number) : limits?.max_per_number !== undefined ? Number(limits.max_per_number) : undefined;
+        if (maxPerNum !== undefined) updateData.max_per_number = maxPerNum;
 
         const { data, error } = await supabaseAdmin
           .from("lottery_markets")
@@ -1114,21 +1234,16 @@ export async function POST(req: NextRequest) {
           .select();
         if (error) throw error;
 
-        // If payout rates provided, update payout_rates table
+        // If payout rates provided, update payout_rates table using standardized market code
         if (rates && typeof rates === "object") {
-          const mktCode = code || (data && data[0] ? data[0].code : null);
+          const mktCode = (code || (data && data[0] ? data[0].code : null) || id);
           if (mktCode) {
-            const upsertRows = Object.entries(rates).map(([bt, rateVal]) => ({
-              market: mktCode,
-              bet_type: bt,
-              rate: Number(rateVal),
-            }));
-
-            for (const r of upsertRows) {
-              await supabaseAdmin
-                .from("payout_rates")
-                .upsert([r], { onConflict: "market,bet_type" })
-                .select();
+            for (const [bt, rateVal] of Object.entries(rates)) {
+              if (rateVal !== undefined && rateVal !== null) {
+                await supabaseAdmin
+                  .from("payout_rates")
+                  .upsert([{ market: mktCode, bet_type: bt, rate: Number(rateVal) }], { onConflict: "market,bet_type" });
+              }
             }
           }
         }
@@ -1178,13 +1293,11 @@ export async function POST(req: NextRequest) {
       }
 
       case "record_login_attempt": {
-        const { phone, user_id, success } = payload;
-        const forwarded = req.headers.get("x-forwarded-for");
-        const realIp = req.headers.get("x-real-ip");
-        const rawIp = forwarded ? forwarded.split(",")[0].trim() : (realIp || "127.0.0.1");
+        const { phone, user_id, success, client_ip, client_geo } = payload;
+        const rawIp = extractClientIp(req, client_ip);
         const ua = req.headers.get("user-agent") || "";
         const dev = parseUserAgent(ua);
-        const geo = await resolveIpGeo(rawIp);
+        const geo = await resolveIpGeo(rawIp, client_geo, req);
 
         const { data, error } = await supabaseAdmin.rpc("record_login_session", {
           p_phone: phone || null,
@@ -1220,46 +1333,34 @@ export async function POST(req: NextRequest) {
 
       case "update_deposit": {
         const { id, status, admin_note } = payload;
-        const { data: dep, error: depErr } = await supabaseAdmin
-          .from("deposit_requests")
-          .select("user_id, amount, status")
-          .eq("id", id)
-          .single();
-        if (depErr) throw depErr;
-
-        const { data, error } = await supabaseAdmin
-          .from("deposit_requests")
-          .update({
-            status,
-            admin_note,
-            approved_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", id)
-          .select();
-        if (error) throw error;
-
-        if (status === "APPROVED" && dep.status !== "APPROVED") {
-          const { data: w } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", dep.user_id).single();
-          if (w) {
-            const newBal = Number(w.balance) + Number(dep.amount);
-            await supabaseAdmin.from("wallets").update({ balance: newBal, updated_at: new Date().toISOString() }).eq("user_id", dep.user_id);
-            try {
-              await supabaseAdmin.from("transactions").insert([{
-                user_id: dep.user_id,
-                type: "DEPOSIT",
-                amount: Number(dep.amount),
-                status: "COMPLETED",
-                reference_id: id,
-                note: admin_note || "ฝากเงินสำเร็จ (อนุมัติผ่านแผงควบคุม)",
-                balance_after: newBal,
-              }]);
-            } catch (txErr) {
-              console.error("Failed to log deposit transaction:", txErr);
-            }
-          }
+        if (status === "APPROVED") {
+          const { data: rpcRes, error: rpcErr } = await supabaseAdmin.rpc("admin_service_approve_deposit", {
+            p_request_id: id,
+            p_admin_note: admin_note || "อนุมัติผ่านแผงควบคุม",
+          });
+          if (rpcErr) throw rpcErr;
+          return NextResponse.json({ success: true, data: rpcRes });
+        } else if (status === "REJECTED") {
+          const { data: rpcRes, error: rpcErr } = await supabaseAdmin.rpc("admin_service_reject_deposit", {
+            p_request_id: id,
+            p_admin_note: admin_note || "ข้อมูลสลิปไม่ถูกต้อง",
+          });
+          if (rpcErr) throw rpcErr;
+          return NextResponse.json({ success: true, data: rpcRes });
+        } else {
+          // Handle other status updates (e.g. CANCELLED or PENDING reset)
+          const { data, error } = await supabaseAdmin
+            .from("deposit_requests")
+            .update({
+              status,
+              admin_note,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", id)
+            .select();
+          if (error) throw error;
+          return NextResponse.json({ success: true, data });
         }
-        return NextResponse.json({ success: true, data });
       }
 
       case "update_member": {
@@ -1284,32 +1385,13 @@ export async function POST(req: NextRequest) {
 
       case "adjust_wallet": {
         const { user_id, delta, note } = payload;
-        const { data: w, error: wErr } = await supabaseAdmin
-          .from("wallets")
-          .select("balance")
-          .eq("user_id", user_id)
-          .single();
-        if (wErr) throw wErr;
-        const newBal = Math.max(0, Number(w.balance) + Number(delta));
-        const { data, error } = await supabaseAdmin
-          .from("wallets")
-          .update({ balance: newBal, updated_at: new Date().toISOString() })
-          .eq("user_id", user_id)
-          .select();
-        if (error) throw error;
-        try {
-          await supabaseAdmin.from("transactions").insert([{
-            user_id,
-            type: delta > 0 ? "ADMIN_ADJUST_ADD" : "ADMIN_ADJUST_SUB",
-            amount: Math.abs(delta),
-            status: "COMPLETED",
-            note: note || (delta > 0 ? "เพิ่มยอดกระเป๋าโดยแอดมิน" : "ลดยอดกระเป๋าโดยแอดมิน"),
-            balance_after: newBal,
-          }]);
-        } catch (txErr) {
-          console.error("Failed to log wallet adjustment transaction:", txErr);
-        }
-        return NextResponse.json({ success: true, data, balance: newBal });
+        const { data: rpcRes, error: rpcErr } = await supabaseAdmin.rpc("admin_service_adjust_wallet", {
+          p_user_id: user_id,
+          p_delta: Number(delta),
+          p_note: note || (delta > 0 ? "เพิ่มยอดกระเป๋าโดยแอดมิน" : "ลดยอดกระเป๋าโดยแอดมิน"),
+        });
+        if (rpcErr) throw rpcErr;
+        return NextResponse.json({ success: true, balance: rpcRes?.balance, data: rpcRes });
       }
 
       case "record_result": {
@@ -1341,46 +1423,33 @@ export async function POST(req: NextRequest) {
 
       case "update_withdrawal": {
         const { id, status, admin_note } = payload;
-        const { data: wReq, error: wErr } = await supabaseAdmin
-          .from("withdraw_requests")
-          .select("*")
-          .eq("id", id)
-          .single();
-        if (wErr) throw wErr;
-
-        const { data, error } = await supabaseAdmin
-          .from("withdraw_requests")
-          .update({
-            status,
-            admin_note,
-            approved_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", id)
-          .select();
-        if (error) throw error;
-
-        if (status === "REJECTED" && wReq.status === "PENDING") {
-          const { data: wal } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", wReq.user_id).single();
-          if (wal) {
-            const newBal = Number(wal.balance) + Number(wReq.amount);
-            await supabaseAdmin.from("wallets").update({ balance: newBal }).eq("user_id", wReq.user_id);
-            try {
-              await supabaseAdmin.from("transactions").insert([{
-                user_id: wReq.user_id,
-                type: "REFUND_WITHDRAW",
-                amount: Number(wReq.amount),
-                status: "COMPLETED",
-                reference_id: id,
-                note: admin_note || "คืนเงินจากการปฏิเสธคำขอถอน",
-                balance_after: newBal,
-              }]);
-            } catch (txErr) {
-              console.error("Failed to log refund transaction:", txErr);
-            }
-          }
+        if (status === "APPROVED") {
+          const { data: rpcRes, error: rpcErr } = await supabaseAdmin.rpc("admin_service_approve_withdraw", {
+            p_request_id: id,
+            p_admin_note: admin_note || "อนุมัติผ่านแผงควบคุม",
+          });
+          if (rpcErr) throw rpcErr;
+          return NextResponse.json({ success: true, data: rpcRes });
+        } else if (status === "REJECTED") {
+          const { data: rpcRes, error: rpcErr } = await supabaseAdmin.rpc("admin_service_reject_withdraw", {
+            p_request_id: id,
+            p_admin_note: admin_note || "ข้อมูลบัญชีไม่ถูกต้อง",
+          });
+          if (rpcErr) throw rpcErr;
+          return NextResponse.json({ success: true, data: rpcRes });
+        } else {
+          const { data, error } = await supabaseAdmin
+            .from("withdraw_requests")
+            .update({
+              status,
+              admin_note,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", id)
+            .select();
+          if (error) throw error;
+          return NextResponse.json({ success: true, data });
         }
-        return NextResponse.json({ success: true, data });
       }
 
       case "cancel_bet": {
@@ -1440,23 +1509,112 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true, data });
       }
 
+      case "upsert_company_bank": {
+        const { id, bank_code, account_no, account_number, account_name, branch, qr_code_url, is_active } = payload;
+        const nowIso = new Date().toISOString();
+        const bCode = (bank_code || "KBANK").toUpperCase();
+        const accNo = account_no || account_number || "";
+        const accName = account_name || "";
+        const row: any = {
+          bank_code: bCode,
+          account_number: accNo,
+          account_name: accName,
+          branch: branch || "สำนักงานใหญ่",
+          qr_code_url: qr_code_url || "",
+          is_active: is_active ?? true,
+          updated_at: nowIso,
+        };
+        if (id && !String(id).startsWith("bk-")) {
+          row.id = id;
+        }
+
+        const { data, error } = await supabaseAdmin.from("company_bank_accounts").upsert([row], { onConflict: "account_number" }).select();
+        
+        // Keep settings table in sync as well
+        await supabaseAdmin.from("settings").upsert([
+          { key: "company_bank_code", value: bCode, updated_at: nowIso },
+          { key: "company_bank_account_number", value: accNo, updated_at: nowIso },
+          { key: "company_bank_account_name", value: accName, updated_at: nowIso },
+          { key: "bank_account_name", value: accName, updated_at: nowIso },
+          ...(qr_code_url ? [{ key: "bank_qr_url", value: qr_code_url, updated_at: nowIso }] : []),
+        ], { onConflict: "key" });
+
+        return NextResponse.json({ success: true, data: data || [row] });
+      }
+
       case "batch_update_settings": {
         const { settings } = payload;
         const upsertRows: { key: string; value: string; updated_at: string }[] = [];
+        const nowIso = new Date().toISOString();
+
+        let hasPopupChange = false;
+        let cBankCode = "";
+        let cAccNo = "";
+        let cAccName = "";
+        let cQrUrl = "";
+
+        const handleKV = (k: string, v: any) => {
+          const strVal = String(v ?? "");
+          upsertRows.push({ key: k, value: strVal, updated_at: nowIso });
+          if (k.startsWith("popup_")) hasPopupChange = true;
+          if (k === "company_bank_code") cBankCode = strVal.toUpperCase();
+          if (k === "company_bank_account_number") cAccNo = strVal;
+          if (k === "company_bank_account_name" || k === "bank_account_name") cAccName = strVal;
+          if (k === "bank_qr_url") cQrUrl = strVal;
+        };
+
         if (Array.isArray(settings)) {
           for (const item of settings) {
-            if (item.key) upsertRows.push({ key: item.key, value: String(item.value ?? ""), updated_at: new Date().toISOString() });
+            if (item.key) handleKV(item.key, item.value);
           }
         } else if (typeof settings === "object" && settings !== null) {
           for (const [k, v] of Object.entries(settings)) {
-            upsertRows.push({ key: k, value: String(v ?? ""), updated_at: new Date().toISOString() });
+            handleKV(k, v);
           }
         }
+
+        if (hasPopupChange) {
+          upsertRows.push({ key: "popup_version", value: Date.now().toString(), updated_at: nowIso });
+        }
+
         if (upsertRows.length > 0) {
           const { error } = await supabaseAdmin.from("settings").upsert(upsertRows, { onConflict: "key" });
           if (error) throw error;
         }
+
+        // Dual-sync company bank account if numbers were updated
+        if (cAccNo) {
+          try {
+            await supabaseAdmin.from("company_bank_accounts").upsert([{
+              bank_code: cBankCode || "KBANK",
+              account_number: cAccNo,
+              account_name: cAccName || "บริษัท ทีเอช ล็อตโต้ จำกัด",
+              branch: "สำนักงานใหญ่",
+              qr_code_url: cQrUrl || "",
+              is_active: true,
+              updated_at: nowIso,
+            }], { onConflict: "account_number" });
+          } catch (e) {
+            console.warn("Could not sync to company_bank_accounts table:", e);
+          }
+        }
+
         return NextResponse.json({ success: true, count: upsertRows.length });
+      }
+
+      case "update_instant_settings": {
+        const { name, logo_url, show_popular, show_trending, win_rate } = payload || {};
+        const nowIso = new Date().toISOString();
+        const rows = [
+          { key: "instant_name", value: String(name || "หวยไทย 1 นาที"), updated_at: nowIso },
+          { key: "instant_logo_url", value: String(logo_url || ""), updated_at: nowIso },
+          { key: "instant_show_popular", value: String(Boolean(show_popular)), updated_at: nowIso },
+          { key: "instant_show_trending", value: String(Boolean(show_trending)), updated_at: nowIso },
+          { key: "instant_win_rate", value: String(win_rate ?? 95), updated_at: nowIso },
+        ];
+        const { error } = await supabaseAdmin.from("settings").upsert(rows, { onConflict: "key" });
+        if (error) throw error;
+        return NextResponse.json({ success: true });
       }
 
       case "update_appearance": {
@@ -1470,9 +1628,20 @@ export async function POST(req: NextRequest) {
           }
         };
 
+        // Brand Identity & Site Meta
         add("site_name", p.site_name);
         add("site_tagline", p.site_tagline);
+        add("site_short_name", p.site_short_name);
         add("site_badge", p.site_badge);
+        add("site_logo_url", p.logo_url ?? p.site_logo_url);
+        add("site_logo_dark_url", p.logo_dark_url ?? p.site_logo_dark_url);
+        add("site_favicon_url", p.favicon_url ?? p.site_favicon_url);
+        add("site_app_icon_url", p.app_icon_url ?? p.site_app_icon_url);
+        add("site_copyright", p.site_copyright ?? p.footer_copyright);
+        add("footer_copyright", p.footer_copyright ?? p.site_copyright);
+
+        // Login Screen Visuals & Copy
+        add("login_bg_url", p.login_bg_url);
         add("login_hero_heading", p.login_hero_heading);
         add("login_feature_1", p.login_feature_1);
         add("login_feature_2", p.login_feature_2);
@@ -1491,14 +1660,37 @@ export async function POST(req: NextRequest) {
         add("login_badge_2_sub", p.login_badge_2_sub);
         add("login_badge_3_title", p.login_badge_3_title);
         add("login_badge_3_sub", p.login_badge_3_sub);
-        add("site_copyright", p.site_copyright);
-        add("site_logo_url", p.logo_url);
-        add("site_favicon_url", p.favicon_url);
-        add("login_bg_url", p.login_bg_url);
-        add("site_primary_color", p.primary_color);
-        add("theme_primary_color", p.primary_color);
-        add("theme_font", p.font || p.font_family);
-        add("theme_dark_mode", p.dark_mode ? "true" : "false");
+
+        // Colors & Typography
+        if (p.primary_color !== undefined) {
+          add("site_primary_color", p.primary_color);
+          add("theme_primary_color", p.primary_color);
+        }
+        if (p.secondary_color !== undefined) add("theme_secondary_color", p.secondary_color);
+        if (p.font !== undefined || p.font_family !== undefined) add("theme_font", p.font || p.font_family);
+        if (p.ui_radius !== undefined) add("theme_ui_radius", p.ui_radius);
+        if (p.dark_mode !== undefined) add("theme_dark_mode", p.dark_mode ? "true" : "false");
+
+        // Social & Support Channels
+        add("contact_line_id", p.line_id);
+        add("contact_line_url", p.line_url);
+        add("contact_facebook_url", p.facebook_url);
+        add("contact_telegram_url", p.telegram_url);
+        add("contact_phone", p.phone);
+        if (p.livechat_enabled !== undefined) add("contact_livechat_enabled", String(p.livechat_enabled));
+
+        // SEO
+        add("seo_meta_title", p.seo_meta_title);
+        add("seo_meta_description", p.seo_meta_description);
+        add("seo_meta_keywords", p.seo_meta_keywords);
+        add("seo_og_image_url", p.seo_og_image_url);
+
+        // Home Popup Notification
+        if (p.popup_enabled !== undefined) add("popup_enabled", String(p.popup_enabled));
+        add("popup_title", p.popup_title);
+        add("popup_description", p.popup_description);
+        add("popup_image_url", p.popup_image_url);
+        add("popup_version", Date.now().toString());
 
         if (pairs.length > 0) {
           const { error } = await supabaseAdmin.from("settings").upsert(pairs, { onConflict: "key" });
@@ -1779,126 +1971,6 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ success: true, count: rows.length });
         }
       }
-
-      case "batch_update_settings": {
-        const { settings: settingsObj } = payload || {};
-        if (!settingsObj || typeof settingsObj !== "object") {
-          return NextResponse.json({ success: false, error: "Invalid settings payload" }, { status: 400 });
-        }
-        const now = new Date().toISOString();
-        const updates: { key: string; value: string; updated_at: string }[] = [];
-        for (const [k, v] of Object.entries(settingsObj)) {
-          if (k) {
-            updates.push({ key: k, value: String(v ?? ""), updated_at: now });
-            if (k === "theme_primary_color") {
-              updates.push({ key: "site_primary_color", value: String(v ?? ""), updated_at: now });
-            } else if (k === "site_primary_color") {
-              updates.push({ key: "theme_primary_color", value: String(v ?? ""), updated_at: now });
-            }
-          }
-        }
-        if (updates.length > 0) {
-          const { error } = await supabaseAdmin.from("settings").upsert(updates, { onConflict: "key" });
-          if (error) throw error;
-        }
-        return NextResponse.json({ success: true, count: updates.length });
-      }
-
-      case "update_appearance": {
-        const {
-          site_name,
-          site_tagline,
-          site_short_name,
-          primary_color,
-          secondary_color,
-          font,
-          ui_radius,
-          dark_mode,
-          logo_url,
-          logo_dark_url,
-          favicon_url,
-          app_icon_url,
-          footer_copyright,
-          line_id,
-          line_url,
-          facebook_url,
-          telegram_url,
-          phone,
-          livechat_enabled,
-          seo_meta_title,
-          seo_meta_description,
-          seo_meta_keywords,
-          seo_og_image_url,
-          login_bg_url,
-          login_hero_heading,
-          login_feature_1,
-          login_feature_2,
-          login_feature_3,
-          login_stat_1_val,
-          login_stat_1_label,
-          login_stat_2_val,
-          login_stat_2_label,
-          login_stat_3_val,
-          login_stat_3_label,
-        } = payload || {};
-
-        const now = new Date().toISOString();
-        const updates: { key: string; value: string; updated_at: string }[] = [];
-
-        // Brand Identity & Login Content
-        if (site_name !== undefined) updates.push({ key: "site_name", value: String(site_name), updated_at: now });
-        if (site_tagline !== undefined) updates.push({ key: "site_tagline", value: String(site_tagline), updated_at: now });
-        if (site_short_name !== undefined) updates.push({ key: "site_short_name", value: String(site_short_name), updated_at: now });
-        if (logo_url !== undefined) updates.push({ key: "site_logo_url", value: String(logo_url), updated_at: now });
-        if (logo_dark_url !== undefined) updates.push({ key: "site_logo_dark_url", value: String(logo_dark_url), updated_at: now });
-        if (favicon_url !== undefined) updates.push({ key: "site_favicon_url", value: String(favicon_url), updated_at: now });
-        if (app_icon_url !== undefined) updates.push({ key: "site_app_icon_url", value: String(app_icon_url), updated_at: now });
-        if (login_bg_url !== undefined) updates.push({ key: "login_bg_url", value: String(login_bg_url), updated_at: now });
-        if (footer_copyright !== undefined) updates.push({ key: "footer_copyright", value: String(footer_copyright), updated_at: now });
-
-        // Login Page Texts & Stats
-        if (login_hero_heading !== undefined) updates.push({ key: "login_hero_heading", value: String(login_hero_heading), updated_at: now });
-        if (login_feature_1 !== undefined) updates.push({ key: "login_feature_1", value: String(login_feature_1), updated_at: now });
-        if (login_feature_2 !== undefined) updates.push({ key: "login_feature_2", value: String(login_feature_2), updated_at: now });
-        if (login_feature_3 !== undefined) updates.push({ key: "login_feature_3", value: String(login_feature_3), updated_at: now });
-        if (login_stat_1_val !== undefined) updates.push({ key: "login_stat_1_val", value: String(login_stat_1_val), updated_at: now });
-        if (login_stat_1_label !== undefined) updates.push({ key: "login_stat_1_label", value: String(login_stat_1_label), updated_at: now });
-        if (login_stat_2_val !== undefined) updates.push({ key: "login_stat_2_val", value: String(login_stat_2_val), updated_at: now });
-        if (login_stat_2_label !== undefined) updates.push({ key: "login_stat_2_label", value: String(login_stat_2_label), updated_at: now });
-        if (login_stat_3_val !== undefined) updates.push({ key: "login_stat_3_val", value: String(login_stat_3_val), updated_at: now });
-        if (login_stat_3_label !== undefined) updates.push({ key: "login_stat_3_label", value: String(login_stat_3_label), updated_at: now });
-
-        // Design & Theming
-        if (primary_color !== undefined) {
-          updates.push({ key: "theme_primary_color", value: String(primary_color), updated_at: now });
-          updates.push({ key: "site_primary_color", value: String(primary_color), updated_at: now });
-        }
-        if (secondary_color !== undefined) updates.push({ key: "theme_secondary_color", value: String(secondary_color), updated_at: now });
-        if (font !== undefined) updates.push({ key: "theme_font", value: String(font), updated_at: now });
-        if (ui_radius !== undefined) updates.push({ key: "theme_ui_radius", value: String(ui_radius), updated_at: now });
-        if (dark_mode !== undefined) updates.push({ key: "theme_dark_mode", value: String(dark_mode), updated_at: now });
-
-        // Social & Channels
-        if (line_id !== undefined) updates.push({ key: "contact_line_id", value: String(line_id), updated_at: now });
-        if (line_url !== undefined) updates.push({ key: "contact_line_url", value: String(line_url), updated_at: now });
-        if (facebook_url !== undefined) updates.push({ key: "contact_facebook_url", value: String(facebook_url), updated_at: now });
-        if (telegram_url !== undefined) updates.push({ key: "contact_telegram_url", value: String(telegram_url), updated_at: now });
-        if (phone !== undefined) updates.push({ key: "contact_phone", value: String(phone), updated_at: now });
-        if (livechat_enabled !== undefined) updates.push({ key: "contact_livechat_enabled", value: String(livechat_enabled), updated_at: now });
-
-        // SEO & Metadata
-        if (seo_meta_title !== undefined) updates.push({ key: "seo_meta_title", value: String(seo_meta_title), updated_at: now });
-        if (seo_meta_description !== undefined) updates.push({ key: "seo_meta_description", value: String(seo_meta_description), updated_at: now });
-        if (seo_meta_keywords !== undefined) updates.push({ key: "seo_meta_keywords", value: String(seo_meta_keywords), updated_at: now });
-        if (seo_og_image_url !== undefined) updates.push({ key: "seo_og_image_url", value: String(seo_og_image_url), updated_at: now });
-
-        if (updates.length > 0) {
-          const { error } = await supabaseAdmin.from("settings").upsert(updates, { onConflict: "key" });
-          if (error) throw error;
-        }
-        return NextResponse.json({ success: true, count: updates.length });
-      }
-
       case "create_admin_user": {
         const { full_name, phone, password, admin_role, permissions } = payload || {};
         const inputId = String(phone || "").trim();
@@ -2085,6 +2157,23 @@ export async function POST(req: NextRequest) {
           })
           .eq("id", id)
           .select();
+        if (error) throw error;
+
+        return NextResponse.json({ success: true, data });
+      }
+
+      case "record_backup": {
+        const { backup_type, backup_date, backup_by } = payload || {};
+        const { data, error } = await supabaseAdmin
+          .from("backup_logs")
+          .insert({
+            backup_type: backup_type || "database",
+            backup_date: backup_date || new Date().toISOString().slice(0, 10),
+            backed_up_at: new Date().toISOString(),
+            backup_by: backup_by || null,
+          })
+          .select()
+          .single();
         if (error) throw error;
 
         return NextResponse.json({ success: true, data });

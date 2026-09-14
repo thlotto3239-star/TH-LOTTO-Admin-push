@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
-  MARKETS,
   BET_TYPES,
   BET_TYPE_LABEL,
   fmtTHB,
@@ -121,13 +120,14 @@ export function RestrictedNumbersPage() {
     })();
 
     const tempId = "rn_" + Date.now();
+    const targetMkt = marketList.find((m) => m.id === form.market_id) || marketList[0] || { name: "หวย", code: "MKT", color: "#059669", logo_url: null, image_url: null };
     const newRecord: RestrictedNumber = {
       id: tempId,
       market_id: form.market_id || (marketList[0]?.id ?? ""),
       market_name: targetMkt?.name || "หวย",
-      market_code: targetMkt.code,
-      market_color: targetMkt.color,
-      market_logo: targetMkt.logo_url || targetMkt.image_url || null,
+      market_code: targetMkt?.code || "MKT",
+      market_color: targetMkt?.color || "#059669",
+      market_logo: targetMkt?.logo_url || targetMkt?.image_url || null,
       bet_type: form.bet_type,
       number: form.number.trim(),
       max_amount: Number(form.max_amount) || 0,
@@ -143,7 +143,7 @@ export function RestrictedNumbersPage() {
     });
     setIsModalOpen(false);
     setForm({
-      market_id: MARKETS[0].id,
+      market_id: marketList[0]?.id || "",
       bet_type: "3TOP",
       number: "",
       mode: "blocked",
@@ -220,8 +220,8 @@ export function RestrictedNumbersPage() {
                 <SelectValue placeholder="เลือกตลาดหวย" />
               </SelectTrigger>
               <SelectContent className="max-h-72 rounded-2xl">
-                <SelectItem value="ALL">ทุกล่าสุด ({marketList.length || 37} ตลาด)</SelectItem>
-                {(marketList.length > 0 ? marketList : MARKETS).map((m: any) => (
+                <SelectItem value="ALL">ทุกล่าสุด ({marketList.length} ตลาด)</SelectItem>
+                {marketList.map((m: any) => (
                   <SelectItem key={m.id} value={m.id}>
                     {m.name} ({m.code})
                   </SelectItem>
@@ -359,7 +359,7 @@ export function RestrictedNumbersPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="max-h-60 rounded-2xl">
-                    {(marketList.length > 0 ? marketList : MARKETS).map((m: any) => (
+                    {marketList.map((m: any) => (
                       <SelectItem key={m.id} value={m.id}>
                         {m.name} ({m.code})
                       </SelectItem>

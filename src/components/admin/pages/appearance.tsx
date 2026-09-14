@@ -10,6 +10,7 @@ import {
 import { Panel, Btn, PageHeader, Field, inputCls, ColorPickerInput } from "../primitives";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminNav } from "../store";
 import { APPEARANCE_SETTINGS, PRIMARY_PALETTE, FONT_OPTIONS } from "@/data/admin-mock";
 import { cn } from "@/lib/utils";
 
@@ -154,6 +155,7 @@ function ImageSlot({
 // ── Main Appearance Page Component ───────────────────────────────────────────
 export function AppearancePage() {
   const { toast } = useToast();
+  const { navigate } = useAdminNav();
   const [s, setS] = React.useState({ ...APPEARANCE_SETTINGS });
   const [initial, setInitial] = React.useState({ ...APPEARANCE_SETTINGS });
   const [previewDevice, setPreviewDevice] = React.useState<"pc" | "mobile">("pc");
@@ -255,6 +257,10 @@ export function AppearancePage() {
             logo_url: dict.site_logo_url || dict.logo_url || APPEARANCE_SETTINGS.logo_url,
             favicon_url: dict.site_favicon_url || dict.favicon_url || APPEARANCE_SETTINGS.favicon_url,
             login_bg_url: dict.login_bg_url || APPEARANCE_SETTINGS.login_bg_url,
+            popup_enabled: dict.popup_enabled !== undefined ? ["TRUE", "1", "YES"].includes(String(dict.popup_enabled).toUpperCase()) : APPEARANCE_SETTINGS.popup_enabled,
+            popup_title: dict.popup_title !== undefined ? String(dict.popup_title) : APPEARANCE_SETTINGS.popup_title,
+            popup_description: dict.popup_description !== undefined ? String(dict.popup_description) : APPEARANCE_SETTINGS.popup_description,
+            popup_image_url: dict.popup_image_url !== undefined ? String(dict.popup_image_url) : APPEARANCE_SETTINGS.popup_image_url,
           };
           setS((prev) => ({ ...prev, ...loaded }));
           setInitial((prev) => ({ ...prev, ...loaded }));
@@ -307,6 +313,10 @@ export function AppearancePage() {
             logo_url: s.logo_url,
             favicon_url: s.favicon_url,
             login_bg_url: s.login_bg_url,
+            popup_enabled: s.popup_enabled,
+            popup_title: s.popup_title,
+            popup_description: s.popup_description,
+            popup_image_url: s.popup_image_url,
           },
         }),
       });
@@ -381,22 +391,22 @@ export function AppearancePage() {
       <Panel className="overflow-hidden p-0 border border-neutral-300 rounded-3xl shadow-xl bg-neutral-900/5">
         {/* Desktop Browser Window Titlebar */}
         <div className="flex items-center justify-between border-b border-neutral-200 bg-white/90 px-4 py-2.5 backdrop-blur-md">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             <span className="size-2.5 rounded-full bg-rose-400" />
             <span className="size-2.5 rounded-full bg-amber-400" />
             <span className="size-2.5 rounded-full bg-emerald-400" />
           </div>
 
-          <div className="flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-1 text-[11px] text-neutral-500 max-w-[280px] w-full justify-center">
-            <Lock className="size-2.5 text-emerald-600" />
-            <span className="truncate font-mono">http://localhost:5173/login</span>
+          <div className="flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-neutral-50 px-3.5 py-1 text-[11px] text-neutral-600 max-w-sm w-full justify-center shadow-xs mx-2">
+            <Lock className="size-3 text-emerald-600 shrink-0" />
+            <span className="truncate font-mono text-emerald-800 font-medium">https://th-lotto-plus.vercel.app/login</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => {
-                if (iframeRef.current) iframeRef.current.src = "http://localhost:5173/login?preview=true";
+                if (iframeRef.current) iframeRef.current.src = "https://th-lotto-plus.vercel.app/login?preview=true";
               }}
               title="รีเฟรชหน้าพรีวิว"
               className="p-1 text-neutral-400 hover:text-neutral-700 rounded-md hover:bg-neutral-100 transition-colors"
@@ -404,10 +414,10 @@ export function AppearancePage() {
               <RefreshCw className="size-3" />
             </button>
             <a
-              href="http://localhost:5173/login"
+              href="https://th-lotto-plus.vercel.app/login"
               target="_blank"
               rel="noreferrer"
-              title="เปิดในแท็บใหม่"
+              title="เปิดหน้าเว็บจริงในแท็บใหม่"
               className="p-1 text-neutral-400 hover:text-brand-600 rounded-md hover:bg-neutral-100 transition-colors"
             >
               <ExternalLink className="size-3" />
@@ -431,7 +441,7 @@ export function AppearancePage() {
                 </div>
                 <iframe
                   ref={iframeRef}
-                  src="http://localhost:5173/login?preview=true"
+                  src="https://th-lotto-plus.vercel.app/login?preview=true"
                   title="Customer Login Live Preview (Mobile)"
                   className="w-full flex-1 border-0"
                   onLoad={postToIframe}
@@ -455,7 +465,7 @@ export function AppearancePage() {
               >
                 <iframe
                   ref={iframeRef}
-                  src="http://localhost:5173/login?preview=true"
+                  src="https://th-lotto-plus.vercel.app/login?preview=true"
                   title="Customer Login Live Preview (PC Desktop)"
                   className="w-full h-full border-0"
                   onLoad={postToIframe}
@@ -803,6 +813,158 @@ export function AppearancePage() {
               ))}
             </div>
           </Field>
+        </div>
+      </Panel>
+
+      {/* Group 6: ป๊อปอัปต้อนรับ & โปรโมชั่นหน้าแรก (Welcome & Promo Popup Modal) */}
+      <Panel className="p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-neutral-400">
+              <Sparkles className="size-4 text-amber-500" /> 6. ป๊อปอัปต้อนรับ & โปรโมชั่นหน้าแรก (Welcome & Promo Popup Modal)
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("popup")}
+              className="inline-flex items-center gap-1 rounded-lg bg-amber-100/80 px-2 py-0.5 text-[11px] font-bold text-amber-800 hover:bg-amber-200 transition-colors"
+            >
+              <ExternalLink className="size-3" /> เปิดหน้าจัดการแบบเต็ม
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-neutral-600">
+              {s.popup_enabled ? "เปิดแสดงผลหน้าแรก" : "ปิดการแสดงผล"}
+            </span>
+            <button
+              type="button"
+              onClick={() => set("popup_enabled", !s.popup_enabled)}
+              className={cn(
+                "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden",
+                s.popup_enabled ? "bg-emerald-500" : "bg-neutral-200"
+              )}
+            >
+              <span
+                className={cn(
+                  "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out",
+                  s.popup_enabled ? "translate-x-5" : "translate-x-0"
+                )}
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* Active Stored Data in Database */}
+        {initial ? (
+          <div className="rounded-2xl border border-amber-200/80 bg-amber-50/60 p-3.5 text-xs space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-amber-900 flex items-center gap-1.5">
+                📌 ข้อมูลป๊อปอัปเดิมในระบบที่เปิดใช้งานอยู่ปัจจุบัน (Saved Values in DB)
+              </span>
+              <span className={cn(
+                "rounded-full px-2.5 py-0.5 text-[10px] font-bold",
+                initial.popup_enabled ? "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300" : "bg-neutral-200 text-neutral-600"
+              )}>
+                {initial.popup_enabled ? "🟢 เปิดใช้งานอยู่ใน DB" : "⚪ ปิดใช้งานใน DB"}
+              </span>
+            </div>
+            <div className="grid gap-1.5 text-amber-950/90 pl-1 font-sans">
+              <p><span className="font-semibold text-amber-800">หัวข้อเดิม:</span> {initial.popup_title || "ไม่ได้ระบุ"}</p>
+              <p><span className="font-semibold text-amber-800">รายละเอียดเดิม:</span> {initial.popup_description || "ไม่ได้ระบุ"}</p>
+              {initial.popup_image_url ? (
+                <div className="flex items-center gap-2 pt-0.5">
+                  <span className="font-semibold text-amber-800">รูปภาพเดิม:</span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={initial.popup_image_url} alt="รูปเดิม" className="size-8 rounded object-cover border border-amber-300" />
+                  <a href={initial.popup_image_url} target="_blank" rel="noreferrer" className="truncate text-[11px] underline text-brand-700 hover:text-brand-800">
+                    {initial.popup_image_url}
+                  </a>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="space-y-3">
+          <Field label="หัวข้อป๊อปอัป (Popup Title)">
+            <Input
+              value={s.popup_title}
+              onChange={(e) => set("popup_title", e.target.value)}
+              placeholder="ยินดีต้อนรับสู่ TH LOTTO II"
+              className={inputCls}
+            />
+          </Field>
+
+          <Field label="รายละเอียดโปรโมชั่น / คำโปรย (Popup Description)">
+            <Input
+              value={s.popup_description}
+              onChange={(e) => set("popup_description", e.target.value)}
+              placeholder="สมาชิกใหม่ รับโบนัสฟรี 50% จากยอดฝากครั้งแรก!!"
+              className={inputCls}
+            />
+          </Field>
+
+          <ImageSlot
+            label="รูปภาพแบนเนอร์ป๊อปอัป (Popup Banner Image)"
+            hint="รองรับไฟล์ภาพ .png, .jpg, .webp อัปโหลดตรงจากคอมพิวเตอร์ หรือวางลิงก์ URL"
+            value={s.popup_image_url}
+            onPick={(v) => set("popup_image_url", v)}
+          />
+
+          {/* Live Visual Card Preview of the Current Active Popup matching Customer UI exactly */}
+          <div className="mt-4 border-t border-neutral-100 pt-4 space-y-2">
+            <p className="text-xs font-bold text-neutral-500 uppercase tracking-wide flex items-center gap-1.5">
+              <Eye className="size-4 text-brand-600" /> ตัวอย่างป๊อปอัปจริงบนหน้าจอผู้เล่น (Live Customer Popup Preview)
+            </p>
+            <div className="mx-auto max-w-xs overflow-hidden rounded-2xl bg-white shadow-2xl border border-neutral-200/80 animate-in fade-in zoom-in-95">
+              {s.popup_image_url ? (
+                <div className="relative w-full aspect-square overflow-hidden bg-neutral-900 flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={s.popup_image_url}
+                    alt="ป๊อปอัปโฆษณา"
+                    className="w-full h-full object-cover"
+                  />
+                  {!s.popup_enabled && (
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center">
+                      <span className="rounded-full bg-neutral-900/90 px-3 py-1 text-xs font-bold text-amber-300 border border-amber-500/30">
+                        ⚪ ปิดการแสดงผลอยู่
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="w-full aspect-square bg-gradient-to-br from-emerald-800 via-emerald-900 to-neutral-950 flex flex-col items-center justify-center p-4 text-white text-center">
+                  <ImageIcon className="size-12 text-white/40 mb-2" />
+                  <p className="text-xs font-bold">ไม่มีรูปภาพป๊อปอัป</p>
+                  <p className="text-[11px] text-white/60">จะแสดงเฉพาะหัวข้อและข้อความ</p>
+                </div>
+              )}
+              <div className="p-5 space-y-2 text-left">
+                <div className="flex items-center justify-between gap-1">
+                  <h3 className="font-bold text-slate-800 text-base truncate">
+                    {s.popup_title || "ยินดีต้อนรับสู่ TH LOTTO II"}
+                  </h3>
+                </div>
+                <p className="text-slate-500 text-sm line-clamp-3 leading-relaxed">
+                  {s.popup_description || "สมาชิกใหม่ รับโบนัสฟรี 50% จากยอดฝากครั้งแรก!!"}
+                </p>
+                <div className="flex gap-2 pt-3">
+                  <button
+                    type="button"
+                    className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl active:scale-95 transition text-center shadow-xs"
+                  >
+                    ปิด
+                  </button>
+                  <button
+                    type="button"
+                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-500 text-sm font-bold rounded-xl active:scale-95 transition text-center"
+                  >
+                    ไม่แสดงอีก
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </Panel>
     </div>

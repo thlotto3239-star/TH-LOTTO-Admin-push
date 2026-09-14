@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import { Panel, StatCard, StatusBadge, Avatar, BankBadge, RealtimeDot, EmptyState, MarketLogo } from "../primitives";
 import {
-  MARKETS, fmtTHB, fmtNum, fmtDT, mktShort,
+  fmtTHB, fmtNum, fmtDT, mktShort,
   type FeedItem,
 } from "@/data/admin-mock";
 import { formatBetTypeThai } from "./bets";
@@ -57,10 +57,7 @@ function FeedRow({ item }: { item: FeedItem }) {
   }
 
   if (item.kind === "bet") {
-    const mkt = MARKETS.find(
-      (m) => m.code === item.market_code || m.name === item.market
-    );
-    const logoUrl = item.market_logo || mkt?.logo_url;
+    const logoUrl = item.market_logo;
     const betTypeThai = formatBetTypeThai(item.bet_type ?? "");
 
     return (
@@ -156,9 +153,6 @@ export function DashboardPage() {
           setLiveStats(json.data);
 
           const betsFeed: FeedItem[] = (json.data.recentBets || []).map((b: any) => {
-            const mkt = MARKETS.find(
-              (m) => m.id === b.market_id || m.code === b.lottery_markets?.code || m.name === b.lottery_markets?.name
-            );
             const statusUpper = (b.status || "PENDING").toUpperCase();
             const mappedStatus = statusUpper === "WON" ? "won" : statusUpper === "LOST" ? "lost" : "pending";
 
@@ -175,10 +169,10 @@ export function DashboardPage() {
                 bank_account_number: "-",
                 vip_level: 0,
               },
-              market: b.lottery_markets?.name || mkt?.name || "หวย",
-              market_code: b.lottery_markets?.code || mkt?.code || "MKT",
-              market_color: b.lottery_markets?.color || mkt?.color || "#059669",
-              market_logo: b.lottery_markets?.logo_url || mkt?.logo_url || null,
+              market: b.lottery_markets?.name || "หวย",
+              market_code: b.lottery_markets?.code || "MKT",
+              market_color: b.lottery_markets?.color || "#059669",
+              market_logo: b.lottery_markets?.logo_url || null,
               bet_type: b.bet_type,
               numbers: b.numbers || b.number || "00",
               amount: Number(b.amount),

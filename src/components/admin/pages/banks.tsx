@@ -111,7 +111,32 @@ export function BanksPage() {
               display_order: idx + 1,
             }))
           );
+        } else {
+          setDisplays(
+            BANKS.map((b, idx) => ({
+              code: b.code.toLowerCase(),
+              is_active: true,
+              display_order: idx + 1,
+            }))
+          );
         }
+
+        if (res.success && Array.isArray(res.data?.company_bank_accounts) && res.data.company_bank_accounts.length > 0) {
+          const mapped: BankAccountBook[] = res.data.company_bank_accounts.map((cb: any, idx: number) => ({
+            id: cb.id ? String(cb.id) : `cb-${idx}`,
+            bank_code: (cb.bank_code || "kbank").toLowerCase(),
+            account_no: cb.account_number || cb.account_no || "",
+            account_name: cb.account_name || "บริษัท ทีเอช ล็อตโต้ จำกัด",
+            branch: cb.branch || "สำนักงานใหญ่",
+            qr_code_url: cb.qr_code_url || "",
+            account_type: "deposit" as const,
+            is_default: idx === 0,
+            is_active: cb.is_active ?? true,
+          }));
+          setAccounts(mapped);
+        }
+
+        // Parse settings & financial limits unconditionally from real DB settings
         if (res.success && Array.isArray(res.data?.settings) && res.data.settings.length > 0) {
           const dict: Record<string, string> = {};
           res.data.settings.forEach((s: any) => {
@@ -122,20 +147,22 @@ export function BanksPage() {
           if (dict.min_withdraw) setLimits((p) => ({ ...p, min_withdraw: Number(dict.min_withdraw) }));
           if (dict.max_withdraw_per_request) setLimits((p) => ({ ...p, max_withdraw: Number(dict.max_withdraw_per_request) }));
 
-          if (dict.company_bank_account_number) {
-            setAccounts([
-              {
-                id: "sb-company-1",
-                bank_code: (dict.company_bank_code || "kbank").toLowerCase(),
-                account_no: dict.company_bank_account_number || "",
-                account_name: dict.company_bank_account_name || dict.bank_account_name || "บริษัท ทีเอช ล็อตโต้ จำกัด",
-                branch: "สำนักงานใหญ่",
-                qr_code_url: dict.bank_qr_url || "",
-                account_type: "deposit" as const,
-                is_default: true,
-                is_active: true,
-              },
-            ]);
+          if (!res.data?.company_bank_accounts || res.data.company_bank_accounts.length === 0) {
+            if (dict.company_bank_account_number) {
+              setAccounts([
+                {
+                  id: "sb-company-1",
+                  bank_code: (dict.company_bank_code || "kbank").toLowerCase(),
+                  account_no: dict.company_bank_account_number || "",
+                  account_name: dict.company_bank_account_name || dict.bank_account_name || "บริษัท ทีเอช ล็อตโต้ จำกัด",
+                  branch: "สำนักงานใหญ่",
+                  qr_code_url: dict.bank_qr_url || "",
+                  account_type: "deposit" as const,
+                  is_default: true,
+                  is_active: true,
+                },
+              ]);
+            }
           }
         }
       })
@@ -196,15 +223,16 @@ export function BanksPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "batch_update_settings",
+          action: "upsert_company_bank",
           payload: {
-            settings: [
-              { key: "company_bank_code", value: a.bank_code },
-              { key: "company_bank_account_number", value: a.account_no },
-              { key: "company_bank_account_name", value: a.account_name },
-              { key: "bank_account_name", value: a.account_name },
-              ...(a.qr_code_url ? [{ key: "bank_qr_url", value: a.qr_code_url }] : []),
-            ],
+            id: a.id,
+            bank_code: a.bank_code,
+            account_no: a.account_no,
+            account_number: a.account_no,
+            account_name: a.account_name,
+            branch: a.branch,
+            qr_code_url: a.qr_code_url,
+            is_active: a.is_active,
           },
         }),
       });
