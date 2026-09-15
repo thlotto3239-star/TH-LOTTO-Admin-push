@@ -15,6 +15,16 @@ function hashPin(phone: string, pin: string) {
 
 export const dynamic = "force-dynamic";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const resource = searchParams.get("resource") || "dashboard";
@@ -1416,14 +1426,61 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true });
       }
 
+      case "create_deposit_request": {
+        const { user_id, amount, slip_url, promo_code } = payload;
+        if (!user_id || !amount) {
+          return NextResponse.json({ success: false, error: "กรุณาระบุข้อมูลผู้ใช้และยอดเงิน" }, { status: 400 });
+        }
+        const { data, error } = await supabaseAdmin
+          .from("deposit_requests")
+          .insert([{
+            user_id,
+            amount: Number(amount),
+            slip_url: slip_url || null,
+            promo_code: promo_code || null,
+            status: "PENDING",
+            created_at: new Date().toISOString(),
+          }])
+          .select()
+          .single();
+        if (error) throw error;
+        return NextResponse.json({ success: true, request_id: data?.id, data });
+      }
+
       case "update_deposit": {
         const { id, status, admin_note } = payload;
+        
+        // Fetch deposit details to get user_id & amount for realtime notification
+        const { data: depRow } = await supabaseAdmin
+          .from("deposit_requests")
+          .select("user_id, amount")
+          .eq("id", id)
+          .maybeSingle();
+
         if (status === "APPROVED") {
           const { data: rpcRes, error: rpcErr } = await supabaseAdmin.rpc("admin_service_approve_deposit", {
             p_request_id: id,
             p_admin_note: admin_note || "อนุมัติผ่านแผงควบคุม",
           });
           if (rpcErr) throw rpcErr;
+
+          // Realtime Notification to user: Deposit Approved Popup
+          if (depRow?.user_id) {
+            await supabaseAdmin.from("notifications").insert([{
+              user_id: depRow.user_id,
+              type: "DEPOSIT",
+              title: "💰 ฝากเงินสำเร็จ",
+              body: `ยอดเงิน ฿${Number(depRow.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })} เข้าสู่กระเป๋าเงินของคุณเรียบร้อยแล้ว`,
+              data: {
+                is_popup: true,
+                amount: Number(depRow.amount),
+                request_id: id,
+                action_url: "/wallet",
+              },
+              is_read: false,
+            }]).catch((err: any) => console.error("Failed to insert deposit notification:", err));
+          }
+
           return NextResponse.json({ success: true, data: rpcRes });
         } else if (status === "REJECTED") {
           const { data: rpcRes, error: rpcErr } = await supabaseAdmin.rpc("admin_service_reject_deposit", {
@@ -1431,6 +1488,23 @@ export async function POST(req: NextRequest) {
             p_admin_note: admin_note || "ข้อมูลสลิปไม่ถูกต้อง",
           });
           if (rpcErr) throw rpcErr;
+
+          // Realtime Notification to user: Deposit Rejected Popup
+          if (depRow?.user_id) {
+            await supabaseAdmin.from("notifications").insert([{
+              user_id: depRow.user_id,
+              type: "WARNING",
+              title: "⚠️ คำขอฝากเงินไม่สำเร็จ",
+              body: admin_note || "ข้อมูลสลิปไม่ถูกต้องหรือไม่พบยอดโอน กรุณาตรวจสอบหรือติดต่อฝ่ายบริการลูกค้า",
+              data: {
+                is_popup: true,
+                request_id: id,
+                action_url: "/deposit",
+              },
+              is_read: false,
+            }]).catch((err: any) => console.error("Failed to insert deposit reject notification:", err));
+          }
+
           return NextResponse.json({ success: true, data: rpcRes });
         } else {
           // Handle other status updates (e.g. CANCELLED or PENDING reset)
@@ -1476,6 +1550,23 @@ export async function POST(req: NextRequest) {
           p_note: note || (delta > 0 ? "เพิ่มยอดกระเป๋าโดยแอดมิน" : "ลดยอดกระเป๋าโดยแอดมิน"),
         });
         if (rpcErr) throw rpcErr;
+
+        if (user_id) {
+          const numDelta = Number(delta);
+          await supabaseAdmin.from("notifications").insert([{
+            user_id,
+            type: numDelta > 0 ? "DEPOSIT" : "SYSTEM",
+            title: numDelta > 0 ? "💰 ปรับเพิ่มยอดเงิน" : "📢 ปรับลดยอดเงิน",
+            body: note || (numDelta > 0 ? `ระบบได้เติมเครดิต ฿${Math.abs(numDelta).toLocaleString(undefined, { minimumFractionDigits: 2 })} เข้ากระเป๋าของคุณ` : `ระบบได้ปรับลดยอดเงิน ฿${Math.abs(numDelta).toLocaleString(undefined, { minimumFractionDigits: 2 })}`),
+            data: {
+              is_popup: true,
+              delta: numDelta,
+              action_url: "/wallet",
+            },
+            is_read: false,
+          }]).catch((err: any) => console.error("Failed to insert wallet adjust notification:", err));
+        }
+
         return NextResponse.json({ success: true, balance: rpcRes?.balance, data: rpcRes });
       }
 
@@ -1508,12 +1599,38 @@ export async function POST(req: NextRequest) {
 
       case "update_withdrawal": {
         const { id, status, admin_note } = payload;
+
+        // Fetch withdrawal details to get user_id & amount for realtime notification
+        const { data: withRow } = await supabaseAdmin
+          .from("withdraw_requests")
+          .select("user_id, amount")
+          .eq("id", id)
+          .maybeSingle();
+
         if (status === "APPROVED") {
           const { data: rpcRes, error: rpcErr } = await supabaseAdmin.rpc("admin_service_approve_withdraw", {
             p_request_id: id,
             p_admin_note: admin_note || "อนุมัติผ่านแผงควบคุม",
           });
           if (rpcErr) throw rpcErr;
+
+          // Realtime Notification to user: Withdrawal Approved Popup
+          if (withRow?.user_id) {
+            await supabaseAdmin.from("notifications").insert([{
+              user_id: withRow.user_id,
+              type: "WITHDRAW",
+              title: "💸 ถอนเงินสำเร็จ",
+              body: `โอนเงินจำนวน ฿${Number(withRow.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })} เข้าบัญชีธนาคารของคุณเรียบร้อยแล้ว`,
+              data: {
+                is_popup: true,
+                amount: Number(withRow.amount),
+                request_id: id,
+                action_url: "/wallet",
+              },
+              is_read: false,
+            }]).catch((err: any) => console.error("Failed to insert withdrawal approved notification:", err));
+          }
+
           return NextResponse.json({ success: true, data: rpcRes });
         } else if (status === "REJECTED") {
           const { data: rpcRes, error: rpcErr } = await supabaseAdmin.rpc("admin_service_reject_withdraw", {
@@ -1521,6 +1638,24 @@ export async function POST(req: NextRequest) {
             p_admin_note: admin_note || "ข้อมูลบัญชีไม่ถูกต้อง",
           });
           if (rpcErr) throw rpcErr;
+
+          // Realtime Notification to user: Withdrawal Rejected Popup
+          if (withRow?.user_id) {
+            await supabaseAdmin.from("notifications").insert([{
+              user_id: withRow.user_id,
+              type: "WARNING",
+              title: "⚠️ คำขอถอนเงินถูกปฏิเสธ",
+              body: admin_note || "ระบบได้คืนยอดเงินเข้ากระเป๋าของคุณแล้ว กรุณาตรวจสอบข้อมูลบัญชีหรือติดต่อเจ้าหน้าที่",
+              data: {
+                is_popup: true,
+                amount: Number(withRow.amount),
+                request_id: id,
+                action_url: "/wallet",
+              },
+              is_read: false,
+            }]).catch((err: any) => console.error("Failed to insert withdrawal rejected notification:", err));
+          }
+
           return NextResponse.json({ success: true, data: rpcRes });
         } else {
           const { data, error } = await supabaseAdmin
@@ -2312,11 +2447,109 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true, data });
       }
 
+      case "create_deposit_request": {
+        const { user_id, amount, slip_url, promo_code } = payload || {};
+        if (!user_id || !amount) {
+          return NextResponse.json(
+            { success: false, error: "ข้อมูล user_id หรือ amount ไม่ครบถ้วน" },
+            { status: 400, headers: corsHeaders }
+          );
+        }
+
+        const { data: inserted, error: insertError } = await supabaseAdmin
+          .from("deposit_requests")
+          .insert({
+            user_id,
+            amount: Number(amount),
+            slip_url: slip_url || null,
+            promo_code: promo_code || null,
+            status: "PENDING",
+            created_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error("[API create_deposit_request ERROR]:", insertError);
+          return NextResponse.json(
+            { success: false, error: insertError.message },
+            { status: 500, headers: corsHeaders }
+          );
+        }
+
+        // Create admin notification
+        try {
+          await supabaseAdmin.from("admin_notifications").insert({
+            type: "DEPOSIT",
+            message: `มีรายการฝากเงินใหม่ ฿${Number(amount).toLocaleString()} รอการตรวจสอบ`,
+            link_url: "/deposits",
+            is_read: false,
+          });
+        } catch (nErr) {
+          console.warn("[Admin Notification Failed]:", nErr);
+        }
+
+        return NextResponse.json(
+          { success: true, data: inserted, request_id: inserted.id },
+          { headers: corsHeaders }
+        );
+      }
+
+      case "upload_slip": {
+        const { user_id, base64_image, file_name, mime_type } = payload || {};
+        if (!base64_image) {
+          return NextResponse.json(
+            { success: false, error: "Missing image data" },
+            { status: 400, headers: corsHeaders }
+          );
+        }
+
+        const cleanBase64 = base64_image.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(cleanBase64, "base64");
+        const detectedMime = mime_type || "image/jpeg";
+        const targetExt = detectedMime.includes("png") ? "png" : detectedMime.includes("webp") ? "webp" : "jpg";
+        const finalName = `${user_id || "guest"}/${Date.now()}_${file_name || "slip"}.${targetExt}`;
+
+        let uploadRes = await supabaseAdmin.storage
+          .from("slips")
+          .upload(finalName, buffer, {
+            contentType: detectedMime,
+            upsert: true,
+          });
+
+        if (uploadRes.error) {
+          uploadRes = await supabaseAdmin.storage
+            .from("deposit-slips")
+            .upload(finalName, buffer, {
+              contentType: detectedMime,
+              upsert: true,
+            });
+        }
+
+        if (uploadRes.error) {
+          return NextResponse.json(
+            { success: false, error: uploadRes.error.message },
+            { status: 500, headers: corsHeaders }
+          );
+        }
+
+        const bucketName = uploadRes.data.fullPath?.startsWith("slips") ? "slips" : "deposit-slips";
+        const { data: urlData } = supabaseAdmin.storage
+          .from(bucketName)
+          .getPublicUrl(finalName);
+
+        return NextResponse.json(
+          { success: true, publicUrl: urlData.publicUrl },
+          { headers: corsHeaders }
+        );
+      }
+
       default:
-        return NextResponse.json({ success: false, error: "Unknown action" }, { status: 400 });
+        return NextResponse.json({ success: false, error: "Unknown action" }, { status: 400, headers: corsHeaders });
     }
   } catch (err: any) {
     console.error("[API POST ERROR]:", err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message }, { status: 500, headers: corsHeaders });
   }
 }
+
